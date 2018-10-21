@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+<!--
+ * This file is part of the esp8266 web interface
+ *
+ * Copyright (C) 2018 Johannes Huebner <dev@johanneshuebner.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+-->
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Huebner Inverter Management Console</title>
+<link href="style.css" rel="stylesheet" type="text/css" />
+<script src="chart.min.js" type="text/javascript"></script>
+<script src="inverter.js" type="text/javascript"></script>
+<script src="index.js" type="text/javascript"></script>
+</head>
+<body onload="onLoad()">
+<div class="navbar">
+	<a class="navbar" href="#commands">Commands</a>
+	<a class="navbar" href="#update">Update</a>
+	<a class="navbar" href="#parameters">Parameters</a>
+	<a class="navbar" href="#spot">Spot Values</a>
+	<a class="navbar" href="#plot">Plot</a>
+	<a class="navbar" href="javascript:updateTables()"><img src="refresh.png" style="margin-top: -1em; margin-bottom: -8px; margin-right: 0.5em">Refresh</a>
+	<input type="checkbox" title="Keep refreshing until unchecked" id="autorefresh"><label for="autorefresh">Auto</label>
+</div>
+<h2 id="commands">Commands</h2>
+<p><button onclick="sendCmd('save');">Save Parameters to Flash</button></p>
+<p><button onclick="sendCmd('load');">Restore Parameters from Flash</button></p>
+<p><button onclick="sendCmd('defaults');">Restore Defaults</button></p>
+<p><button onclick="sendCmd('start 2');">Start Inverter in manual Mode</button></p>
+<p><button onclick="sendCmd('stop');">Stop Inverter</button></p>
+<p><button onclick="sendCmd('errors');">Display Error Memory</button></p>
+<p><button onclick="sendCmd('can clear');">Reset CAN Mapping</button></p>
+<p><input type="text" id="customcmd"/> <button onclick="sendCmd(document.getElementById('customcmd').value);">Send Custom Command</button></p>
+<p><a href="/wifi">Wifi Settings</a>
+
+<h2 id="update">Update</h2>
+<p>Use binary files (stm32sine_HWCONFIG_XXX.bin) for updating inverter firmware. Upload any other file for updating this web interface.</p>
+<p>If board is locked up:</p>
+<ol>
+<li>Start update
+<li>Reset main board with reset button (be quick, time out after 5s)
+<li>Update should run normally
+</ol>
+<form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
+    <input id="updatefile" name="updatefile" type="file" onchange="fileSelected();" />
+    <input type="button" onclick="uploadFile();" value="Upload" />
+</form>
+<div id="progress" class="graph">
+<div id="bar" style="width: 0"></div>
+</div>
+
+<h2 id="parameters">Parameters</h2>
+<p><a href="http://johanneshuebner.com/quickcms/index.html%3Fen_parameters,24.html" target="_blank">Parameter Reference</a>
+<p><a download="params.json" href="data:text/json,{ }" id="paramDownload">Download Parameter File</a>
+Downloads the parameters as per the last table update</p>
+<form id="paramform" enctype="multipart/form-data" action="edit" method="POST">
+    <input id="paramfile" name="paramfile" type="file" />
+    <input type="button" onclick="loadParametersFromFile();" value="Upload" />
+</form>
+
+<p>Type new value and hit enter to change. Only change one value at a time.</p>
+<p>Messages: <button onclick="clearMessages();">Clear</button></p>
+<pre><div id="message"></div></pre>
+<p><img src="ajax-loader.gif" style="visibility: hidden" id="loader1">
+<button onclick="toggleVisibility();">Toggle Category Visibility</button></p>
+<table id="params">
+<thead>
+<tr>
+	<th>Name</th>
+	<th>Value</th>
+	<th>Unit</th>
+	<th>Minimum</th>
+	<th>Maximum</th>
+	<th>Default</th>
+</tr>
+</thead>
+<tbody id="paramBody">
+</tbody>
+</table>
+<h2 id="spot">Spot Values</h2>
+<p><img src="ajax-loader.gif" style="visibility: hidden" id="loader2"> <button onclick="showGauges()">Show Gauges</button></p>
+<table id="spotValues"><thead>
+<tr>
+	<th>Name</th>
+	<th>Value</th>
+	<th>Unit</th>
+	<th>Plot</th>
+	<th>CAN Id</th>
+	<th>Position</th>
+	<th>Bits</th>
+	<th>Gain</th>
+	<th>Map to CAN</th>
+</tr>
+</thead>
+<tbody id="spotBody">
+</tbody>
+</table>
+<h2 id="plot">Plot</h2>
+<canvas id="canvas" width=100 height=40></canvas>
+<p>
+<button onclick="startPlot()">Start Plot</button>
+<button onclick="stopPlot()">Stop Plot</button>
+<button onclick="pauseResumePlot()" disabled id="pauseButton">Pause Plot</button>
+Limit data points to: <input type="number" id="maxValues" step="1" min="10" max="10000" value="1000" />
+Burst length: <input type="number" id="burstLength" step="1" min="1" max="1000" value="10" />
+<p>Copyright 2018 Johannes Huebner dev@johanneshuebner.com</p>
+<p>Charting by <a href="http://chartjs.org/" target="_blank">chart.js</a></p>
+<p>Gauges by <a href="https://github.com/Mikhus/canvas-gauges" target="_blank">Mykhailo Stadnyk</a></p>
+</body>
+</html>
+

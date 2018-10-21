@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+<!--
+ * This file is part of the esp8266 web interface
+ *
+ * Copyright (C) 2018 Johannes Huebner <dev@johanneshuebner.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+-->
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Modify Wifi settings</title>
+<link href="style.css" rel="stylesheet" type="text/css" />
+<script>
+function onAPPW(pw)
+{
+    document.getElementById("apsubmit").disabled = pw.length < 8;
+}
+</script>
+</head>
+<body>
+<h2>Access Point Settings</h2>
+Here you can specify SSID and password of the access point that
+is created by the inverter.
+<form id="apform" enctype="multipart/form-data" action="wifi" method="POST">
+    <p><label for="apSSID">AP SSID: </label><input id="apSSID" name="apSSID" type="text" value="%apSSID%"/>
+    <p><label for="apPW">AP WPA2 Password: </label><input id="apPW" name="apPW" type="text" title="Must be at leat 8 characters long" onkeyup="onAPPW(this.value)"/><br>
+    <p><input id="apsubmit" type="submit" value="Modify" disabled/>
+</form>
+<hr>
+<h2>Station Settings</h2>
+Here you can specify a Wifi network that the inverter joins.
+<form id="apform" enctype="multipart/form-data" action="wifi" method="POST">
+    <p><label for="staSSID">Network SSID: </label><input id="staSSID" name="staSSID" type="text" value="%staSSID%"/>
+    <p><label for="staPW">WPA2 Password: </label><input id="staPW" name="staPW" type="text" />
+    <p>Current IP Address: %staIP%
+    <p><input type="submit" value="Modify" />
+</form>
+</body>
+</html>
+
+
