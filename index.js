@@ -287,6 +287,15 @@ function showGauges()
 	window.open(req);
 }
 
+/** @brief open new page with gauges for selected spot values */
+function showLog()
+{
+	var items = getPlotItems();
+	var req = "log.html?items=" + items.names.join(',')
+
+	window.open(req);
+}
+
 function fileSelected()
 {
 }

@@ -214,6 +214,7 @@ static void handleCommand() {
       Serial.begin(921600);
       fastUart = true;
     }
+    else
     {
       fastUartAvailable = false;
     }
