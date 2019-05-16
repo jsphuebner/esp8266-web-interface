@@ -123,7 +123,10 @@ function updateTables()
 				var unit = param.unit;
 				
 				if (can)
-					buttonHtml = "can not be mapped again";
+				{
+					buttonHtml = param.isrx ? "RX" : "TX";
+					buttonHtml += ' <BUTTON id="' + name + '" onclick="canmap(\'del\', this.id)">Unmap</BUTTON>';
+				}
 
 				if (param.enums)
 				{
