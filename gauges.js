@@ -63,12 +63,13 @@ function calcTicks(min, max)
 {
 	var N = 6;
 	var ticks =  [ min ];
-	var diff = max - min;
+	var dist = (max - min) / N;
+	var tick = min;
 	
-	for (var i = N; i > 0; i--)
+	for (var i = 0; i < N; i++)
 	{
-		var tick = Math.round(min + diff / i);
-		ticks.push(tick);
+		tick += dist;
+		ticks.push(Math.round(tick));
 	}
 	return ticks;
 }
@@ -83,8 +84,8 @@ function acquire()
 		for (var name in values)
 		{
 			var val = values[name][0];
-			gauges[name].options.minValue = Math.min(gauges[name].options.minValue, Math.floor(val));
-			gauges[name].options.maxValue = Math.max(gauges[name].options.maxValue, Math.ceil(val));
+			gauges[name].options.minValue = Math.min(gauges[name].options.minValue, Math.floor(val * 0.7));
+			gauges[name].options.maxValue = Math.max(gauges[name].options.maxValue, Math.ceil(val * 1.5));
 			gauges[name].options.majorTicks = calcTicks(gauges[name].options.minValue, gauges[name].options.maxValue);
 			gauges[name].value = val;
 			gauges[name].update();
