@@ -49,13 +49,7 @@
 <p><a href="/wifi">Wifi Settings</a>
 
 <h2 id="update">Update</h2>
-<p>Use binary files (stm32sine_HWCONFIG_XXX.bin) for updating inverter firmware. Upload any other file for updating this web interface.</p>
-<p>If board is locked up:</p>
-<ol>
-<li>Start update
-<li>Reset main board with reset button (be quick, time out after 5s)
-<li>Update should run normally
-</ol>
+<p>Use binary files (stm32_sine/foc.bin) for updating inverter firmware. Upload any other file for updating this web interface.</p>
 <form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
     <input id="updatefile" name="updatefile" type="file" onchange="fileSelected();" />
     <input type="button" onclick="uploadFile();" value="Upload" />

@@ -262,11 +262,16 @@ static uint32_t crc32(uint32_t* data, uint32_t len, uint32_t crc)
 static void handleUpdate()
 {
   if(!server.hasArg("step") || !server.hasArg("file")) {server.send(500, "text/plain", "BAD ARGS"); return;}
-  const size_t PAGE_SIZE_BYTES = 1024;
+  size_t PAGE_SIZE_BYTES = 1024;
   int step = server.arg("step").toInt();
   File file = SPIFFS.open(server.arg("file"), "r");
   int pages = (file.size() + PAGE_SIZE_BYTES - 1) / PAGE_SIZE_BYTES;
   String message;
+
+  if (server.hasArg("pagesize"))
+  {
+    PAGE_SIZE_BYTES = server.arg("pagesize").toInt();
+  }
 
   if (step == -1)
   {
@@ -394,6 +399,7 @@ void setup(void){
 
   //WIFI INIT
   WiFi.mode(WIFI_AP_STA);
+  WiFi.setPhyMode(WIFI_PHY_MODE_11B);
   WiFi.begin();
   sta_tick.attach(10, staCheck);
   
@@ -419,7 +425,8 @@ void setup(void){
   server.on("/cmd", handleCommand);
   server.on("/fwupdate", handleUpdate);
   server.on("/baud", handleBaud);
-
+  server.on("/version", [](){ server.send(200, "text/plain", "1.1.R"); });
+  
   //called when the url is not defined here
   //use it to load content from SPIFFS
   server.onNotFound([](){
