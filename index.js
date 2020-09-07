@@ -78,6 +78,7 @@ function updateTables()
 			{
 				var valInput;
 				var unit = param.unit;
+				var index = "-";
 				params[name] = param.value;
 
 				if (param.category != lastCategory)
@@ -90,14 +91,27 @@ function updateTables()
 				
 				if (param.enums)
 				{
-					valInput = '<SELECT onchange="sendCmd(\'set ' + name + ' \' + this.value)">';
-
-					for (var idx in param.enums)
+					if (param.enums[param.value])
 					{
- 						valInput += '<OPTION value="' + idx + '"';
-						if (idx == param.value)
-							valInput += " selected";
-						valInput += '>' + param.enums[idx] + '</OPTION>';
+					    valInput = '<SELECT onchange="sendCmd(\'set ' + name + ' \' + this.value)">';
+
+					    for (var idx in param.enums)
+					    {
+     						valInput += '<OPTION value="' + idx + '"';
+						    if (idx == param.value)
+							    valInput += " selected";
+						    valInput += '>' + param.enums[idx] + '</OPTION>';
+					    }
+					}
+					else
+					{
+ 						valInput = "<ul>";
+ 						for (var key in param.enums)
+ 						{
+ 							if (param.value & key)
+ 								valInput += "<li>" + param.enums[key];
+ 						}
+ 						valInput += "</ul>";
 					}
 					unit = "";
 				}
@@ -107,7 +121,10 @@ function updateTables()
 						'" step="0.05" value="' + param.value + '" onchange="sendCmd(\'set ' + name + ' \' + this.value)"/>';
 				}
 				
-				addRow(tableParam, [ name, valInput, unit, param.minimum, param.maximum, param.default ]);
+				if (param.i !== undefined)
+				    index = param.i;
+				
+				addRow(tableParam, [ index, name, valInput, unit, param.minimum, param.maximum, param.default ]);
 			}
 			else
 			{
