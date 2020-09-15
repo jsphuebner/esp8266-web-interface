@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" class="no-js" lang="en">
+<head>
+<!--
+ * This file is part of the esp8266 web interface
+ *
+ * Copyright (C) 2018 Johannes Huebner <dev@johanneshuebner.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+-->
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" >
+<title>Syncofs</title>
+<script src="inverter.js" type="text/javascript"></script>
+<script src="chart.min.js" type="text/javascript"></script>
+<script src="chartjs-annotation.min.js" type="text/javascript"></script>
+<script src="jquery.core.min.js" type="text/javascript"></script>
+<script src="jquery.knob.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+    var knobValue_syncofs = 0;
+    var knobValue_manualid = 0;
+    var ctxFont = 14;
+    var ctxFontColor = '#808080';
+    var ctxDashColor = 'black';
+    document.addEventListener('DOMContentLoaded', function(event)
+    {
+        $('#syncofs').val(0).trigger('change');
+        $('#manualid').val(0).trigger('change');
+
+        var loader = $('<div>',{ class:'spinner-border text-dark'});
+        var canvas = $('<canvas>');
+
+        $('#syncofsTuningGraph').append(loader);
+        $('#syncofsTuningGraph').append(canvas);
+
+        var chart_speed_datasets = {
+            type: 'line',
+            label: 'speed',
+            backgroundColor: 'rgba(255,99,132, 0.5)',
+            borderColor: 'rgba(255,99,132)',
+            borderWidth: 2,
+            data: [],
+            yAxisID: 'y-axis-0',
+        };
+
+        var syncofs_variable = [];
+
+        for (var i = 0; i <= 65530 ; i+=10) {
+            syncofs_variable.push(i);
+            chart_speed_datasets.data.push(100);
+        }
+
+        data = {
+            labels: syncofs_variable,
+            datasets: [chart_speed_datasets]
+        };
+
+        options = {
+            responsive: true,
+            //maintainAspectRatio: true,
+            elements: {
+                point:{
+                    radius: 0
+                }
+            },
+            tooltips: {
+                enabled: false,
+            },
+            scales: {
+                xAxes: [{
+                    id: 'x-axis-0',
+                    position: 'bottom',
+                    scaleLabel: {
+                        display: true,
+                        fontColor: ctxFontColor,
+                        fontSize: ctxFont,
+                        labelString: 'syncofs'
+                    },
+                    ticks: {
+                        fontColor: ctxFontColor,
+                        fontSize: ctxFont
+                    },
+                    gridLines: {
+                        color: ctxFontColor
+                    }
+                }],
+                yAxes: [{
+                    id: 'y-axis-0',
+                    position: 'right',
+                    ticks: {
+                        display: false,
+                        suggestedMin: 0,
+                        suggestedMax: 100
+                    },
+                    gridLines: {
+                        drawOnChartArea: false,
+                    }
+                },{
+                    id: 'y-axis-1',
+                    position: 'left',
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'manualid (Amps)',
+                        fontColor: ctxFontColor,
+                        fontSize: ctxFont
+                    },
+                    ticks: {
+                        reverse: true,
+                        display: true,
+                        fontColor: ctxFontColor,
+                        fontSize: ctxFont,
+                        suggestedMin: 0,
+                        suggestedMax: 100
+                    },
+                    gridLines: {
+                        drawOnChartArea: false,
+                        color: ctxFontColor
+                    }
+                }]
+            },
+            annotation: {
+                annotations: [{
+                    type: 'line',
+                    id: 'a-line-0',
+                    mode: 'vertical',
+                    scaleID: 'x-axis-0',
+                    value: knobValue_syncofs,
+                    borderColor: 'rgb(0, 0, 0)',
+                    borderWidth: 2,
+                    label: {
+                      content: "syncofs=" + knobValue_syncofs,
+                      enabled: true,
+                      position: 'left'
+                    }
+                }]
+            }
+        };
+
+        loader.hide();
+        
+        var chart = new Chart(canvas, {
+            type: 'line',
+            data: data,
+            options: options
+        });
+
+        $('#syncofs').knob({
+            min: 0,
+            max: 65535,
+            step: 10,
+            stopper: true,
+            value: 0,
+            release: function(value) {
+               if (value <= knobValue_syncofs + 10000) { //Avoid hard jumps
+                    //console.log(value);
+                    knobValue_syncofs = value;
+
+                    inverter.sendCmd('set syncofs ' + value, function () {
+                        chart.annotation.elements['a-line-0'].options.value = knobValue_syncofs;
+                        chart.annotation.elements['a-line-0'].options.label.content = 'syncofs=' + knobValue_syncofs;
+                        chart.update();
+                    });
+                } else {
+                    //console.log('!' + value + '>' + knobValue_syncofs);
+                    syncofsTuning_slow();
+                    setTimeout(function () {
+                        $('#syncofs').val(knobValue_syncofs).trigger('change');
+                    }, 100);
+                }
+            }
+        });
+        $('#manualid').knob({
+            min: 0,
+            max: 100,
+            stopper: true,
+            value: 0,
+            release: function(value) {
+                if (value <= knobValue_manualid + 10) { //Avoid hard jumps
+                    //console.log(value);
+                    knobValue_manualid = value;
+
+                    if(value != 0) {
+                        inverter.sendCmd('set syncofs ' + value, function () {
+                            inverter.sendCmd('get speed', function (v) {
+                                var t = knobValue_syncofs/10;
+                                if(v < 100) {
+                                    for (var i = t; i <= (t+100); i++) {
+                                        chart.data.datasets[0].data[i] = v;
+                                    }
+                                    chart.update();
+                                }
+                            });
+                        });
+                    }
+                } else {
+                    //console.log('!' + value + '>' + knobValue_manualid);
+                    syncofsTuning_slow();
+                    setTimeout(function () {
+                        $('#manualid').val(0).trigger('change'); //Zero immediately!
+                    }, 100);
+                }
+            }
+        });
+    });
+    function syncofsTuning_slow() {
+
+        var i = 10;
+
+        var blink = setInterval(function() {
+            i--;
+            if(i < 1) {
+                clearInterval(blink);
+            }
+            if (i%2 == 0){
+                document.getElementById('text_slowdown').classList.add('hidden');
+            }else{
+                document.getElementById('text_slowdown').classList.remove('hidden');
+            }
+        }, 200);
+    };
+</script>
+<style>
+    .hidden {
+      display: none;
+    }
+    .text-danger{
+        color:#dc3545!important
+    }
+</style>
+</head>
+<body style="background-color:#D3D3D3">
+<table width="100%">
+    <tr>
+        <td align="center">
+            <h3>syncofs</h3>
+        </td>
+        <td align="center">
+            <h3>manualid</h3>
+        </td>
+    </tr>
+    <tr height="80px">
+        <td align="center" colspan="2">
+            <h2 class="text-danger hidden" id="text_slowdown">Slow Down!</h2>
+            <h2 class="text-warning hidden" id="text_close">Getting Close</h2>
+            <h2 class="text-success hidden" id="text_found">Found!</h2>
+        </td>
+    </tr>
+    <tr>
+        <td align="center">
+            <input class="dial notstored adjuster" data-displayinput="true" data-min="0" data-max="100" data-fgcolor="#222222" data-bgcolor="#FFFFFF" value="0" id="syncofs">
+        </td>
+        <td align="center">
+            <input class="dial notstored adjuster" data-displayinput="true" data-min="0" data-max="100" data-fgcolor="#222222" data-bgcolor="#FFFFFF" value="0" id="manualid">
+        </td>
+    </tr>
+    <tr>
+        <td id="syncofsTuningGraph" colspan="2"></td>
+    </tr>
+</table>
+</body>
+</html>
+
