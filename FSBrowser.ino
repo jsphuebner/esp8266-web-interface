@@ -44,6 +44,7 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
+#include <ESP8266HTTPUpdateServer.h>
 #include <ESP8266mDNS.h>
 #include <ArduinoOTA.h>
 #include <FS.h>
@@ -56,6 +57,7 @@ bool fastUart = false;
 bool fastUartAvailable = true;
 
 ESP8266WebServer server(80);
+ESP8266HTTPUpdateServer updater;
 //holds the current upload
 File fsUploadFile;
 Ticker sta_tick;
@@ -404,6 +406,8 @@ void setup(void){
   sta_tick.attach(10, staCheck);
   
   MDNS.begin(host);
+
+  updater.setup(&server);
   
   //SERVER INIT
   ArduinoOTA.begin();
