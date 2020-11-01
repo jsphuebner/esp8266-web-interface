@@ -76,7 +76,7 @@ var inverter = {
 			replyFunc(values);
 		};
 		
-		if (inverter.firmwareVersion < 3.53)
+		if (inverter.firmwareVersion < 3.53 || items.length > 10)
 			inverter.sendCmd("get " + items.join(','), process, repeat);
 		else
 			inverter.sendCmd("stream " + repeat + " " + items.join(','), process);
