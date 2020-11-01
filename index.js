@@ -172,6 +172,7 @@ function updateTables()
 			}
 		}
 		document.getElementById("paramDownload").href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(params, null, 2));
+		document.getElementById("parameters_json").value = JSON.stringify(values);
 		document.getElementById("loader1").style.visibility = "hidden";
 		document.getElementById("loader2").style.visibility = "hidden";
 		
