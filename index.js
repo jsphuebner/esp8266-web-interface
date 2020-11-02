@@ -55,6 +55,17 @@ function generateChart()
 		} });
 }
 
+function parameterSubmit()
+{
+	document.getElementById("loader0").style.visibility = "visible";
+	inverter.getParamList(function(values)
+	{
+		document.getElementById("loader0").style.visibility = "hidden";
+		document.getElementById("parameters_json").value = JSON.stringify(values);
+		document.getElementById("paramdb").submit();
+	}, true);
+}
+
 /** @brief generates parameter and spotvalue tables */
 function updateTables()
 {
@@ -172,7 +183,6 @@ function updateTables()
 			}
 		}
 		document.getElementById("paramDownload").href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(params, null, 2));
-		document.getElementById("parameters_json").value = JSON.stringify(values);
 		document.getElementById("loader1").style.visibility = "hidden";
 		document.getElementById("loader2").style.visibility = "hidden";
 		

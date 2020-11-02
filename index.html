@@ -62,10 +62,12 @@
 <p><a href="http://johanneshuebner.com/quickcms/index.html%3Fen_parameters,24.html" target="_blank">Parameter Reference</a>
 <p><a download="params.json" href="data:text/json,{ }" id="paramDownload">Download Parameter File</a>
 Downloads the parameters as per the last table update</p>
-<form action="https://openinverter.org/parameters/index.php?page=add" method="POST" enctype="multipart/form-data">
+<form id="paramdb" action="https://openinverter.org/parameters/index.php?page=add" method="POST" enctype="multipart/form-data">
     <input type="text" style="display: none;" id="parameters_json" name="data"></input>
-    <input type="submit" value="Submit parameters to openinverter" />
+    <img src="ajax-loader.gif" style="visibility: hidden" id="loader0">
+    <input type="button" value="Submit parameters to openinverter" onclick="parameterSubmit();" />
 </form>
+<br>
 <form id="paramform" enctype="multipart/form-data" action="edit" method="POST">
     <input id="paramfile" name="paramfile" type="file" />
     <input type="button" onclick="loadParametersFromFile();" value="Upload" />
