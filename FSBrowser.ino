@@ -235,6 +235,7 @@ static void handleCommand() {
       Serial.readBytes(buffer, 1); //consume "!"
     }
   } while (len > 0);
+  server.sendHeader("Access-Control-Allow-Origin","*");
   server.send(200, "text/json", output);
 }
 
