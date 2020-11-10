@@ -38,7 +38,7 @@ var inverter = {
 		xmlhttp.send();
 	},
 	
-	getParamList: function(replyFunc)
+	getParamList: function(replyFunc, includeHidden)
 	{
 		var cmd = includeHidden ? "json hidden" : "json";
 		
