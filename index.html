@@ -26,6 +26,7 @@
 <script src="chart.min.js" type="text/javascript"></script>
 <script src="inverter.js" type="text/javascript"></script>
 <script src="index.js" type="text/javascript"></script>
+<script src="subscription.js" type="text/javascript"></script>
 </head>
 <body onload="onLoad()">
 <div class="navbar">
@@ -40,7 +41,6 @@
 <h2 id="commands">Commands</h2>
 <p><button onclick="sendCmd('save');">Save Parameters to Flash</button></p>
 <p><button onclick="sendCmd('load');">Restore Parameters from Flash</button></p>
-<p><button onclick="sendCmd('defaults');">Restore Defaults</button></p>
 <p><button onclick="sendCmd('start 2');">Start Inverter in manual Mode</button></p>
 <p><button onclick="sendCmd('stop');">Stop Inverter</button></p>
 <p><button onclick="sendCmd('errors');">Display Error Memory</button></p>
@@ -60,13 +60,24 @@
 </div>
 
 <h2 id="parameters">Parameters</h2>
-<p><a href="http://johanneshuebner.com/quickcms/index.html%3Fen_parameters,24.html" target="_blank">Parameter Reference</a>
+<p><a href="https://openinverter.org/wiki/Parameters" target="_blank">Parameter Reference</a>
 <p><a download="params.json" href="data:text/json,{ }" id="paramDownload">Download Parameter File</a>
 Downloads the parameters as per the last table update</p>
 <form id="paramform" enctype="multipart/form-data" action="edit" method="POST">
     <input id="paramfile" name="paramfile" type="file" />
-    <input type="button" onclick="loadParametersFromFile();" value="Upload" />
+    <input type="button" onclick="loadParametersFromFile();" value="Apply Parameter File" />
 </form>
+<p>
+<form id="paramdb" action="http://localhost/parameters/api.php" method="POST" enctype="multipart/form-data">
+    <input type="text" hidden id="parameters_json" name="data" />
+    <input type="text" hidden id="parameters_token" name="token" />
+    <img src="ajax-loader.gif" style="visibility: hidden" id="loader0">
+    <input type="button" value="Submit parameters to openinverter" onclick="parameterSubmit();" />
+</form>
+<p>
+Subscribe to parameter set:
+<input id="token" type="text" onchange="checkToken(this.value, 'Requesting parameter set', true)" size="40">
+<br>
 
 <p>Type new value and hit enter to change. Only change one value at a time.</p>
 <p>Messages: <button onclick="clearMessages();">Clear</button></p>
