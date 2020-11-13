@@ -27,6 +27,7 @@ function onLoad()
 {
 	updateTables();
 	generateChart();
+	checkSubscribedParameterSet();
 }
 
 /** @brief generates chart at bottom of page */
@@ -53,6 +54,78 @@ function generateChart()
 				}]
 			}
 		} });
+}
+
+function parameterSubmit()
+{
+	document.getElementById("loader0").style.visibility = "visible";
+	inverter.getParamList(function(values)
+	{
+		document.getElementById("loader0").style.visibility = "hidden";
+		document.getElementById("parameters_json").value = JSON.stringify(values);
+		document.getElementById("paramdb").submit();
+	}, true);
+}
+
+function checkSubscribedParameterSet()
+{
+	if (subscription)
+	{
+		checkToken(subscription.token, 'Checking your parameter subscription ' + subscription.token, false);
+	}
+}
+
+/* If a valid token is entered, the belonging dataset is downloaded
+ * and applied to the inverter. Token and timestamp are saved to ESP filesystem
+ * Token example 5f4d8fa6-b6a4-4f87-9a28-4363bdac5dc9 */
+function checkToken(token, message, forceUpdate)
+{
+	var expr = /^[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}$/i;
+	
+	if (expr.test(token))
+	{
+		var xmlhttp=new XMLHttpRequest();
+		var req = "https://openinverter.org/parameters/api.php?token=" + token;
+
+		document.getElementById("message").innerHTML = message + "\r\n";
+		document.getElementById("parameters_token").value = token;
+
+		xmlhttp.onload = function() 
+		{
+			var params = JSON.parse(this.responseText);
+			var timestamp = params.timestamp;
+			
+			delete params['timestamp'];			
+			document.getElementById("token").value = token;
+			
+			if (subscription && subscription.timestamp == timestamp && !forceUpdate)
+			{
+				document.getElementById("message").innerHTML += "Parameters up to date\r\n";
+			}
+			else if (forceUpdate || confirm("Parameter set updated, apply?"))
+			{
+				document.getElementById("message").innerHTML += "Applying new parameter set from " + timestamp + "\r\n";
+
+				setParam(params, 0);
+				
+				var uploadRequest = new XMLHttpRequest();
+				var formData = new FormData();
+				var subs = "subscription = { 'timestamp': '" + timestamp + "', 'token': '" + token + "' };";
+				var blob = new Blob([subs], { type: "text/javascript"});
+				formData.append("file", blob, "subscription.js");
+				uploadRequest.open("POST", "/edit");
+				uploadRequest.send(formData);
+			}
+		};
+		
+		xmlhttp.onerror = function()
+		{
+			alert("error");
+		};
+
+		xmlhttp.open("GET", req, true);
+		xmlhttp.send();
+	}
 }
 
 /** @brief generates parameter and spotvalue tables */
@@ -273,13 +346,12 @@ function loadParametersFromFile()
  * @param index numerical index which parameter to set */
 function setParam(params, index)
 {
-	var xmlhttp=new XMLHttpRequest();
 	var keys = Object.keys(params); 
 	
 	if (index < keys.length)
 	{
 		var key = keys[index];
-		document.getElementById("message").innerHTML += "Setting " + key + " to " + params[key];
+		document.getElementById("message").innerHTML += "Setting " + key + " to " + params[key] + " - ";
 
 		inverter.sendCmd("set " + key + " " + params[key], function(reply) {
 			document.getElementById("message").innerHTML += reply;

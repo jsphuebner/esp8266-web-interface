@@ -38,22 +38,24 @@ var inverter = {
 		xmlhttp.send();
 	},
 	
-	getParamList: function(replyFunc)
+	getParamList: function(replyFunc, includeHidden)
 	{
-		inverter.sendCmd("json", function(reply) {
-				var params = JSON.parse(reply);
+		var cmd = includeHidden ? "json hidden" : "json";
+		
+		inverter.sendCmd(cmd, function(reply) {
+			var params = JSON.parse(reply);
+			
+			for (var name in params)
+			{
+				var param = params[name];
+				param.enums = inverter.parseEnum(param.unit);
 				
-				for (var name in params)
-				{
-					var param = params[name];
-					param.enums = inverter.parseEnum(param.unit);
-					
-					if (name == "version")
-						inverter.firmwareVersion = parseFloat(param.value);
-				}
-				
-				if (replyFunc) replyFunc(params);
-			});
+				if (name == "version")
+					inverter.firmwareVersion = parseFloat(param.value);
+			}
+			
+			if (replyFunc) replyFunc(params);
+		});
 	},
 	
 	getValues: function(items, repeat, replyFunc)
