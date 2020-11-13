@@ -70,6 +70,7 @@ Downloads the parameters as per the last table update</p>
 <p>
 <form id="paramdb" action="https://openinverter.org/parameters/api.php" method="POST" enctype="multipart/form-data">
     <input type="text" style="display: none;" id="parameters_json" name="data"></input>
+    <input type="hidden" id="parameters_token" name="token" />
     <img src="ajax-loader.gif" style="visibility: hidden" id="loader0">
     <input type="button" value="Submit parameters to openinverter" onclick="parameterSubmit();" />
 </form>

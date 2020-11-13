@@ -88,6 +88,7 @@ function checkToken(token, message, forceUpdate)
 		var req = "https://openinverter.org/parameters/api.php?token=" + token;
 
 		document.getElementById("message").innerHTML = message + "\r\n";
+		document.getElementById("parameters_token").value = token;
 
 		xmlhttp.onload = function() 
 		{
