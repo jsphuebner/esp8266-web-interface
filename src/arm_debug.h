@@ -55,6 +55,15 @@ public:
     // Turn on debugging and enter halt state
     bool debugHalt();
 
+    // Enable halt-on-reset
+    bool debugHaltOnReset(uint8_t enable);
+
+    // Reset the core
+    bool debugReset();
+
+    // CPU continue its execution
+    bool debugRun();
+
     // CPU register operations, when halted (via DCRSR)
     bool regWrite(unsigned num, uint32_t data);
     bool regRead(unsigned num, uint32_t &data);
@@ -144,6 +153,12 @@ public:
         CTRLSTAT = 0x4,
         SELECT = 0x8,
         RDBUFF = 0xC
+    };
+
+    // Vector catch is the mechanism for generating a debug event 
+    // and entering Debug state when a particular exception occurs
+    enum DebugVectorBits {
+        VC_CORERESET = 0 //Enable Reset Vector Catch. Local reset to halt a running system
     };
 
     // CTRL/STAT bits

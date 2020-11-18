@@ -27,6 +27,16 @@
 #include "arm_debug.h"
 #include "arm_reg.h"
 
+/*
+Additional Research:
+    https://research.kudelskisecurity.com/2019/05/16/swd-arms-alternative-to-jtag
+    https://research.kudelskisecurity.com/2019/07/31/swd-part-2-the-mem-ap
+    https://www.silabs.com/documents/public/application-notes/an0062.pdf
+    https://www.silabs.com/documents/public/example-code/an0062-efm32-programming-guide.zip
+    https://github.com/MarkDing/swd_programing_sram
+    https://www.cnblogs.com/shangdawei/p/4753040.html
+*/
+
 ARMDebug::ARMDebug(unsigned clockPin, unsigned dataPin, LogLevel logLevel)
     : clockPin(clockPin), dataPin(dataPin), logLevel(logLevel)
 {}
@@ -48,7 +58,6 @@ bool ARMDebug::begin()
     wireWrite(0xFFFFFFFF, 32);
     wireWrite(0, 32);
     wireWrite(0, 32);
-    //More Info: https://www.cnblogs.com/shangdawei/p/4753040.html
 
 	//The host must read IDCODE register after line request sequence.
     uint32_t idcode;
@@ -78,6 +87,9 @@ bool ARMDebug::getIDCODE(uint32_t &idcode)
 
 bool ARMDebug::debugPortPowerup()
 {
+    //Power up debug domain
+    //dpWrite(4, 0x50000000);
+
     // Initialize CTRL/STAT, request system and debugger power-up
     if (!dpWrite(CTRLSTAT, false, CSYSPWRUPREQ | CDBGPWRUPREQ))
         return false;
@@ -159,7 +171,8 @@ bool ARMDebug::debugHalt()
         while (haltRetries) {
             haltRetries--;
 
-            if (!apWrite(MEM_DRW, 0xA05F0003)) //0xA05F0000 exit debug mode
+            //DHCSR bits C_STOP and C_DEBUGEN
+            if (!apWrite(MEM_DRW, 0xA05F0003))
                 continue;
             if (!apRead(MEM_DRW, dhcsr))
                 continue;
@@ -179,6 +192,38 @@ bool ARMDebug::debugHalt()
     }
 
     return true;
+}
+
+bool ARMDebug::debugHaltOnReset(uint8_t enable)
+{
+    uint32_t demcr = 0x01000000; //1 to bit VC_CORERESET
+
+    if(enable == 0)
+        demcr = 0x00000000;
+
+    if (apWrite(MEM_TAR, REG_SCB_DEMCR))
+        if (apWrite(MEM_DRW, demcr))
+            return true;
+
+    return false;
+}
+
+
+bool ARMDebug::debugReset()
+{
+    if (apWrite(MEM_TAR, REG_SCB_AIRCR))
+            if (apWrite(MEM_DRW, 0xFA050004))
+                return true;
+
+    return false;
+}
+
+bool ARMDebug::debugRun()
+{
+    if (apWrite(MEM_TAR, REG_SCB_DHCSR))
+            if (apWrite(MEM_DRW, 0xA05F0000))
+                return true;
+    return false;
 }
 
 bool ARMDebug::regTransactionHandshake()

@@ -484,8 +484,7 @@ void setup(void){
   });
   server.on("/swd/zero", []() {
 
-    uint32_t idcode;
-    if (swd.begin() && swd.getIDCODE(idcode)) {
+    if (swd.begin()) {
 
       server.setContentLength(CONTENT_LENGTH_UNKNOWN);
       server.send(200, "text/plain", "");
@@ -496,6 +495,10 @@ void setup(void){
 
       // Before programming internal SRAM, the ARM Cortex-M3 should first be reset and halted.
       swd.debugHalt();
+
+      swd.debugHaltOnReset(1);
+      
+      swd.debugReset();
 
       /*
          https://www.silabs.com/community/mcu/32-bit/knowledge-base.entry.html/2014/10/21/how_to_program_inter-esAv
@@ -583,7 +586,7 @@ void setup(void){
         addr = 0x08001000;
         addrEnd = 0x0801ffff;
       }
-      server.sendHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+      server.sendHeader("Content-Disposition", "attachment; filename = \"" + filename + "\"");
       server.setContentLength(CONTENT_LENGTH_UNKNOWN);
       server.send(200, "application/octet-stream", "");
 
