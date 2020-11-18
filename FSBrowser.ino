@@ -62,6 +62,18 @@ ESP8266HTTPUpdateServer updater;
 File fsUploadFile;
 Ticker sta_tick;
 
+//swd over esp8266
+/*
+  https://github.com/scanlime/esp8266-arm-swd
+*/
+#include "src/arm_debug.h"
+#include <StreamString.h>
+uint32_t addr = 0x08000000;
+uint32_t addrEnd = 0x0801ffff;
+const uint8_t swd_clock_pin = 4; //GPIO4 (D2)
+const uint8_t swd_data_pin = 5; //GPIO5 (D1)
+ARMDebug swd(swd_clock_pin, swd_data_pin, ARMDebug::LOG_NONE);
+
 //format bytes
 String formatBytes(size_t bytes){
   if (bytes < 1024){
@@ -431,7 +443,122 @@ void setup(void){
   server.on("/fwupdate", handleUpdate);
   server.on("/baud", handleBaud);
   server.on("/version", [](){ server.send(200, "text/plain", "1.1.R"); });
-  
+  server.on("/swd/begin", []() {
+    // See if we can communicate. If so, return information about the target.
+    // This shouldn't reset the target, but it does need to communicate,
+    // and the debug port itself will be reset.
+    //
+    // If all is well, this returns some identifying info about the target.
+
+    uint32_t idcode;
+
+    if (swd.begin() && swd.getIDCODE(idcode)) {
+
+      char output[128];
+      snprintf(output, sizeof output, "{\"connected\": true, \"idcode\": \"0x%02x\" }", idcode);
+      server.send(200, "text/json", String(output));
+
+    } else {
+      server.send(200, "text/json", "{\"connected\": false}");
+    }
+  });
+  server.on("/swd/uid", []() {
+    // STM32F103 Reference Manual, Chapter 30.2 Unique device ID register (96 bits)
+    // http://www.st.com/st-web-ui/static/active/en/resource/technical/document/reference_manual/CD00171190.pdf
+
+    uint32_t REG_U_ID = 0x1FFFF7E8; //96 bits long, read using 3 read operations
+
+    uint16_t off0;
+    uint16_t off2;
+    uint32_t off4;
+    uint32_t off8;
+
+    swd.memLoadHalf(REG_U_ID + 0x0, off0);
+    swd.memLoadHalf(REG_U_ID + 0x2, off2);
+    swd.memLoad(REG_U_ID + 0x4, off4);
+    swd.memLoad(REG_U_ID + 0x8, off8);
+
+    char output[128];
+    snprintf(output, sizeof output, "{\"uid\": \"0x%02x-0x%02x-0x%04x-0x%04x\" }", off0, off2, off4, off8);
+    server.send(200, "text/json", String(output));
+  });
+  server.on("/swd/hex", []() {
+    uint32_t idcode;
+    if (swd.begin() && swd.getIDCODE(idcode)) {
+
+      if (server.hasArg("bootloader")) {
+        addr = 0x08000000;
+        addrEnd = 0x08000ff0;
+      } else if (server.hasArg("flash")) {
+        addr = 0x08001000;
+        addrEnd = 0x0801ffff;
+      }
+      server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+      server.send(200, "text/plain", "");
+
+      uint32_t addrCount = 256;
+      uint32_t addrNext = addr;
+      do {
+
+        //Serial.printf("------ %08x ------\n", addrNext);
+
+        StreamString data;
+        swd.hexDump(addrNext, addrCount, data);
+        server.sendContent(data.readString());
+
+        yield(); //Prevent Reset by Watch-Dog
+
+        addrNext += (addrCount * 4); //step = count * 4 bytes in int32 word
+      } while (addrNext <= addrEnd);
+
+      server.sendContent("");
+
+    } else {
+      server.send(200, "text/plain", "SWD Error");
+    }
+  });
+  server.on("/swd/bin", []() {
+
+    uint32_t idcode;
+    if (swd.begin() && swd.getIDCODE(idcode)) {
+
+      String filename = "flash.bin";
+
+      if (server.hasArg("bootloader")) {
+        addr = 0x08000000;
+        addrEnd = 0x08000ff0;
+        filename = "bootloader.bin";
+      } else if (server.hasArg("flash")) {
+        addr = 0x08001000;
+        addrEnd = 0x0801ffff;
+      }
+      server.sendHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+      server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+      server.send(200, "application/octet-stream", "");
+
+      uint32_t addrNext = addr;
+      do {
+
+        //Serial.printf("------ %08x ------\n", addrNext);
+
+        uint8_t* buff;
+        swd.binDump(addrNext, buff);
+
+        char output[sizeof(buff) / 4];
+        strcpy(output, (const char*)buff);
+        server.sendContent(output, sizeof(output));
+
+        yield(); //Prevent Reset by Watch-Dog
+
+        addrNext++;
+      } while (addrNext <= addrEnd);
+
+      server.sendContent("");
+
+    } else {
+      server.send(200, "text/plain", "SWD Error");
+    }
+  });
   //called when the url is not defined here
   //use it to load content from SPIFFS
   server.onNotFound([](){
