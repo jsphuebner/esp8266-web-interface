@@ -419,6 +419,39 @@ function uploadFile()
 	xmlhttp.send(fd);
 }
 
+/** @brief uploads file to web server, Flash using Single-Wire-Debug. Start address bootloader = 0x08000000, firmware = 0x08001000*/
+function uploadSWDFile() 
+{
+	var xmlhttp = new XMLHttpRequest();
+	var form = document.getElementById('swdform');
+	
+	if (form.getFormData)
+		var fd = form.getFormData();
+	else
+		var fd = new FormData(form);
+	var file = document.getElementById('swdfile').files[0].name;
+
+	xmlhttp.onload = function() 
+	{
+		var xhr = new XMLHttpRequest();
+	    xhr.onload = function() {
+	        if (xhr.status == 200) {
+	            var log = xhr.responseText;
+	            console.log(log);
+	        }
+	    }
+		if (file.endsWith('loader.bin'))
+		{
+			xhr.open('GET', '/swd/mem/flash?bootloader&file=' + file, true);
+		}else{
+			xhr.open('GET', '/swd/mem/flash?flash&file=' + file, true);
+		}
+    	xhr.send();
+	}
+	xmlhttp.open("POST", "/edit");
+	xmlhttp.send(fd);
+}
+
 /** @brief Runs a step of a firmware upgrade
  * Step -1 is resetting controller
  * Steps i=0..n send page i

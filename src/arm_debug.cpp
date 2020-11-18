@@ -159,7 +159,7 @@ bool ARMDebug::debugHalt()
         while (haltRetries) {
             haltRetries--;
 
-            if (!apWrite(MEM_DRW, 0xA05F0003))
+            if (!apWrite(MEM_DRW, 0xA05F0003)) //0xA05F0000 exit debug mode
                 continue;
             if (!apRead(MEM_DRW, dhcsr))
                 continue;

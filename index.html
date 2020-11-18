@@ -50,7 +50,7 @@
 <p><a href="/wifi">Wifi Settings</a>
 <p><a href="/remote.html">Start Remote Support Session</a>
 
-<h2 id="update">Update</h2>
+<h2 id="update">UART Update</h2>
 <p>Use binary files (stm32_sine/foc.bin) for updating inverter firmware. Upload any other file for updating this web interface.</p>
 <form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
     <input id="updatefile" name="updatefile" type="file" onchange="fileSelected();" />
@@ -59,6 +59,15 @@
 <div id="progress" class="graph">
 <div id="bar" style="width: 0"></div>
 </div>
+
+<h2 id="swdupdate">SWD Update</h2>
+<p>Use binary files (stm32_loader.bin, stm32_sine/foc.bin) for updating inverter bootloader/firmware.</p>
+<form id="swdform" enctype="multipart/form-data" action="edit" method="POST">
+    <input id="swdfile" name="swdfile" type="file" onchange="fileSelected();" accept=".bin" />
+    <input type="button" onclick="uploadSWDFile();" value="Upload" />
+</form>
+<br/><br/>
+<a href="/swd/bin?bootloader">Download Bootloader</a> | <a href="/swd/bin?flash">Download Flash</a>
 
 <h2 id="parameters">Parameters</h2>
 <p><a href="https://openinverter.org/wiki/Parameters" target="_blank">Parameter Reference</a>

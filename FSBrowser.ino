@@ -482,13 +482,64 @@ void setup(void){
     snprintf(output, sizeof output, "{\"uid\": \"0x%02x-0x%02x-0x%04x-0x%04x\" }", off0, off2, off4, off8);
     server.send(200, "text/json", String(output));
   });
+  server.on("/swd/zero", []() {
+
+    uint32_t idcode;
+    if (swd.begin() && swd.getIDCODE(idcode)) {
+
+      server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+      server.send(200, "text/plain", "");
+
+      //Testing
+      addr = 0x08000000;
+      addrEnd = 0x08000010;
+
+      // Before programming internal SRAM, the ARM Cortex-M3 should first be reset and halted.
+      swd.debugHalt();
+
+      /*
+         https://www.silabs.com/community/mcu/32-bit/knowledge-base.entry.html/2014/10/21/how_to_program_inter-esAv
+         The debug and system registers and one Silicon Labs-specific AP register CHIPAP_CTRL1 are used for this purpose.
+         CHIPAP_CTRL1 address = 0x1, APSEL = 0x0A. Bit 3 core_reset_ap should be written to 1 to hold the Cortex-M3 core in reset.
+
+         The process is as follows:
+
+          Write 0x08 to CHIPAP_CTRL1.
+          Write 0xA05F0001 to DHCSR, which enables debug halt.
+          Write 0x01 to DEMCR. This enables Reset Vector Catch.
+          Write 0x05FA0004 to AIRCR. This resets the core.
+          Write 0x00 to CHIPAP_CTRL1.
+      */
+
+      uint32_t addrNext = addr;
+      do {
+
+        //Serial.printf("------ %08x ------\n", addrNext);
+
+        swd.memStoreByte(addr, 0xff);
+
+        char output[128];
+        snprintf(output, sizeof output, "%08x\n", addrNext);
+        server.sendContent(output);
+
+        yield(); //Prevent Reset by Watch-Dog
+
+        addrNext++;
+      } while (addrNext <= addrEnd);
+
+      server.sendContent(""); //end stream
+
+    } else {
+      server.send(200, "text/plain", "SWD Error");
+    }
+  });
   server.on("/swd/hex", []() {
     uint32_t idcode;
     if (swd.begin() && swd.getIDCODE(idcode)) {
 
       if (server.hasArg("bootloader")) {
         addr = 0x08000000;
-        addrEnd = 0x08000ff0;
+        addrEnd = 0x08000fff;
       } else if (server.hasArg("flash")) {
         addr = 0x08001000;
         addrEnd = 0x0801ffff;
@@ -511,7 +562,7 @@ void setup(void){
         addrNext += (addrCount * 4); //step = count * 4 bytes in int32 word
       } while (addrNext <= addrEnd);
 
-      server.sendContent("");
+      server.sendContent(""); //end stream
 
     } else {
       server.send(200, "text/plain", "SWD Error");
@@ -526,7 +577,7 @@ void setup(void){
 
       if (server.hasArg("bootloader")) {
         addr = 0x08000000;
-        addrEnd = 0x08000ff0;
+        addrEnd = 0x08000fff;
         filename = "bootloader.bin";
       } else if (server.hasArg("flash")) {
         addr = 0x08001000;
@@ -553,8 +604,57 @@ void setup(void){
         addrNext++;
       } while (addrNext <= addrEnd);
 
-      server.sendContent("");
+      server.sendContent(""); //end stream
 
+    } else {
+      server.send(200, "text/plain", "SWD Error");
+    }
+  });
+  server.on("/swd/mem/flash", []() {
+
+    uint32_t idcode;
+    if (swd.begin() && swd.getIDCODE(idcode)) {
+
+      if (server.hasArg("file")) {
+
+        if (server.hasArg("bootloader")) {
+          addr = 0x08000000;
+          addrEnd = 0x08000fff;
+        } else if (server.hasArg("flash")) {
+          addr = 0x08001000;
+          addrEnd = 0x0801ffff;
+        }
+        
+        swd.debugHalt();
+        
+        server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+        server.send(200, "text/plain", "");
+
+        File file = SPIFFS.open(server.arg("file"), "r");
+
+        uint32_t addrNext = addr;
+        do {
+
+          //Serial.printf("------ %08x ------\n", addrNext);
+
+          swd.memStoreByte(addr, file.read());
+
+          char output[128];
+          snprintf(output, sizeof output, "%08x", addrNext);
+          server.sendContent(output);
+
+          yield(); //Prevent Reset by Watch-Dog
+
+          addrNext++;
+        } while (addrNext <= addrEnd);
+
+        file.close();
+
+        server.sendContent(""); //end stream
+
+      } else {
+        server.send(200, "text/plain", ".bin File Required");
+      }
     } else {
       server.send(200, "text/plain", "SWD Error");
     }
