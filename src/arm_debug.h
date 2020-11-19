@@ -70,6 +70,17 @@ public:
     // Progaramming SRAM with flashloader
     bool flashloaderSRAM();
 
+    // Unlocking the Flash memory
+    void unlockFlash();
+
+    int flashWait();
+
+    // Flash Mass Erase
+    bool flashEraseAll();
+
+    // Erase Flash by Sector (Page)
+    bool flashErase(uint32_t addr);
+
     // Writes to flash (and erase operations)
     bool flashWrite(uint32_t addr, uint32_t data);
 
@@ -162,12 +173,6 @@ public:
         CTRLSTAT = 0x4,
         SELECT = 0x8,
         RDBUFF = 0xC
-    };
-
-    // Vector catch is the mechanism for generating a debug event 
-    // and entering Debug state when a particular exception occurs
-    enum DebugVectorBits {
-        VC_CORERESET = 0 //Enable Reset Vector Catch. Local reset to halt a running system
     };
 
     // CTRL/STAT bits

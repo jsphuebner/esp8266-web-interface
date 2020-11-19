@@ -504,12 +504,13 @@ void setup(void){
 
     if (swd.begin()) {
 
-      server.setContentLength(CONTENT_LENGTH_UNKNOWN);
-      server.send(200, "text/plain", "");
-
       //Testing
       addr = 0x08000000;
       addrEnd = 0x08000010;
+
+      server.setContentLength(addrEnd - addr * 5); //CONTENT_LENGTH_UNKNOWN
+      server.send(200, "text/plain", "");
+      
       //swd.debugPortPowerup();
 
       // Before programming internal SRAM, the ARM Cortex-M3 should first be reset and halted.
@@ -522,8 +523,15 @@ void setup(void){
       swd.debugHalt();
       swd.debugHaltOnReset(1);
       swd.debugReset();
-      
-      swd.flashloaderSRAM();
+
+      //METHOD #1
+      //swd.flashloaderSRAM();
+
+      //METHOD #2
+      swd.flashWrite(0x08000000, 0xffffffff);
+
+      //METHOD #3
+      //swd.flashEraseAll();
       
       uint32_t addrNext = addr;
       do {
@@ -531,6 +539,7 @@ void setup(void){
         //Serial.printf("------ %08x ------\n", addrNext);
 
         //swd.memStoreByte(addr, 0xff);
+        //swd.memStoreHalf(addr + addrNext * 2, 0xffff);
         //swd.memStore(addr + addrNext * 4, 0xffffffff);
 
         char output[128];
@@ -565,7 +574,7 @@ void setup(void){
         addr = 0x20000000;
         addrEnd = 0x200003ff;
       }
-      server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+      server.setContentLength(addrEnd - addr * 5); //CONTENT_LENGTH_UNKNOWN
       server.send(200, "text/plain", "");
 
       uint32_t addrCount = 256;
@@ -609,7 +618,7 @@ void setup(void){
         filename = "ram.bin";
       }
       server.sendHeader("Content-Disposition", "attachment; filename = \"" + filename + "\"");
-      server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+      server.setContentLength(addrEnd - addr * 5); //CONTENT_LENGTH_UNKNOWN
       server.send(200, "application/octet-stream", "");
 
       uint32_t addrNext = addr;

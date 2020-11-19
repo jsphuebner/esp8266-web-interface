@@ -5,8 +5,21 @@
 #pragma once
 
 // Cortex M3 Memory Access Port
-#define MEMAP_BANK_0  0x00000000       // BANK 0 => CSW, TAR, Reserved, DRW
-#define MEMAP_BANK_1  0x00000010       // BANK 1 => BD0, BD1, BD2, BD3
+#define MEMAP_BANK_0  0x00000000       					// BANK 0 => CSW, TAR, Reserved, DRW
+#define MEMAP_BANK_1  0x00000001						// BANK 1 => BD0, BD1, BD2, BD3
+
+// Flash program and erase controller (FPEC), PM0075 manual STM32F10xxx Flash memory
+#define REG_FPEC_FLASH_ACR			0x40022000			//Flash access control register
+#define REG_FPEC_FLASH_KEYR 		0x40022004 			//FPEC key register
+#define REG_FPEC_FLASH_OPTKEYR 		0x40022008 			//Option byte key register
+#define REG_FPEC_FLASH_SR  			0x4002200C 			//Flash status register
+#define REG_FPEC_FLASH_CR 			0x40022010  		//Flash control register
+#define REG_FPEC_FLASH_AR 			0x40022014 			//Flash address register
+#define REG_FPEC_FLASH_OBR  		0x4002201C 			//Option byte register
+#define REG_FPEC_FLASH_WRPR 		0x40022020 			//Write protection register
+#define REG_FPEC_KEY_RDPRT 			0x00A5
+#define REG_FPEC_KEY_KEY1 			0x45670123
+#define REG_FPEC_KEY_KEY2 			0xCDEF89AB
 
 // System Control Space (SCS), ARMv7 ref manual, B3.2, page 708
 #define REG_SCB_CPUID               0xE000ED00          // CPUID Base Register

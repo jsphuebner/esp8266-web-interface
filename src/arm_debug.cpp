@@ -199,34 +199,25 @@ bool ARMDebug::debugHaltOnReset(uint8_t enable)
 {
     /* 
     //Enable TRC (Trace and Debug blocks) (including DWT)
-    CoreDebug->DEMCR &= ~0x01000000; //disable
-    CoreDebug->DEMCR |= 0x01000000; //enable
+    DEMCR &= ~0x01000000; //disable
+    DEMCR |= 0x01000000; //enable
     */
 
     /*
     // 32 bit memory access, auto increment
     rw_data = 0x23000002;
     SWD_DAP_Move(0, MEMAP_CSW, &rw_data);
+	*/
 
-    // DHCSR.C_DEBUGEN = 1
-    rw_data = DHCSR;
-    SWD_DAP_Move(0, MEMAP_TAR, &rw_data);
-    rw_data = 0xA05F0001;
-    SWD_DAP_Move(0, MEMAP_DRW_WR, &rw_data);
-
-    // DEMCR.VC_CORERESET = 1
-    rw_data = DEMCR;
-    SWD_DAP_Move(0, MEMAP_TAR, &rw_data);
-    rw_data = 0x1;
-    SWD_DAP_Move(0, MEMAP_DRW_WR, &rw_data);
-    */
+	// Vector catch is the mechanism for generating a debug event 
+    // and entering Debug state when a particular exception occurs
 
     uint32_t VC_CORERESET = 0x0;
-    if(enable == 1) //1 to bit VC_CORERESET
-        VC_CORERESET = 0x1;
+    if(enable == 1)
+        VC_CORERESET = 0x1; //Halt after Reset set VC_CORERESET bit to 1
 
     if (apWrite(MEM_TAR, REG_SCB_DEMCR))
-        if (apWrite(MEM_DRW, VC_CORERESET));
+        if (apWrite(MEM_DRW, VC_CORERESET))
             return true;
 
     return false;
@@ -262,7 +253,7 @@ bool ARMDebug::flashloaderSRAM()
     //https://github.com/MarkDing/swd_programing_sram/blob/master/SW_Interface/main.c
     
     // Select MEM BANK 0
-    apWrite(SELECT, MEMAP_BANK_0);
+    //apWrite(SELECT, MEMAP_BANK_0);
 
     //flashloader/stm32f0.s
     static const uint8_t binraw[] = {
@@ -312,62 +303,150 @@ bool ARMDebug::flashloaderSRAM()
     for (i = 0; i < size; i++)
         memStoreByte(addr + i, binraw[i]);
     
-    //Make code running from SRAM
-    memStore(REG_SCB_VTOR, addr); //Debugger to check the core VTOR register
-    
-    //regWrite(0x164f3e68 + size, 0);       // Source
-    //regWrite(0x164f3e68 + count, 1);      // Target
-    //regWrite(count, 2);                   // Count
-    //regWrite(0x40, 3);                    // 0x08080000? Flash register base only used on VL/F1_XL, but harmless for others
-    regWrite(0x164f3e68 & 0xFFFFFFFE, 15);  // PC Register (Program Counter)
-    regWrite(0x164f3c68, 13);               // SP Register (Stack Pointer)
+    //Update vector table entry in 0xe000ed08 to SRAM start position 0x20000000
+    if (apWrite(MEM_TAR, REG_SCB_VTOR)) //Debugger to check the core VTOR register
+        apWrite(MEM_DRW, addr);
+    //memStore(REG_SCB_VTOR, addr); //Debugger to check the core VTOR register
 
-    //regWrite(binraw[1] & 0xFFFFFFFE, 15); // PC Register (Program Counter)
-    //regWrite(binraw[0], 13);              // SP Register (Stack Pointer)
+    //https://www.st.com/resource/en/programming_manual/dm00237416-stm32f7-series-and-stm32h7-series-cortexm7-processor-programming-manual-stmicroelectronics.pdf
+
+    //Update R15(PC) with reset vector address. It locates at second word position in firmware.
+    /*
+    The Program Counter (PC) is register R15. It contains the current program address.
+    On reset, the processor loads the PC with the value of the reset vector, which is at address 0x00000004.
+    */
+    regWrite(binraw[1] & 0xFFFFFFFE, 15); // R15
+
+    //Update R13(SP) with stack address defined in first word in firmware.
+    /*
+    The Stack Pointer (SP) is register R13. In Thread mode, bit[1] of the CONTROL register indicates the stack pointer to use:
+    0 = Main Stack Pointer (MSP). This is the reset value.
+    1 = Process Stack Pointer (PSP).
+    On reset, the processor loads the MSP with the value from address 0x00000000.
+    */
+    regWrite(binraw[0], 13);              // R13
 
     //Run code
+    debugRun();
     //memStore(REG_SCB_DHCSR, 0xA05F0000);
-    //debugRun();
+}
+
+void ARMDebug::unlockFlash()
+{
+    //https://ioprog.com/2018/05/23/using-flash-memory-on-the-stm32f103
+
+    /*
+    An unlocking sequence should be written to the FLASH_KEYR register to open up the FPEC block.
+    This sequence consists of two write cycles, where two key values (KEY1 and KEY2) are written to the FLASH_KEYR address
+    */
+    apWrite(REG_FPEC_FLASH_KEYR, REG_FPEC_KEY_KEY1);
+    apWrite(REG_FPEC_FLASH_KEYR, REG_FPEC_KEY_KEY2);
+
+    //Any wrong sequence locks up the FPEC block and FLASH_CR register until the next reset.
+}
+
+int ARMDebug::flashWait()
+{
+    unsigned flashRetries = 10000;
+    uint32_t flashsr;
+
+    while (flashRetries) {
+        flashRetries--;
+
+        if (!apRead(REG_FPEC_FLASH_SR, flashsr))
+            continue;
+        
+        if (flashsr & 0) { //BSY
+            continue; // Wait while busy
+        }else if (flashsr & 2) { //PGERR
+            return -1; // Flash not erased to begin with
+        }else if (flashsr & 2) { //WRPRTERR
+            return -2; // Write protect error
+        }else{ //EOP
+            //Ready!
+            break;
+        }
+    }
+    return 0;
+}
+
+bool ARMDebug::flashEraseAll()
+{
+    unlockFlash();
+
+    uint32_t flashcr;
+
+    if (apRead(REG_FPEC_FLASH_CR, flashcr))
+    {
+    	apWrite(REG_FPEC_FLASH_CR, flashcr &= ~0);  // ensure PG bit low
+    	apWrite(REG_FPEC_FLASH_CR, flashcr &= ~1);  // ensure PER is low
+        apWrite(REG_FPEC_FLASH_CR, flashcr |= 2);   // set MER bit
+        apWrite(REG_FPEC_FLASH_CR, flashcr |= 6);   // set STRT bit
+
+        flashWait();
+        return true;
+    }
+
+    return false;
+}
+
+bool ARMDebug::flashErase(uint32_t addr)
+{
+    unlockFlash();
+
+    uint32_t flashcr;
+
+    if (apRead(REG_FPEC_FLASH_CR, flashcr))
+    {
+        apWrite(REG_FPEC_FLASH_CR, flashcr &= ~0);  // ensure PG bit low
+        apWrite(REG_FPEC_FLASH_CR, flashcr &= ~2);  // ensure MER is low
+        apWrite(REG_FPEC_FLASH_CR, flashcr |= 1);   // set PER bit
+        apWrite(REG_FPEC_FLASH_AR, addr);
+        apWrite(REG_FPEC_FLASH_CR, flashcr |= 6);   // set STRT bit
+
+        flashWait();
+        return true;
+    }
+
+    return false;
 }
 
 bool ARMDebug::flashWrite(uint32_t addr, uint32_t data)
 {
-    //http://markding.github.io/swd_programing_sram/
+	uint16_t addrHalf[2];
+    uint16_t dataHalf[2];
 
-    /*
-    1. Enable flash writing by setting the WREN bit in MSC_WRITECTRL
-    2. Write the destination address to MSC_ADDRB
-    3. Load the internal write register by writing a 1 to bit LADDRIM in MSC_WRITECMD 4. Write the word to MSC_WDATA
-    5. Initiate the write by writing a 1 to bit WRITEONCE in MSC_WRITECMD
-    */
+	//Split Address
+    addrHalf[0] = addr >> 16;
+	addrHalf[1] = addr & 0x0000FFFF;
 
-    //https://community.st.com/s/question/0D50X00009XkeqGSAR/using-swd-protocoll-bitbang-to-readwrite-stm32f0-flash
-    uint32_t result;
+	//Split Data
+	dataHalf[0] = data >> 16;
+	dataHalf[1] = data & 0x0000FFFF;
 
-    // 32 bit memory access, auto increment
-    //apWrite(MEM_CSW, 0x23000002);
+    uint8_t count = 1;
+	do
+	{
+	    unlockFlash();
 
-    //Write 0x08000000 to AP.TAR
-    if (apWrite(MEM_TAR, 0x08000000))
-    {
-        //Read DRW (plus read RDBUFF) -> no result. 
-        if (apRead(MEM_DRW, result)) // && dpRead(RDBUFF, false, result))
-        {
-        }
-        Serial.printf("%08x\n",result);
-        //Write 0x2000000 to TAR 
-        if (apWrite(MEM_TAR, 0x20000000))
-        {
-            if (apRead(MEM_DRW, result)) // && dpRead(RDBUFF, false, result))
-            {
-            }
-            Serial.printf("%08x\n",result);
-        }
+	    uint32_t flashcr;
+	    if (apRead(REG_FPEC_FLASH_CR, flashcr))
+	    {
+	        apWrite(REG_FPEC_FLASH_CR, flashcr &= ~1);  // ensure PER is low
+	        apWrite(REG_FPEC_FLASH_CR, flashcr &= ~2);  // ensure MER is low
+	        apWrite(REG_FPEC_FLASH_CR, flashcr |= 0);   // set PG bit
 
-        //Update vector table entry in 0xe000ed08 to SRAM start position 0x20000000.
-    }
+	        //Perform the data write (half-word) at the desired address
+	        memStoreHalf(addrHalf[count], dataHalf[count]);
 
-    return false;
+	        flashWait();
+	    }else{
+	    	return false;
+	    }
+	    count--;
+	}while(count);
+
+	return true;
 }
 
 bool ARMDebug::regTransactionHandshake()
