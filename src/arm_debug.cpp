@@ -33,6 +33,7 @@ Additional Research:
     https://research.kudelskisecurity.com/2019/07/31/swd-part-2-the-mem-ap
     https://www.silabs.com/documents/public/application-notes/an0062.pdf
     https://www.silabs.com/documents/public/example-code/an0062-efm32-programming-guide.zip
+    http://markding.github.io/swd_programing_sram
     https://github.com/MarkDing/swd_programing_sram
     https://www.cnblogs.com/shangdawei/p/4753040.html
 */
@@ -171,13 +172,13 @@ bool ARMDebug::debugHalt()
         while (haltRetries) {
             haltRetries--;
 
-            //DHCSR bits C_STOP and C_DEBUGEN
+            //DHCSR bits C_STOP and C_DEBUGEN (2 + 1)
             if (!apWrite(MEM_DRW, 0xA05F0003))
                 continue;
             if (!apRead(MEM_DRW, dhcsr))
                 continue;
 
-            if (dhcsr & (1 << 17)) {
+            if (dhcsr & (1 << 17)) { //checking whether it actually is halted (0x30000)
                 // Halted!
                 break;
             }
@@ -196,33 +197,176 @@ bool ARMDebug::debugHalt()
 
 bool ARMDebug::debugHaltOnReset(uint8_t enable)
 {
-    uint32_t demcr = 0x01000000; //1 to bit VC_CORERESET
+    /* 
+    //Enable TRC (Trace and Debug blocks) (including DWT)
+    CoreDebug->DEMCR &= ~0x01000000; //disable
+    CoreDebug->DEMCR |= 0x01000000; //enable
+    */
 
-    if(enable == 0)
-        demcr = 0x00000000;
+    /*
+    // 32 bit memory access, auto increment
+    rw_data = 0x23000002;
+    SWD_DAP_Move(0, MEMAP_CSW, &rw_data);
+
+    // DHCSR.C_DEBUGEN = 1
+    rw_data = DHCSR;
+    SWD_DAP_Move(0, MEMAP_TAR, &rw_data);
+    rw_data = 0xA05F0001;
+    SWD_DAP_Move(0, MEMAP_DRW_WR, &rw_data);
+
+    // DEMCR.VC_CORERESET = 1
+    rw_data = DEMCR;
+    SWD_DAP_Move(0, MEMAP_TAR, &rw_data);
+    rw_data = 0x1;
+    SWD_DAP_Move(0, MEMAP_DRW_WR, &rw_data);
+    */
+
+    uint32_t VC_CORERESET = 0x0;
+    if(enable == 1) //1 to bit VC_CORERESET
+        VC_CORERESET = 0x1;
 
     if (apWrite(MEM_TAR, REG_SCB_DEMCR))
-        if (apWrite(MEM_DRW, demcr))
+        if (apWrite(MEM_DRW, VC_CORERESET));
             return true;
 
     return false;
 }
 
-
 bool ARMDebug::debugReset()
 {
     if (apWrite(MEM_TAR, REG_SCB_AIRCR))
-            if (apWrite(MEM_DRW, 0xFA050004))
-                return true;
+         if (apWrite(MEM_DRW, 0xFA050004))
+            return true;
 
+    return false;
+}
+
+bool ARMDebug::debugStep()
+{
+    if (apWrite(MEM_TAR, REG_SCB_DHCSR))
+        if (apWrite(MEM_DRW, 0xA05F0005))
+            return true;
     return false;
 }
 
 bool ARMDebug::debugRun()
 {
     if (apWrite(MEM_TAR, REG_SCB_DHCSR))
-            if (apWrite(MEM_DRW, 0xA05F0000))
-                return true;
+        if (apWrite(MEM_DRW, 0xA05F0000))
+            return true;
+    return false;
+}
+
+bool ARMDebug::flashloaderSRAM()
+{
+    //https://github.com/MarkDing/swd_programing_sram/blob/master/SW_Interface/main.c
+    
+    // Select MEM BANK 0
+    apWrite(SELECT, MEMAP_BANK_0);
+
+    //flashloader/stm32f0.s
+    static const uint8_t binraw[] = {
+        0x16, 0x4f, 0x3c, 0x68,
+        0x16, 0x4f, 0x3e, 0x68,
+        0x36, 0x19, 0x16, 0x4f,
+        0x3d, 0x68, 0x2d, 0x19,
+        0x4f, 0xf0, 0x01, 0x07,
+        0x33, 0x68, 0x3b, 0x43,
+        0x33, 0x60, 0x03, 0x88,
+        0x0b, 0x80, 0x4f, 0xf0,
+        0x02, 0x07, 0xc0, 0x19,
+        0xc9, 0x19, 0x4f, 0xf0,
+        0x01, 0x07, 0x2b, 0x68,
+        0x3b, 0x42, 0xfa, 0xd0,
+        0x4f, 0xf0, 0x04, 0x07,
+        0x3b, 0x42, 0x04, 0xd1,
+        0x4f, 0xf0, 0x01, 0x07,
+        0xd2, 0x1b, 0x00, 0x2a,
+        0xe6, 0xd1, 0x4f, 0xf0,
+        0x01, 0x07, 0x33, 0x68,
+        0xbb, 0x43, 0x33, 0x60,
+        0x00, 0xbe, 0x00, 0xbf,
+        0x00, 0x20, 0x02, 0x40,
+        0x10, 0x00, 0x00, 0x00,
+        0x0c, 0x00, 0x00, 0x00,
+        0x50, 0x00, 0x00, 0x20,
+        0x54, 0x00, 0x00, 0x20,
+        0x58, 0x00, 0x00, 0x20
+    };
+    
+    uint32_t i, size, count, addr = 0x20000000;
+
+    /*
+    size = sizeof(binraw) / 4;
+    for (i = 0; i < size; i += 256) {
+        if ((i + 256) < size) {
+            count = 256;
+        } else {
+            count = size - i;
+        }
+        memStore(addr + i * 4, &binraw[i], count);
+    }
+    */
+    size = sizeof(binraw);
+    count = size / sizeof(uint16_t);
+    for (i = 0; i < size; i++)
+        memStoreByte(addr + i, binraw[i]);
+    
+    //Make code running from SRAM
+    memStore(REG_SCB_VTOR, addr); //Debugger to check the core VTOR register
+    
+    //regWrite(0x164f3e68 + size, 0);       // Source
+    //regWrite(0x164f3e68 + count, 1);      // Target
+    //regWrite(count, 2);                   // Count
+    //regWrite(0x40, 3);                    // 0x08080000? Flash register base only used on VL/F1_XL, but harmless for others
+    regWrite(0x164f3e68 & 0xFFFFFFFE, 15);  // PC Register (Program Counter)
+    regWrite(0x164f3c68, 13);               // SP Register (Stack Pointer)
+
+    //regWrite(binraw[1] & 0xFFFFFFFE, 15); // PC Register (Program Counter)
+    //regWrite(binraw[0], 13);              // SP Register (Stack Pointer)
+
+    //Run code
+    //memStore(REG_SCB_DHCSR, 0xA05F0000);
+    //debugRun();
+}
+
+bool ARMDebug::flashWrite(uint32_t addr, uint32_t data)
+{
+    //http://markding.github.io/swd_programing_sram/
+
+    /*
+    1. Enable flash writing by setting the WREN bit in MSC_WRITECTRL
+    2. Write the destination address to MSC_ADDRB
+    3. Load the internal write register by writing a 1 to bit LADDRIM in MSC_WRITECMD 4. Write the word to MSC_WDATA
+    5. Initiate the write by writing a 1 to bit WRITEONCE in MSC_WRITECMD
+    */
+
+    //https://community.st.com/s/question/0D50X00009XkeqGSAR/using-swd-protocoll-bitbang-to-readwrite-stm32f0-flash
+    uint32_t result;
+
+    // 32 bit memory access, auto increment
+    //apWrite(MEM_CSW, 0x23000002);
+
+    //Write 0x08000000 to AP.TAR
+    if (apWrite(MEM_TAR, 0x08000000))
+    {
+        //Read DRW (plus read RDBUFF) -> no result. 
+        if (apRead(MEM_DRW, result)) // && dpRead(RDBUFF, false, result))
+        {
+        }
+        Serial.printf("%08x\n",result);
+        //Write 0x2000000 to TAR 
+        if (apWrite(MEM_TAR, 0x20000000))
+        {
+            if (apRead(MEM_DRW, result)) // && dpRead(RDBUFF, false, result))
+            {
+            }
+            Serial.printf("%08x\n",result);
+        }
+
+        //Update vector table entry in 0xe000ed08 to SRAM start position 0x20000000.
+    }
+
     return false;
 }
 
@@ -860,7 +1004,8 @@ void ARMDebug::hexDump(uint32_t addr, unsigned count, StreamString &data)
                 bytes[1] = (word >> 8)  & 0xFF;
                 bytes[2] = (word >> 16) & 0xFF;
                 bytes[3] = (word >> 24) & 0xFF;
-                snprintf(buffer, sizeof buffer, " | %02x %02x %02x %02x", bytes[0], bytes[1], bytes[2], bytes[3]); // endian reversed
+                //snprintf(buffer, sizeof buffer, " | %02x %02x %02x %02x", bytes[3], bytes[2], bytes[1], bytes[0]); // big-endian
+                snprintf(buffer, sizeof buffer, " | %02x %02x %02x %02x", bytes[0], bytes[1], bytes[2], bytes[3]); // little-endian (reversed)
 
                 data.print(buffer);
             } else {

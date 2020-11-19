@@ -4,10 +4,9 @@
 
 #pragma once
 
-// Commands to run/stop/step CPU. Write these to DHCSR
-#define RUN_CMD  0xA05F0001
-#define STOP_CMD 0xA05F0003
-#define STEP_CMD 0xA05F0005
+// Cortex M3 Memory Access Port
+#define MEMAP_BANK_0  0x00000000       // BANK 0 => CSW, TAR, Reserved, DRW
+#define MEMAP_BANK_1  0x00000010       // BANK 1 => BD0, BD1, BD2, BD3
 
 // System Control Space (SCS), ARMv7 ref manual, B3.2, page 708
 #define REG_SCB_CPUID               0xE000ED00          // CPUID Base Register

@@ -61,8 +61,17 @@ public:
     // Reset the core
     bool debugReset();
 
+    // Step command
+    bool debugStep();
+
     // CPU continue its execution
     bool debugRun();
+
+    // Progaramming SRAM with flashloader
+    bool flashloaderSRAM();
+
+    // Writes to flash (and erase operations)
+    bool flashWrite(uint32_t addr, uint32_t data);
 
     // CPU register operations, when halted (via DCRSR)
     bool regWrite(unsigned num, uint32_t data);

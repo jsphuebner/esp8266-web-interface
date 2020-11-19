@@ -456,10 +456,10 @@ void setup(void){
 
       char output[128];
       snprintf(output, sizeof output, "{\"connected\": true, \"idcode\": \"0x%02x\" }", idcode);
-      server.send(200, "text/json", String(output));
+      server.send(200, "application/json", String(output));
 
     } else {
-      server.send(200, "text/json", "{\"connected\": false}");
+      server.send(200, "application/json", "{\"connected\": false}");
     }
   });
   server.on("/swd/uid", []() {
@@ -480,7 +480,25 @@ void setup(void){
 
     char output[128];
     snprintf(output, sizeof output, "{\"uid\": \"0x%02x-0x%02x-0x%04x-0x%04x\" }", off0, off2, off4, off8);
-    server.send(200, "text/json", String(output));
+    server.send(200, "application/json", String(output));
+  });
+  server.on("/swd/halt", []() {
+    if (swd.begin()) {
+      char output[128];
+      snprintf(output, sizeof output, "{\"halt\": \"%s\"}", swd.debugHalt() ? "true" : "false");
+      server.send(200, "application/json", String(output));
+    }else{
+      server.send(200, "text/plain", "SWD Error");
+    }
+  });
+  server.on("/swd/reset", []() {
+    if (swd.begin()) {
+      char output[128];
+      snprintf(output, sizeof output, "{\"halt\": \"%s\", \"reset\": \"%s\"}", swd.debugHalt() ? "true" : "false", swd.debugReset() ? "true" : "false");
+      server.send(200, "application/json", String(output));
+    }else{
+      server.send(200, "text/plain", "SWD Error");
+    }
   });
   server.on("/swd/zero", []() {
 
@@ -492,34 +510,28 @@ void setup(void){
       //Testing
       addr = 0x08000000;
       addrEnd = 0x08000010;
+      //swd.debugPortPowerup();
 
       // Before programming internal SRAM, the ARM Cortex-M3 should first be reset and halted.
-      swd.debugHalt();
-
-      swd.debugHaltOnReset(1);
-      
-      swd.debugReset();
-
       /*
-         https://www.silabs.com/community/mcu/32-bit/knowledge-base.entry.html/2014/10/21/how_to_program_inter-esAv
-         The debug and system registers and one Silicon Labs-specific AP register CHIPAP_CTRL1 are used for this purpose.
-         CHIPAP_CTRL1 address = 0x1, APSEL = 0x0A. Bit 3 core_reset_ap should be written to 1 to hold the Cortex-M3 core in reset.
-
-         The process is as follows:
-
-          Write 0x08 to CHIPAP_CTRL1.
-          Write 0xA05F0001 to DHCSR, which enables debug halt.
-          Write 0x01 to DEMCR. This enables Reset Vector Catch.
-          Write 0x05FA0004 to AIRCR. This resets the core.
-          Write 0x00 to CHIPAP_CTRL1.
+      1. Write 0xA05F0003 to DHCSR. This will halt the core.
+      2. Write 1 to bit VC_CORERESET in DEMCR. This will enable halt-on-reset 
+      3. Write 0xFA050004 to AIRCR. This will reset the core.
       */
-
+      
+      swd.debugHalt();
+      swd.debugHaltOnReset(1);
+      swd.debugReset();
+      
+      swd.flashloaderSRAM();
+      
       uint32_t addrNext = addr;
       do {
 
         //Serial.printf("------ %08x ------\n", addrNext);
 
-        swd.memStoreByte(addr, 0xff);
+        //swd.memStoreByte(addr, 0xff);
+        //swd.memStore(addr + addrNext * 4, 0xffffffff);
 
         char output[128];
         snprintf(output, sizeof output, "%08x\n", addrNext);
@@ -529,6 +541,9 @@ void setup(void){
 
         addrNext++;
       } while (addrNext <= addrEnd);
+
+      //swd.debugHaltOnReset(0);
+      //swd.debugReset();
 
       server.sendContent(""); //end stream
 
@@ -546,6 +561,9 @@ void setup(void){
       } else if (server.hasArg("flash")) {
         addr = 0x08001000;
         addrEnd = 0x0801ffff;
+      }else if (server.hasArg("ram")) {
+        addr = 0x20000000;
+        addrEnd = 0x200003ff;
       }
       server.setContentLength(CONTENT_LENGTH_UNKNOWN);
       server.send(200, "text/plain", "");
@@ -585,6 +603,10 @@ void setup(void){
       } else if (server.hasArg("flash")) {
         addr = 0x08001000;
         addrEnd = 0x0801ffff;
+      }else if (server.hasArg("ram")) {
+        addr = 0x20000000;
+        addrEnd = 0x200003ff;
+        filename = "ram.bin";
       }
       server.sendHeader("Content-Disposition", "attachment; filename = \"" + filename + "\"");
       server.setContentLength(CONTENT_LENGTH_UNKNOWN);
