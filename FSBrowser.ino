@@ -504,11 +504,19 @@ void setup(void){
 
     if (swd.begin()) {
 
+      //Important Note: Writable SRAM Limited! From 0x20000000 to 0x200003ff
+      /*
+      AN2606 Application note, STM32F101xx and STM32F103xx system memory boot mode, Section 1.6 - Using the bootloader
+      The bootloader is executed from the System memory Flash memory area, however it uses the first 1024 bytes of RAM for variables and buffers,
+      that is from 0x2000 0000 to 0x200003FF. So when downloading code into RAM, the user has to consider only the remaining RAM memory.
+      */
+      
       //Testing
       addr = 0x08000000;
-      addrEnd = 0x08000010;
+      addrEnd = 0x08000fff;
 
-      server.setContentLength(addrEnd - addr * 5); //CONTENT_LENGTH_UNKNOWN
+      uint32_t addrTotal = addrEnd - addr;
+      server.setContentLength(addrTotal * 5); //CONTENT_LENGTH_UNKNOWN
       server.send(200, "text/plain", "");
       
       //swd.debugPortPowerup();
@@ -524,33 +532,48 @@ void setup(void){
       swd.debugHaltOnReset(1);
       swd.debugReset();
 
+      swd.memWait();
+
       //METHOD #1
-      //swd.flashloaderSRAM();
+      //swd.flashEraseAll();
 
       //METHOD #2
-      swd.flashWrite(0x08000000, 0xffffffff);
-
-      //METHOD #3
-      //swd.flashEraseAll();
+      swd.flashloaderSRAM();
       
       uint32_t addrNext = addr;
+      uint32_t addrIndex = 0;
+      uint32_t addrBuffer = 0x20000068; //Used by METHOD #2
       do {
+        //Serial.printf("------ %08x -> %08x ------\n", addrNext, addrBuffer);
 
-        //Serial.printf("------ %08x ------\n", addrNext);
+         char output[128];
+         snprintf(output, sizeof output, "%08x:", addrNext);
+         server.sendContent(output);
 
-        //swd.memStoreByte(addr, 0xff);
-        //swd.memStoreHalf(addr + addrNext * 2, 0xffff);
-        //swd.memStore(addr + addrNext * 4, 0xffffffff);
+        for (int i = 0; i <= 4; i++)
+        {
+          //METHOD #2
+          swd.memStore(addrBuffer, 0xffffffff);
+        
+          //METHOD #3
+          //swd.flashWrite(addrNext, 0xffffffff);
+        
+          server.sendContent(" | ff ff ff ff");
+          
+          addrNext+=4;
+          addrBuffer+=4;
+        }
 
-        char output[128];
-        snprintf(output, sizeof output, "%08x\n", addrNext);
-        server.sendContent(output);
+        server.sendContent("\n");
 
         yield(); //Prevent Reset by Watch-Dog
-
-        addrNext++;
+        
+        addrIndex++;
       } while (addrNext <= addrEnd);
 
+      //METHOD #2
+      swd.flashloaderRUN(addr, 256);
+      
       //swd.debugHaltOnReset(0);
       //swd.debugReset();
 

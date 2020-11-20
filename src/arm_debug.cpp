@@ -38,6 +38,36 @@ Additional Research:
     https://www.cnblogs.com/shangdawei/p/4753040.html
 */
 
+//flashloader/stm32f0.s (Cortex-M3) @ 0x20000000
+static const uint8_t flashloader_raw[] = {
+    0x16, 0x4f, 0x3c, 0x68,
+    0x16, 0x4f, 0x3e, 0x68,
+    0x36, 0x19, 0x16, 0x4f,
+    0x3d, 0x68, 0x2d, 0x19,
+    0x4f, 0xf0, 0x01, 0x07,
+    0x33, 0x68, 0x3b, 0x43,
+    0x33, 0x60, 0x03, 0x88,
+    0x0b, 0x80, 0x4f, 0xf0,
+    0x02, 0x07, 0xc0, 0x19,
+    0xc9, 0x19, 0x4f, 0xf0,
+    0x01, 0x07, 0x2b, 0x68,
+    0x3b, 0x42, 0xfa, 0xd0,
+    0x4f, 0xf0, 0x04, 0x07,
+    0x3b, 0x42, 0x04, 0xd1,
+    0x4f, 0xf0, 0x01, 0x07,
+    0xd2, 0x1b, 0x00, 0x2a,
+    0xe6, 0xd1, 0x4f, 0xf0,
+    0x01, 0x07, 0x33, 0x68,
+    0xbb, 0x43, 0x33, 0x60,
+    0x00, 0xbe, 0x00, 0xbf,
+    0x00, 0x20, 0x02, 0x40,
+    0x10, 0x00, 0x00, 0x00,
+    0x0c, 0x00, 0x00, 0x00,
+    0x50, 0x00, 0x00, 0x20,
+    0x54, 0x00, 0x00, 0x20,
+    0x58, 0x00, 0x00, 0x20
+}; //next address: 0x20000068 (buffer for flash writing)
+
 ARMDebug::ARMDebug(unsigned clockPin, unsigned dataPin, LogLevel logLevel)
     : clockPin(clockPin), dataPin(dataPin), logLevel(logLevel)
 {}
@@ -250,85 +280,81 @@ bool ARMDebug::debugRun()
 
 bool ARMDebug::flashloaderSRAM()
 {
-    //https://github.com/MarkDing/swd_programing_sram/blob/master/SW_Interface/main.c
+    // https://github.com/MarkDing/swd_programing_sram/blob/master/SW_Interface/main.c
     
     // Select MEM BANK 0
     //apWrite(SELECT, MEMAP_BANK_0);
-
-    //flashloader/stm32f0.s
-    static const uint8_t binraw[] = {
-        0x16, 0x4f, 0x3c, 0x68,
-        0x16, 0x4f, 0x3e, 0x68,
-        0x36, 0x19, 0x16, 0x4f,
-        0x3d, 0x68, 0x2d, 0x19,
-        0x4f, 0xf0, 0x01, 0x07,
-        0x33, 0x68, 0x3b, 0x43,
-        0x33, 0x60, 0x03, 0x88,
-        0x0b, 0x80, 0x4f, 0xf0,
-        0x02, 0x07, 0xc0, 0x19,
-        0xc9, 0x19, 0x4f, 0xf0,
-        0x01, 0x07, 0x2b, 0x68,
-        0x3b, 0x42, 0xfa, 0xd0,
-        0x4f, 0xf0, 0x04, 0x07,
-        0x3b, 0x42, 0x04, 0xd1,
-        0x4f, 0xf0, 0x01, 0x07,
-        0xd2, 0x1b, 0x00, 0x2a,
-        0xe6, 0xd1, 0x4f, 0xf0,
-        0x01, 0x07, 0x33, 0x68,
-        0xbb, 0x43, 0x33, 0x60,
-        0x00, 0xbe, 0x00, 0xbf,
-        0x00, 0x20, 0x02, 0x40,
-        0x10, 0x00, 0x00, 0x00,
-        0x0c, 0x00, 0x00, 0x00,
-        0x50, 0x00, 0x00, 0x20,
-        0x54, 0x00, 0x00, 0x20,
-        0x58, 0x00, 0x00, 0x20
-    };
     
-    uint32_t i, size, count, addr = 0x20000000;
+    uint32_t i, size, addr = 0x20000000;
 
-    /*
-    size = sizeof(binraw) / 4;
-    for (i = 0; i < size; i += 256) {
-        if ((i + 256) < size) {
-            count = 256;
-        } else {
-            count = size - i;
-        }
-        memStore(addr + i * 4, &binraw[i], count);
-    }
-    */
-    size = sizeof(binraw);
-    count = size / sizeof(uint16_t);
+    size = sizeof(flashloader_raw);
     for (i = 0; i < size; i++)
-        memStoreByte(addr + i, binraw[i]);
-    
+        memStoreByte(addr + i, flashloader_raw[i]);
+}
+
+bool ARMDebug::flashloaderRUN(uint32_t addr, unsigned count)
+{
+    uint32_t buf_addr = 0x20000068; //flashloader end address
+    uint32_t pages = count / sizeof(uint16_t);
+
     //Update vector table entry in 0xe000ed08 to SRAM start position 0x20000000
     if (apWrite(MEM_TAR, REG_SCB_VTOR)) //Debugger to check the core VTOR register
         apWrite(MEM_DRW, addr);
     //memStore(REG_SCB_VTOR, addr); //Debugger to check the core VTOR register
 
-    //https://www.st.com/resource/en/programming_manual/dm00237416-stm32f7-series-and-stm32h7-series-cortexm7-processor-programming-manual-stmicroelectronics.pdf
+    // https://www.st.com/resource/en/programming_manual/cd00228163-stm32f10xxx-20xxx-21xxx-l1xxxx-cortex-m3-programming-manual-stmicroelectronics.pdf
 
-    //Update R15(PC) with reset vector address. It locates at second word position in firmware.
+    // Update R15(PC) with reset vector address. It locates at second word position in firmware.
     /*
     The Program Counter (PC) is register R15. It contains the current program address.
     On reset, the processor loads the PC with the value of the reset vector, which is at address 0x00000004.
     */
-    regWrite(binraw[1] & 0xFFFFFFFE, 15); // R15
+    regWrite(flashloader_raw[1] & 0xFFFFFFFE, 15); // R15
 
-    //Update R13(SP) with stack address defined in first word in firmware.
+    // Update R13(SP) with stack address defined in first word in firmware.
     /*
     The Stack Pointer (SP) is register R13. In Thread mode, bit[1] of the CONTROL register indicates the stack pointer to use:
     0 = Main Stack Pointer (MSP). This is the reset value.
     1 = Process Stack Pointer (PSP).
     On reset, the processor loads the MSP with the value from address 0x00000000.
     */
-    regWrite(binraw[0], 13);              // R13
+    regWrite(flashloader_raw[0], 13);              // R13
+
+    // Flashloader Variables
+    // ----------------------
+    // Communication implemented by using fixed-address variables that both parties check (flashloader <-> CPU R0, R1, R2, R3)
+    
+    regWrite(buf_addr + count, 0);      // Source
+    regWrite(addr, 1);          // Target
+    regWrite(pages, 2);         // Count (Page Size)
+    regWrite(0x08000000, 3);    // Flash register base only used on VL/F1_XL, but harmless for others
+    //regWrite(0x08080000, 3);
 
     //Run code
-    debugRun();
+    //debugRun();
     //memStore(REG_SCB_DHCSR, 0xA05F0000);
+}
+
+bool ARMDebug::writeBufferSRAM(uint32_t addr, const uint32_t *data, unsigned count)
+{
+    // Write the buffer right after the loader
+    uint32_t i, buf_addr = 0x20000068; //flashloader end address
+
+    for (i = 0; i < count-1; i++)
+    {
+        Serial.printf("%08x\n", buf_addr + (i * 4));
+        memStore(buf_addr + (i * 4), data[i]);
+        /*
+        memStoreHalf(buf_addr + (i * 2), data[i] >> 16);
+        memStoreHalf(buf_addr + (i * 2) + 2, data[i] & 0x0000FFFF);
+        */
+        /*
+        memStoreByte(buf_addr + (i * 4) + 0, (data[i] >> 0)  & 0xFF);
+        memStoreByte(buf_addr + (i * 4) + 1, (data[i] >> 8)  & 0xFF);
+        memStoreByte(buf_addr + (i * 4) + 2, (data[i] >> 16)  & 0xFF);
+        memStoreByte(buf_addr + (i * 4) + 3, (data[i] >> 24)  & 0xFF);
+        */
+    }
 }
 
 void ARMDebug::unlockFlash()
@@ -341,6 +367,10 @@ void ARMDebug::unlockFlash()
     */
     apWrite(REG_FPEC_FLASH_KEYR, REG_FPEC_KEY_KEY1);
     apWrite(REG_FPEC_FLASH_KEYR, REG_FPEC_KEY_KEY2);
+
+    //Authorize the programming of the option bytes by writing the same set of KEYS (KEY1 and KEY2) to the FLASH_OPTKEYR register
+    //apWrite(REG_FPEC_FLASH_OPTKEYR, REG_FPEC_KEY_KEY1);
+    //apWrite(REG_FPEC_FLASH_OPTKEYR, REG_FPEC_KEY_KEY2);
 
     //Any wrong sequence locks up the FPEC block and FLASH_CR register until the next reset.
 }
@@ -374,18 +404,27 @@ bool ARMDebug::flashEraseAll()
 {
     unlockFlash();
 
-    uint32_t flashcr;
-
+    uint32_t flashcr = 0x00000000;
+    /*
     if (apRead(REG_FPEC_FLASH_CR, flashcr))
     {
-    	apWrite(REG_FPEC_FLASH_CR, flashcr &= ~0);  // ensure PG bit low
-    	apWrite(REG_FPEC_FLASH_CR, flashcr &= ~1);  // ensure PER is low
-        apWrite(REG_FPEC_FLASH_CR, flashcr |= 2);   // set MER bit
-        apWrite(REG_FPEC_FLASH_CR, flashcr |= 6);   // set STRT bit
+        flashcr &= ~(1 << 0);   // ensure PG bit low
+        flashcr &= ~(1 << 1);   // ensure PER is low
+        flashcr |= (1 << 2);    // set MER bit
+        flashcr |= (1 << 6);    // set STRT bit
+
+        //Serial.printf("%08x\n",flashcr);
+
+        apWrite(REG_FPEC_FLASH_CR, flashcr);
 
         flashWait();
+
         return true;
     }
+    */
+    apWrite(REG_FPEC_FLASH_CR, 0x00000044);
+
+    flashWait();
 
     return false;
 }
@@ -413,38 +452,29 @@ bool ARMDebug::flashErase(uint32_t addr)
 
 bool ARMDebug::flashWrite(uint32_t addr, uint32_t data)
 {
-	uint16_t addrHalf[2];
     uint16_t dataHalf[2];
-
-	//Split Address
-    addrHalf[0] = addr >> 16;
-	addrHalf[1] = addr & 0x0000FFFF;
 
 	//Split Data
 	dataHalf[0] = data >> 16;
 	dataHalf[1] = data & 0x0000FFFF;
 
-    uint8_t count = 1;
-	do
-	{
-	    unlockFlash();
+    unlockFlash();
 
-	    uint32_t flashcr;
-	    if (apRead(REG_FPEC_FLASH_CR, flashcr))
-	    {
-	        apWrite(REG_FPEC_FLASH_CR, flashcr &= ~1);  // ensure PER is low
-	        apWrite(REG_FPEC_FLASH_CR, flashcr &= ~2);  // ensure MER is low
-	        apWrite(REG_FPEC_FLASH_CR, flashcr |= 0);   // set PG bit
+    uint32_t flashcr;
+    if (apRead(REG_FPEC_FLASH_CR, flashcr))
+    {
+        apWrite(REG_FPEC_FLASH_CR, flashcr &= ~1);  // ensure PER is low
+        apWrite(REG_FPEC_FLASH_CR, flashcr &= ~2);  // ensure MER is low
+        apWrite(REG_FPEC_FLASH_CR, flashcr |= 0);   // set PG bit
 
-	        //Perform the data write (half-word) at the desired address
-	        memStoreHalf(addrHalf[count], dataHalf[count]);
+        //Perform the data write (half-word) at the desired address
+        memStoreHalf(addr, dataHalf[0]);
+        memStoreHalf(addr + 4, dataHalf[1]);
 
-	        flashWait();
-	    }else{
-	    	return false;
-	    }
-	    count--;
-	}while(count);
+        flashWait();
+    }else{
+    	return false;
+    }
 
 	return true;
 }

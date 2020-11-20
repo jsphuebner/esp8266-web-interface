@@ -69,6 +69,8 @@ public:
 
     // Progaramming SRAM with flashloader
     bool flashloaderSRAM();
+    bool flashloaderRUN(uint32_t addr, unsigned count);
+    bool writeBufferSRAM(uint32_t addr, const uint32_t *data, unsigned count);
 
     // Unlocking the Flash memory
     void unlockFlash();
