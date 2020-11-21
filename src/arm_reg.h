@@ -5,10 +5,15 @@
 #pragma once
 
 // Cortex M3 Memory Access Port
-#define MEMAP_BANK_0  0x00000000       					// BANK 0 => CSW, TAR, Reserved, DRW
-#define MEMAP_BANK_1  0x00000001						// BANK 1 => BD0, BD1, BD2, BD3
+#define MEMAP_BANK_0				0x00000000       	// BANK 0 => CSW, TAR, Reserved, DRW
+#define MEMAP_BANK_1  				0x00000001			// BANK 1 => BD0, BD1, BD2, BD3
+#define MEMAP_SRAM_START			0x20000000			// RAM start
+#define MEMAP_SRAM_END				0x200003FF			// RAM end
+#define MEMAP_FLASH_BANK1_START		0x08000000			// FLASH start
+//#define MEMAP_FLASH_BANK2_START	0x08080000			// STM32F103 does not reach there
 
 // Flash program and erase controller (FPEC), PM0075 manual STM32F10xxx Flash memory
+#define REG_FPEC_FLASH_BANK2_OFS 	0x40 				//If SRAM > 1024 and target address is over 0x08080000, All FPEC Registers offset +0x40 e.g. 0x40022040
 #define REG_FPEC_FLASH_ACR			0x40022000			//Flash access control register
 #define REG_FPEC_FLASH_KEYR 		0x40022004 			//FPEC key register
 #define REG_FPEC_FLASH_OPTKEYR 		0x40022008 			//Option byte key register

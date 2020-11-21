@@ -72,8 +72,11 @@ public:
     bool flashloaderRUN(uint32_t addr, unsigned count);
     bool writeBufferSRAM(uint32_t addr, const uint32_t *data, unsigned count);
 
+    // Locking the Flash memory
+    bool lockFlash();
+
     // Unlocking the Flash memory
-    void unlockFlash();
+    bool unlockFlash();
 
     int flashWait();
 
@@ -85,6 +88,10 @@ public:
 
     // Writes to flash (and erase operations)
     bool flashWrite(uint32_t addr, uint32_t data);
+
+    //Flash memory protection
+    bool flashProtectionCheck();
+    bool flashProtectionUnlock();
 
     // CPU register operations, when halted (via DCRSR)
     bool regWrite(unsigned num, uint32_t data);
@@ -212,6 +219,24 @@ public:
         CSW_DBGSWENABLE     = 1 << 31
     };
 
+    // FPEC Flash CR bits
+    enum FlashCRBit {
+        FLASH_CR_PG       = (1 << 0), //Programming
+        FLASH_CR_PER      = (1 << 1), //Pageerase
+        FLASH_CR_MER      = (1 << 2), //Masserase
+        FLASH_CR_STRT     = (1 << 6), //Start
+        FLASH_CR_OPTWRE   = (1 << 9), //Option bytes write enable
+        FLASH_CR_PSIZE_8  = (0 << 8),
+        FLASH_CR_PSIZE_16 = (1 << 8),
+        FLASH_CR_PSIZE_32 = (2 << 8),
+        FLASH_CR_PSIZE_64 = (3 << 8),
+        FLASH_CR_LOCK     = (1 << 31) //Lock 0x0080
+    };
+
+    inline uint32_t FLASH_CR_SNB(uint8_t sector) {
+        return sector << 3;
+    }
+    
     static const unsigned CSW_DEFAULTS = CSW_DBGSWENABLE | CSW_MASTER_DEBUG | CSW_HPROT;
     static const unsigned DEFAULT_RETRIES = 50;
 

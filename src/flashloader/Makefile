@@ -7,9 +7,12 @@
 CC = /opt/local/gcc-arm-none-eabi-8-2018-q4-major/bin/arm-none-eabi-gcc
 CFLAGS = -mcpu=Cortex-M3 -Tlinker.ld -ffreestanding -nostdlib
 
-all: stm32f0.o
+all: stm32x.o stm32f0.o
 
-stm32vl.o: stm32f0.s
+stm32x.o: stm32x.s
+	$(CC) stm32x.s $(CFLAGS)  -o stm32x.o
+
+stm32f0.o: stm32f0.s
 	$(CC) stm32f0.s $(CFLAGS)  -o stm32f0.o
 
 clean:
