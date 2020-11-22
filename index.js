@@ -419,6 +419,20 @@ function uploadFile()
 	xmlhttp.send(fd);
 }
 
+/** @brief hard-reset SWD, different from soft-reset*/
+function resetSWD()
+{		
+	var xhr = new XMLHttpRequest();
+	xhr.onload = function()
+	{
+		document.getElementById("swdbar").style.width = "100%";
+		document.getElementById("swdbar").innerHTML = "<p>Hard-Reset</p>";
+		updateTables();
+	};
+	xhr.open('GET', '/swd/reset?hard', true);
+	xhr.send();
+}
+
 /** @brief uploads file to web server, Flash using Serial-Wire-Debug. Start address bootloader = 0x08000000, firmware = 0x08001000*/
 function uploadSWDFile() 
 {

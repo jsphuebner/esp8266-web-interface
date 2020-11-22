@@ -503,8 +503,16 @@ void setup(void){
   });
   server.on("/swd/reset", []() {
     if (swd.begin()) {
+      bool debugHalt = swd.debugHalt();
+      bool debugReset = false;
+      if (server.hasArg("hard")) {
+        swd.memStore(0xE000ED0C, 0x05FA0004);
+        debugReset = true;
+      } else {
+        debugReset = swd.debugReset();
+      }
       char output[128];
-      snprintf(output, sizeof output, "{\"halt\": \"%s\", \"reset\": \"%s\"}", swd.debugHalt() ? "true" : "false", swd.debugReset() ? "true" : "false");
+      snprintf(output, sizeof output, "{\"halt\": \"%s\", \"reset\": \"%s\"}", debugHalt ? "true" : "false", debugReset ? "true" : "false");
       server.send(200, "application/json", String(output));
     } else {
       server.send(200, "text/plain", "SWD Error");
@@ -743,12 +751,12 @@ void setup(void){
 
           fs.close();
           SPIFFS.remove("/" + filename);
-          
+
           swd.flashFinalize(addr);
           swd.debugHaltOnReset(0);
-          if(addr == 0x08000000) {
+          if (addr == 0x08000000) {
             swd.debugReset(); //soft-reset
-          }else{
+          } else {
             swd.memStore(0xE000ED0C, 0x05FA0004); //hard-reset
           }
 
