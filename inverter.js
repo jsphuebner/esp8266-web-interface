@@ -43,17 +43,19 @@ var inverter = {
 		var cmd = includeHidden ? "json hidden" : "json";
 		
 		inverter.sendCmd(cmd, function(reply) {
-			var params = JSON.parse(reply);
-			
-			for (var name in params)
-			{
-				var param = params[name];
-				param.enums = inverter.parseEnum(param.unit);
+			var params = {};
+			try {
+				params = JSON.parse(reply);
 				
-				if (name == "version")
-					inverter.firmwareVersion = parseFloat(param.value);
-			}
-			
+				for (var name in params)
+				{
+					var param = params[name];
+					param.enums = inverter.parseEnum(param.unit);
+					
+					if (name == "version")
+						inverter.firmwareVersion = parseFloat(param.value);
+				}
+			} catch(ex) {}
 			if (replyFunc) replyFunc(params);
 		});
 	},

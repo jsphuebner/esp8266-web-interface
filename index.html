@@ -66,8 +66,11 @@
     <input id="swdfile" name="swdfile" type="file" onchange="fileSelected();" accept=".bin" />
     <input type="button" onclick="uploadSWDFile();" value="Upload" />
 </form>
+<div id="progress" class="graph">
+<div id="swdbar" style="width: 0"></div>
+</div>
 <br/><br/>
-<a href="/swd/zero">Erase Entire Flash</a> | <a href="/swd/bin?bootloader">Download Bootloader</a> | <a href="/swd/bin?flash">Download Flash</a>
+<a href="/swd/zero" target="_blank">Erase Entire Flash</a> | <a href="/swd/bin?bootloader">Download Bootloader</a> | <a href="/swd/bin?flash">Download Flash</a>
 
 <h2 id="parameters">Parameters</h2>
 <p><a href="https://openinverter.org/wiki/Parameters" target="_blank">Parameter Reference</a>

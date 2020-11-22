@@ -287,8 +287,8 @@ bool ARMDebug::flashloaderRUN(uint32_t addr, unsigned count)
     // Flashloader Variables
     // ----------------------
     // Communication implemented by using fixed-address variables that both parties check (flashloader <-> CPU R0, R1, R2, R3)
-    Serial.printf("Flasloader Buffer Start %08x\n", buf_addr);
-    Serial.printf("Flasloader Page Count %d\n", count / 2);
+    log(LOG_NORMAL,"Flasloader Buffer Start %08x\n", buf_addr);
+    log(LOG_NORMAL, "Flasloader Page Count %d\n", count / 2);
     
     //OpenOCD stm32x.h
     regWrite(0, buf_addr);    // Source
@@ -313,33 +313,25 @@ bool ARMDebug::flashloaderRUN(uint32_t addr, unsigned count)
     regRead(2, r2);
     regRead(3, r3);
     regRead(15, r15);
-    Serial.printf("R0:%08x R1:%08x R2:%08x R3:%08x R15:%08x \n", r0, r1, r2, r3, r15);
+    log(LOG_NORMAL, "R0:%08x R1:%08x R2:%08x R3:%08x R15:%08x \n", r0, r1, r2, r3, r15);
 
     unlockFlash();
 
     //Run code
     memStore(REG_SCB_DHCSR, 0xA05F0000);
+
+    flashWait();
 }
 
-bool ARMDebug::writeBufferSRAM(uint32_t addr, const uint32_t *data, unsigned count)
+bool ARMDebug::writeBufferSRAM(uint32_t addr, const uint8_t *data, unsigned count)
 {
     // Write the buffer right after the loader
     uint32_t i, buf_addr = MEMAP_SRAM_START + sizeof(flashloader_raw) + addr; //flashloader end address
 
     for (i = 0; i < count; i++)
     {
-        //Serial.printf("%08x\n", buf_addr + (i * 4));
-        memStore(buf_addr + (i * 4), data[i]);
-        /*
-        memStoreHalf(buf_addr + (i * 2), data[i] >> 16);
-        memStoreHalf(buf_addr + (i * 2) + 2, data[i] & 0x0000FFFF);
-        */
-        /*
-        memStoreByte(buf_addr + (i * 4) + 0, (data[i] >> 0)  & 0xFF);
-        memStoreByte(buf_addr + (i * 4) + 1, (data[i] >> 8)  & 0xFF);
-        memStoreByte(buf_addr + (i * 4) + 2, (data[i] >> 16)  & 0xFF);
-        memStoreByte(buf_addr + (i * 4) + 3, (data[i] >> 24)  & 0xFF);
-        */
+        memStoreByte(buf_addr + i, data[i]);
+        memWait();
     }
 }
 
@@ -364,28 +356,20 @@ bool ARMDebug::unlockFlash()
     uint32_t flashlock;
 
 	//apRead(REG_FPEC_FLASH_CR, flashlock);
-	//Serial.printf("Flash Unlock Check %08x\n",flashlock);
+    //log(LOG_NORMAL, "Flash Unlock Check %08x\n",flashlock);
 
 	//if (flashlock & FLASH_CR_LOCK) {
     	/*
 	    An unlocking sequence should be written to the FLASH_KEYR register to open up the FPEC block.
 	    This sequence consists of two write cycles, where two key values (KEY1 and KEY2) are written to the FLASH_KEYR address
 	    */
-        memStore(REG_FPEC_FLASH_KEYR, REG_FPEC_KEY_KEY1); //First Write Cycles
-        memStore(REG_FPEC_FLASH_KEYR, REG_FPEC_KEY_KEY2); //First Write Cycles
-        memStore(REG_FPEC_FLASH_KEYR, REG_FPEC_KEY_KEY1); //Second Write Cycles
-        memStore(REG_FPEC_FLASH_KEYR, REG_FPEC_KEY_KEY2); //Second Write Cycles
-	    flashWait();
-
+        memStore(REG_FPEC_FLASH_KEYR, REG_FPEC_KEY_KEY1);
+        memStore(REG_FPEC_FLASH_KEYR, REG_FPEC_KEY_KEY2);
+        flashWait();
 	    //Authorize the programming of the option bytes by writing the same set of KEYS (KEY1 and KEY2) to the FLASH_OPTKEYR register
 	    //memStore(REG_FPEC_FLASH_OPTKEYR, REG_FPEC_KEY_KEY1);
 	    //memStore(REG_FPEC_FLASH_OPTKEYR, REG_FPEC_KEY_KEY2);
         //flashWait();
-
-		apRead(REG_FPEC_FLASH_CR, flashlock);
-		Serial.printf("Flash Unlock Verify %08x\n",flashlock);
-		if (flashlock & FLASH_CR_LOCK)
-			return false;
     //}
     //Any wrong sequence locks up the FPEC block and FLASH_CR register until the next reset.
 
@@ -397,7 +381,7 @@ int ARMDebug::flashWait()
 	//Programming error flags. Cleared by writing this value into FLASH_CR
 	const uint32_t FLASH_SR_ERROR_FLAGS = 0xF0;
 	const uint32_t FLASH_SR_BUSY = 1<<16;
-    const uint32_t FLASH_SR_WRPRTERR = 2<<16;
+    const uint32_t FLASH_SR_WRPRTERR = 4;
 
     uint32_t timeout = 10000;
     uint32_t start = millis();
@@ -406,20 +390,20 @@ int ARMDebug::flashWait()
     for (;;)
 	{
 		apRead(REG_FPEC_FLASH_SR, status);
-		if (!(status & FLASH_SR_BUSY))
-			break;
         //if (status & FLASH_SR_WRPRTERR)
         //    return -2;
+        if (!(status & FLASH_SR_BUSY))
+            break;
 		if (millis()-start > timeout)
 		{
-			Serial.printf("Flash Wait Timeout %08x\n",status);
+            log(LOG_ERROR, "Flash Wait Timeout %08x\n",status);
 			return -1;
 		}
 	}
 	if (status & FLASH_SR_ERROR_FLAGS)
 	{
 		// clear the errors
-		apWrite(REG_FPEC_FLASH_SR, status & ~FLASH_SR_ERROR_FLAGS);
+		memStore(REG_FPEC_FLASH_SR, status & ~FLASH_SR_ERROR_FLAGS);
 	}
 
     return 0;
@@ -427,84 +411,42 @@ int ARMDebug::flashWait()
 
 bool ARMDebug::flashEraseAll()
 {
-	flashWait();
-
     unlockFlash();
 
-    uint32_t flashcr = 0x00000000;
-    
+    uint32_t flashcr;
     if (apRead(REG_FPEC_FLASH_CR, flashcr))
     {
-        Serial.printf("FLASH_CR Before %08x\n",flashcr);
-
+        log(LOG_NORMAL, "FLASH_CR Before %08x\n",flashcr);
         flashcr &= ~FLASH_CR_PG;    // ensure PG bit low
         flashcr &= ~FLASH_CR_PER;   // ensure PER is low
-        flashcr |=  FLASH_CR_MER;   // set MER bit
-        flashcr |=  FLASH_CR_STRT;  // set STRT bit
+        log(LOG_NORMAL, "FLASH_CR After %08x\n",flashcr);
 
-        Serial.printf("FLASH_CR After %08x\n",flashcr);
-
-        //apWrite(REG_FPEC_FLASH_CR, flashcr);
-        memStore(REG_FPEC_FLASH_CR, flashcr);
+        memStore(REG_FPEC_FLASH_CR, flashcr |=  FLASH_CR_MER); // set MER bit
+        memStore(REG_FPEC_FLASH_CR, flashcr |=  FLASH_CR_STRT); // set STRT bit
 
         flashWait();
 
         return true;
     }
-    
-    //apWrite(REG_FPEC_FLASH_CR, 0x00000044);
-    //apWrite(REG_FPEC_FLASH_CR, FLASH_CR_PER | FLASH_CR_STRT | FLASH_CR_SNB(0));
-
-    flashWait();
 
     return false;
 }
 
-bool ARMDebug::flashProtectionCheck()
-{
-	flashWait();
-
-    unlockFlash();
-
-    //TODO: Get info from the Option byte register (FLASH_OBR)
-
-	uint32_t rdp;
-	if (apRead(REG_FPEC_FLASH_WRPR, rdp))
-    {
-   		Serial.printf("RDP Status %08x\n", rdp);
-   	}
-   	return false;
-}
-
-bool ARMDebug::flashProtectionUnlock()
-{
-	//When the read protection option byte is altered to a memory-unprotect value, a mass erase is performed.
-
-	flashWait();
-
-    unlockFlash();
-
-	apWrite(REG_FPEC_FLASH_CR, FLASH_CR_OPTWRE | FLASH_CR_STRT);
-	apWrite(REG_FPEC_FLASH_WRPR, REG_FPEC_KEY_RDPRT); ///???
-
-	flashWait();
-}
-
 bool ARMDebug::flashErase(uint32_t addr)
 {
-	flashWait();
-
     unlockFlash();
 
     uint32_t flashcr;
-
     if (apRead(REG_FPEC_FLASH_CR, flashcr))
     {
-        apWrite(REG_FPEC_FLASH_CR, flashcr &= ~0);  // ensure PG bit low
-        apWrite(REG_FPEC_FLASH_CR, flashcr &= ~2);  // ensure MER is low
-        apWrite(REG_FPEC_FLASH_CR, flashcr |= 1);   // set PER bit
-        apWrite(REG_FPEC_FLASH_AR, addr);
-        apWrite(REG_FPEC_FLASH_CR, flashcr |= 6);   // set STRT bit
+        log(LOG_NORMAL, "FLASH_CR Before %08x\n",flashcr);
+        flashcr &= ~FLASH_CR_PG;    // ensure PG bit low
+        flashcr &= ~FLASH_CR_MER;   // ensure MER is low
+        log(LOG_NORMAL, "FLASH_CR After %08x\n",flashcr);
+
+        memStore(REG_FPEC_FLASH_CR, flashcr |= FLASH_CR_PER);   // set PER bit
+        memStore(REG_FPEC_FLASH_AR, addr);
+        memStore(REG_FPEC_FLASH_CR, flashcr |= FLASH_CR_STRT);  // set STRT bit
 
         flashWait();
         return true;
@@ -528,7 +470,7 @@ bool ARMDebug::flashWrite(uint32_t addr, uint32_t data)
 
         //Perform the data write (half-word) at the desired address
         memStoreHalf(addr, data >> 16);
-        memStoreHalf(addr + 4, data & 0x0000FFFF);
+        memStoreHalf(addr + 2, data & 0x0000FFFF);
 
         flashWait();
     }else{

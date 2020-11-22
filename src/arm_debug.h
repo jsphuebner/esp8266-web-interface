@@ -70,7 +70,7 @@ public:
     // Progaramming SRAM with flashloader
     bool flashloaderSRAM();
     bool flashloaderRUN(uint32_t addr, unsigned count);
-    bool writeBufferSRAM(uint32_t addr, const uint32_t *data, unsigned count);
+    bool writeBufferSRAM(uint32_t addr, const uint8_t *data, unsigned count);
 
     // Locking the Flash memory
     bool lockFlash();
@@ -78,6 +78,7 @@ public:
     // Unlocking the Flash memory
     bool unlockFlash();
 
+    // Wait for FPEC_FLASH_CR to change
     int flashWait();
 
     // Flash Mass Erase
@@ -88,10 +89,6 @@ public:
 
     // Writes to flash (and erase operations)
     bool flashWrite(uint32_t addr, uint32_t data);
-
-    //Flash memory protection
-    bool flashProtectionCheck();
-    bool flashProtectionUnlock();
 
     // CPU register operations, when halted (via DCRSR)
     bool regWrite(unsigned num, uint32_t data);

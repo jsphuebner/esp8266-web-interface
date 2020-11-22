@@ -419,7 +419,7 @@ function uploadFile()
 	xmlhttp.send(fd);
 }
 
-/** @brief uploads file to web server, Flash using Single-Wire-Debug. Start address bootloader = 0x08000000, firmware = 0x08001000*/
+/** @brief uploads file to web server, Flash using Serial-Wire-Debug. Start address bootloader = 0x08000000, firmware = 0x08001000*/
 function uploadSWDFile() 
 {
 	var xmlhttp = new XMLHttpRequest();
@@ -429,24 +429,50 @@ function uploadSWDFile()
 		var fd = form.getFormData();
 	else
 		var fd = new FormData(form);
-	var file = document.getElementById('swdfile').files[0].name;
+	var file = document.getElementById('swdfile').files[0];
 
-	xmlhttp.onload = function() 
+	xmlhttp.onload = function()
 	{
-		var xhr = new XMLHttpRequest();
-	    xhr.onload = function() {
-	        if (xhr.status == 200) {
-	            var log = xhr.responseText;
-	            console.log(log);
-	        }
-	    }
-		if (file.endsWith('loader.bin'))
-		{
-			xhr.open('GET', '/swd/mem/flash?bootloader&file=' + file, true);
-		}else{
-			xhr.open('GET', '/swd/mem/flash?flash&file=' + file, true);
-		}
-    	xhr.send();
+		document.getElementById("swdbar").style.width = "100%";
+		document.getElementById("swdbar").innerHTML = "<p>SWD Flashing ...</p>";
+		
+		setTimeout(function() {
+			var xhr = new XMLHttpRequest();
+			xhr.seenBytes = 0;
+			xhr.seenTotalPages = 0;
+			xhr.onreadystatechange = function() {
+			  if(xhr.readyState == 3) {
+			    var data = xhr.response.substr(xhr.seenBytes);
+			    console.log(data);
+
+			    if(data.indexOf("Error") != -1) {
+			    	document.getElementById("swdbar").style.width = "100%";
+					document.getElementById("swdbar").innerHTML = "<p>" + data + "</p>";
+			    }else{
+				    var s = data.split('\n');
+					xhr.seenTotalPages += (s.length - 1) * 16;
+					//console.log("pages: " + s.length + " Size: " + ((s.length -1) * 16));
+
+				    var progress = Math.round(100 * xhr.seenTotalPages / file.size);
+				    document.getElementById("swdbar").style.width = progress + "%";
+				    if(progress == 100) {
+				    	document.getElementById("swdbar").innerHTML = "<p>" +  progress + "% (Hard Reset Required)</p>";
+				    }else{
+				    	document.getElementById("swdbar").innerHTML = "<p>" +  progress + "%</p>";
+				    }
+					
+				    xhr.seenBytes = xhr.responseText.length;
+				}
+			  }
+			};
+			if (file.name.endsWith('loader.bin'))
+			{
+				xhr.open('GET', '/swd/mem/flash?bootloader&file=' + file.name, true);
+			}else{
+				xhr.open('GET', '/swd/mem/flash?flash&file=' + file.name, true);
+			}
+	    	xhr.send();
+    	}, 5000);
 	}
 	xmlhttp.open("POST", "/edit");
 	xmlhttp.send(fd);

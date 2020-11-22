@@ -479,7 +479,7 @@ void setup(void){
     swd.memLoad(REG_U_ID + 0x8, off8);
 
     char output[128];
-    snprintf(output, sizeof output, "{\"uid\": \"0x%02x-0x%02x-0x%04x-0x%04x\" }", off0, off2, off4, off8);
+    snprintf(output, sizeof output, "{\"uid\": \"0x%04x-0x%04x-0x%08x-0x%08x\" }", off0, off2, off4, off8);
     server.send(200, "application/json", String(output));
   });
   server.on("/swd/halt", []() {
@@ -515,13 +515,6 @@ void setup(void){
 
     if (swd.begin()) {
 
-      //Important Note: Writable SRAM Limited! From 0x20000000 to 0x200003ff
-      /*
-        AN2606 Application note, STM32F101xx and STM32F103xx system memory boot mode, Section 1.6 - Using the bootloader
-        The bootloader is executed from the System memory Flash memory area, however it uses the first 1024 bytes of RAM for variables and buffers,
-        that is from 0x20000000 to 0x200003FF. So when downloading code into RAM, the user has to consider only the remaining RAM memory.
-      */
-
       //Testing
       addr = 0x08000000;
       //addrEnd = 0x08000fff;
@@ -530,10 +523,15 @@ void setup(void){
       uint32_t addrTotal = addrEnd - addr;
       server.setContentLength(addrTotal * 5); //CONTENT_LENGTH_UNKNOWN
       server.send(200, "text/plain", "");
-      
+
+      swd.debugHalt();
+      swd.debugHaltOnReset(1);
+      swd.debugReset();
+      //swd.begin();
+     
       //METHOD #1
       swd.flashEraseAll();
-      
+
       //METHOD #2
       // Before programming internal SRAM, the ARM Cortex-M3 should first be reset and halted.
       /*
@@ -541,12 +539,8 @@ void setup(void){
         2. Write 1 to bit VC_CORERESET in DEMCR. This will enable halt-on-reset
         3. Write 0xFA050004 to AIRCR. This will reset the core.
       */
-      /*
-      swd.debugHalt();
-      swd.debugHaltOnReset(1);
-      swd.debugReset();
-      swd.flashloaderSRAM();
-      */
+      //swd.flashloaderSRAM();
+      
       uint32_t addrNext = addr;
       uint32_t addrIndex = 0;
       uint32_t addrBuffer = 0x00000000; //Used by METHOD #2
@@ -558,12 +552,12 @@ void setup(void){
 
         uint32_t eraseBuffer[4];
         memset(eraseBuffer, 0xff, sizeof(eraseBuffer));
-        
+
         for (int i = 0; i < 4; i++)
         {
           //METHOD #2
           //swd.writeBufferSRAM(addrBuffer, eraseBuffer, 1);
-        
+
           //METHOD #3
           //swd.flashWrite(addrNext, eraseBuffer[i]);
 
@@ -583,9 +577,10 @@ void setup(void){
 
       //METHOD #2
       //swd.flashloaderRUN(addr, addrBuffer);
-      //swd.debugHaltOnReset(0); //Don't do this too soon
-      //swd.debugReset();
-
+      
+      swd.debugHaltOnReset(0);
+      swd.debugReset();
+      
       server.sendContent(""); //end stream
 
     } else {
@@ -593,8 +588,8 @@ void setup(void){
     }
   });
   server.on("/swd/hex", []() {
-    uint32_t idcode;
-    if (swd.begin() && swd.getIDCODE(idcode)) {
+
+    if (swd.begin()) {
 
       if (server.hasArg("bootloader")) {
         addr = 0x08000000;
@@ -604,7 +599,7 @@ void setup(void){
         addrEnd = 0x0801ffff;
       } else if (server.hasArg("ram")) {
         addr = 0x20000000;
-        addrEnd = 0x200003ff;
+        addrEnd = 0x200003ff; //Note: Read is limited to 0x200003ff but you can write to higher portion of RAM
       }
       server.setContentLength(addrEnd - addr * 5); //CONTENT_LENGTH_UNKNOWN
       server.send(200, "text/plain", "");
@@ -632,8 +627,7 @@ void setup(void){
   });
   server.on("/swd/bin", []() {
 
-    uint32_t idcode;
-    if (swd.begin() && swd.getIDCODE(idcode)) {
+    if (swd.begin()) {
 
       String filename = "flash.bin";
 
@@ -644,13 +638,9 @@ void setup(void){
       } else if (server.hasArg("flash")) {
         addr = 0x08001000;
         addrEnd = 0x0801ffff;
-      } else if (server.hasArg("ram")) {
-        addr = 0x20000000;
-        addrEnd = 0x200003ff;
-        filename = "ram.bin";
       }
       server.sendHeader("Content-Disposition", "attachment; filename = \"" + filename + "\"");
-      server.setContentLength(addrEnd - addr * 5); //CONTENT_LENGTH_UNKNOWN
+      server.setContentLength(addrEnd - addr); //CONTENT_LENGTH_UNKNOWN
       server.send(200, "application/octet-stream", "");
 
       uint32_t addrNext = addr;
@@ -660,17 +650,14 @@ void setup(void){
 
         uint8_t* buff;
         swd.binDump(addrNext, buff);
-
-        char output[sizeof(buff) / 4];
-        strcpy(output, (const char*)buff);
-        server.sendContent(output, sizeof(output));
+        server.sendContent(String((char *)buff));
 
         yield(); //Prevent Reset by Watch-Dog
 
         addrNext++;
       } while (addrNext <= addrEnd);
 
-      server.sendContent(""); //end stream
+      //server.sendContent(""); //end stream
 
     } else {
       server.send(200, "text/plain", "SWD Error");
@@ -678,8 +665,9 @@ void setup(void){
   });
   server.on("/swd/mem/flash", []() {
 
-    uint32_t idcode;
-    if (swd.begin() && swd.getIDCODE(idcode)) {
+    char output[128];
+
+    if (swd.begin()) {
 
       if (server.hasArg("file")) {
 
@@ -691,33 +679,60 @@ void setup(void){
           addrEnd = 0x0801ffff;
         }
 
-        swd.debugHalt();
+        String filename = server.arg("file");
+        File fs = SPIFFS.open("/" + filename, "r");
+        if (fs)
+        {
+          server.setContentLength(addrEnd - addr * 5); //CONTENT_LENGTH_UNKNOWN
+          server.send(200, "text/plain", "");
+        
+          swd.debugHalt();
+          swd.debugHaltOnReset(1);
+          swd.debugReset();
+          //swd.begin();
+          
+          swd.flashloaderSRAM();
+        
+          uint32_t addrNext = addr;
+          uint32_t addrBuffer = 0x00000000;
+          while (fs.available() != 0)
+          {
+            //Serial.printf("------ %08x ------\n", addrNext);
+  
+            snprintf(output, sizeof output, "%08x:", addrNext);
+            server.sendContent(output);
+  
+            for (int i = 0; i < 4; i++)
+            {
+              char sramBuffer[4];
+              size_t len = fs.readBytes(sramBuffer, 4);
+              if(len == 0) //Fill rest of block with FF
+                memset(sramBuffer, 0xff, sizeof(sramBuffer));
+              swd.writeBufferSRAM(addrBuffer, (uint8_t*)sramBuffer, sizeof(sramBuffer));
+  
+              snprintf(output, sizeof output, " | %02x %02x %02x %02x", sramBuffer[0], sramBuffer[1], sramBuffer[2], sramBuffer[3]);
+              server.sendContent(output);
+  
+              addrNext += 4;
+              addrBuffer += 4;
+            }
+            server.sendContent("\n");
+  
+            yield(); //Prevent Reset by Watch-Dog
+          }
+          swd.flashloaderRUN(addr, addrBuffer);
+  
+          fs.close();
+          SPIFFS.remove("/" + filename);
+          
+          //TODO: Delay Reset (otherwise ask user for manual hard-reset)
+          swd.debugHaltOnReset(0);
+          //swd.debugReset();
 
-        server.setContentLength(CONTENT_LENGTH_UNKNOWN);
-        server.send(200, "text/plain", "");
-
-        File file = SPIFFS.open(server.arg("file"), "r");
-
-        uint32_t addrNext = addr;
-        do {
-
-          //Serial.printf("------ %08x ------\n", addrNext);
-
-          swd.memStoreByte(addr, file.read());
-
-          char output[128];
-          snprintf(output, sizeof output, "%08x", addrNext);
-          server.sendContent(output);
-
-          yield(); //Prevent Reset by Watch-Dog
-
-          addrNext++;
-        } while (addrNext <= addrEnd);
-
-        file.close();
-
-        server.sendContent(""); //end stream
-
+          server.sendContent(""); //end stream
+        }else{
+          server.send(200, "text/plain", "File Error");
+        }
       } else {
         server.send(200, "text/plain", ".bin File Required");
       }
