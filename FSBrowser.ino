@@ -527,8 +527,8 @@ void setup(void){
       swd.debugHalt();
       swd.debugHaltOnReset(1);
       swd.debugReset();
-      //swd.begin();
-     
+      swd.unlockFlash();
+
       //METHOD #1
       swd.flashEraseAll();
 
@@ -540,7 +540,7 @@ void setup(void){
         3. Write 0xFA050004 to AIRCR. This will reset the core.
       */
       //swd.flashloaderSRAM();
-      
+
       uint32_t addrNext = addr;
       uint32_t addrIndex = 0;
       uint32_t addrBuffer = 0x00000000; //Used by METHOD #2
@@ -577,10 +577,10 @@ void setup(void){
 
       //METHOD #2
       //swd.flashloaderRUN(addr, addrBuffer);
-      
+
       swd.debugHaltOnReset(0);
       swd.debugReset();
-      
+
       server.sendContent(""); //end stream
 
     } else {
@@ -597,6 +597,7 @@ void setup(void){
       } else if (server.hasArg("flash")) {
         addr = 0x08001000;
         addrEnd = 0x0801ffff;
+        //addrEnd = 0x080011ff; //Quick Debug
       } else if (server.hasArg("ram")) {
         addr = 0x20000000;
         addrEnd = 0x200003ff; //Note: Read is limited to 0x200003ff but you can write to higher portion of RAM
@@ -685,52 +686,68 @@ void setup(void){
         {
           server.setContentLength(addrEnd - addr * 5); //CONTENT_LENGTH_UNKNOWN
           server.send(200, "text/plain", "");
-        
+
           swd.debugHalt();
           swd.debugHaltOnReset(1);
           swd.debugReset();
-          //swd.begin();
-          
-          swd.flashloaderSRAM();
-        
+          swd.unlockFlash();
+
+          const uint16_t PAGE_SIZE_BYTES = 1024;
           uint32_t addrNext = addr;
-          uint32_t addrBuffer = 0x00000000;
-          while (fs.available() != 0)
-          {
-            //Serial.printf("------ %08x ------\n", addrNext);
-  
-            snprintf(output, sizeof output, "%08x:", addrNext);
-            server.sendContent(output);
-  
-            for (int i = 0; i < 4; i++)
+          uint32_t addrIndex = addr;
+          do {
+
+            if (fs.available() == 0)
+              break;
+
+            swd.debugHalt();
+            swd.flashloaderSRAM();
+
+            uint32_t addrBuffer = 0x00000000;
+
+            //Serial.printf("------ %08x ------\n", addrIndex);
+
+            for (uint16_t p = 0; p < PAGE_SIZE_BYTES; p++)
             {
-              char sramBuffer[4];
-              size_t len = fs.readBytes(sramBuffer, 4);
-              if(len == 0) //Fill rest of block with FF
-                memset(sramBuffer, 0xff, sizeof(sramBuffer));
-              swd.writeBufferSRAM(addrBuffer, (uint8_t*)sramBuffer, sizeof(sramBuffer));
-  
-              snprintf(output, sizeof output, " | %02x %02x %02x %02x", sramBuffer[0], sramBuffer[1], sramBuffer[2], sramBuffer[3]);
+              if (fs.available() == 0)
+                break;
+
+              snprintf(output, sizeof output, "%08x:", addrNext);
               server.sendContent(output);
-  
-              addrNext += 4;
-              addrBuffer += 4;
+
+              for (int i = 0; i < 4; i++)
+              {
+                if (fs.available() == 0)
+                  break;
+
+                char sramBuffer[4];
+                fs.readBytes(sramBuffer, 4);
+                swd.writeBufferSRAM(addrBuffer, (uint8_t*)sramBuffer, sizeof(sramBuffer));
+
+                snprintf(output, sizeof output, " | %02x %02x %02x %02x", sramBuffer[0], sramBuffer[1], sramBuffer[2], sramBuffer[3]);
+                server.sendContent(output);
+
+                addrNext += 4;
+                addrBuffer += 4;
+              }
+              server.sendContent("\n");
+
+              yield(); //Prevent Reset by Watch-Dog
             }
-            server.sendContent("\n");
-  
-            yield(); //Prevent Reset by Watch-Dog
-          }
-          swd.flashloaderRUN(addr, addrBuffer);
-  
+            swd.flashloaderRUN(addrIndex, addrBuffer);
+            delay(2000); //swd.memWait();
+
+            addrIndex = addrNext;
+          } while (addrNext <= addrEnd);
+
           fs.close();
           SPIFFS.remove("/" + filename);
           
-          //TODO: Delay Reset (otherwise ask user for manual hard-reset)
           swd.debugHaltOnReset(0);
           //swd.debugReset();
 
           server.sendContent(""); //end stream
-        }else{
+        } else {
           server.send(200, "text/plain", "File Error");
         }
       } else {

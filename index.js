@@ -433,46 +433,41 @@ function uploadSWDFile()
 
 	xmlhttp.onload = function()
 	{
-		document.getElementById("swdbar").style.width = "100%";
-		document.getElementById("swdbar").innerHTML = "<p>SWD Flashing ...</p>";
-		
-		setTimeout(function() {
-			var xhr = new XMLHttpRequest();
-			xhr.seenBytes = 0;
-			xhr.seenTotalPages = 0;
-			xhr.onreadystatechange = function() {
-			  if(xhr.readyState == 3) {
-			    var data = xhr.response.substr(xhr.seenBytes);
-			    console.log(data);
+		var xhr = new XMLHttpRequest();
+		xhr.seenBytes = 0;
+		xhr.seenTotalPages = 0;
+		xhr.onreadystatechange = function() {
+		  if(xhr.readyState == 3) {
+		    var data = xhr.response.substr(xhr.seenBytes);
+		    console.log(data);
 
-			    if(data.indexOf("Error") != -1) {
-			    	document.getElementById("swdbar").style.width = "100%";
-					document.getElementById("swdbar").innerHTML = "<p>" + data + "</p>";
+		    if(data.indexOf("Error") != -1) {
+		    	document.getElementById("swdbar").style.width = "100%";
+				document.getElementById("swdbar").innerHTML = "<p>" + data + "</p>";
+		    }else{
+			    var s = data.split('\n');
+				xhr.seenTotalPages += (s.length - 1) * 16;
+				//console.log("pages: " + s.length + " Size: " + ((s.length -1) * 16));
+
+			    var progress = Math.round(100 * xhr.seenTotalPages / file.size);
+			    document.getElementById("swdbar").style.width = progress + "%";
+			    if(progress == 100) {
+			    	document.getElementById("swdbar").innerHTML = "<p>" +  progress + "% (STM32 Reset Required)</p>";
 			    }else{
-				    var s = data.split('\n');
-					xhr.seenTotalPages += (s.length - 1) * 16;
-					//console.log("pages: " + s.length + " Size: " + ((s.length -1) * 16));
-
-				    var progress = Math.round(100 * xhr.seenTotalPages / file.size);
-				    document.getElementById("swdbar").style.width = progress + "%";
-				    if(progress == 100) {
-				    	document.getElementById("swdbar").innerHTML = "<p>" +  progress + "% (Hard Reset Required)</p>";
-				    }else{
-				    	document.getElementById("swdbar").innerHTML = "<p>" +  progress + "%</p>";
-				    }
-					
-				    xhr.seenBytes = xhr.responseText.length;
-				}
-			  }
-			};
-			if (file.name.endsWith('loader.bin'))
-			{
-				xhr.open('GET', '/swd/mem/flash?bootloader&file=' + file.name, true);
-			}else{
-				xhr.open('GET', '/swd/mem/flash?flash&file=' + file.name, true);
+			    	document.getElementById("swdbar").innerHTML = "<p>" +  progress + "%</p>";
+			    }
+				
+			    xhr.seenBytes = xhr.responseText.length;
 			}
-	    	xhr.send();
-    	}, 5000);
+		  }
+		};
+		if (file.name.endsWith('loader.bin'))
+		{
+			xhr.open('GET', '/swd/mem/flash?bootloader&file=' + file.name, true);
+		}else{
+			xhr.open('GET', '/swd/mem/flash?flash&file=' + file.name, true);
+		}
+    	xhr.send();
 	}
 	xmlhttp.open("POST", "/edit");
 	xmlhttp.send(fd);

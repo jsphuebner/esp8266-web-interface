@@ -315,7 +315,7 @@ bool ARMDebug::flashloaderRUN(uint32_t addr, unsigned count)
     regRead(15, r15);
     log(LOG_NORMAL, "R0:%08x R1:%08x R2:%08x R3:%08x R15:%08x \n", r0, r1, r2, r3, r15);
 
-    unlockFlash();
+    //unlockFlash();
 
     //Run code
     memStore(REG_SCB_DHCSR, 0xA05F0000);
@@ -353,10 +353,11 @@ bool ARMDebug::unlockFlash()
     //https://ioprog.com/2018/05/23/using-flash-memory-on-the-stm32f103
 
     //FLASH_CR default value is 0x80000000. Bit 7 is reset by hardware after detecting unlock sequence. So expected value is 0x00
+    /*
     uint32_t flashlock;
-
-	//apRead(REG_FPEC_FLASH_CR, flashlock);
-    //log(LOG_NORMAL, "Flash Unlock Check %08x\n",flashlock);
+	apRead(REG_FPEC_FLASH_CR, flashlock);
+    log(LOG_NORMAL, "Flash Unlock Check %08x\n",flashlock);
+    */
 
 	//if (flashlock & FLASH_CR_LOCK) {
     	/*
