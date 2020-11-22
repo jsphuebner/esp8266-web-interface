@@ -69,6 +69,7 @@ public:
 
     // Progaramming SRAM with flashloader
     bool flashloaderSRAM();
+    bool flashFinalize(uint32_t addr);
     bool flashloaderRUN(uint32_t addr, unsigned count);
     bool writeBufferSRAM(uint32_t addr, const uint8_t *data, unsigned count);
 
@@ -181,6 +182,21 @@ public:
         RDBUFF = 0xC
     };
 
+    // DCB_DHCSR bit and field definitions
+    enum DCB_DHCSRBit {
+        DBGKEY      = (0xA05F << 16),
+        C_DEBUGEN   = (1 << 0),
+        C_HALT      = (1 << 1),
+        C_STEP      = (1 << 2),
+        C_MASKINTS  = (1 << 3),
+        S_REGRDY    = (1 << 16),
+        S_HALT      = (1 << 17),
+        S_SLEEP     = (1 << 18),
+        S_LOCKUP    = (1 << 19),
+        S_RETIRE_ST = (1 << 24),
+        S_RESET_ST  = (1 << 25)
+    };
+
     // CTRL/STAT bits
     enum CtrlStatBit {
         CSYSPWRUPACK = 1 << 31,
@@ -219,8 +235,8 @@ public:
     // FPEC Flash CR bits
     enum FlashCRBit {
         FLASH_CR_PG       = (1 << 0), //Programming
-        FLASH_CR_PER      = (1 << 1), //Pageerase
-        FLASH_CR_MER      = (1 << 2), //Masserase
+        FLASH_CR_PER      = (1 << 1), //Page erase
+        FLASH_CR_MER      = (1 << 2), //Mass erase
         FLASH_CR_STRT     = (1 << 6), //Start
         FLASH_CR_OPTWRE   = (1 << 9), //Option bytes write enable
         FLASH_CR_PSIZE_8  = (0 << 8),

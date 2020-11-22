@@ -262,7 +262,7 @@ bool ARMDebug::flashloaderRUN(uint32_t addr, unsigned count)
     uint32_t buf_addr = MEMAP_SRAM_START + sizeof(flashloader_raw); //flashloader end address
 
     // Update vector table entry in 0xe000ed08 to SRAM start position 0x20000000
-    memStore(REG_SCB_VTOR, MEMAP_SRAM_START); //Debugger to check the core VTOR register
+    //memStore(REG_SCB_VTOR, MEMAP_SRAM_START); //Debugger to check the core VTOR register
 
     // https://www.st.com/resource/en/programming_manual/cd00228163-stm32f10xxx-20xxx-21xxx-l1xxxx-cortex-m3-programming-manual-stmicroelectronics.pdf
 
@@ -321,6 +321,22 @@ bool ARMDebug::flashloaderRUN(uint32_t addr, unsigned count)
     memStore(REG_SCB_DHCSR, 0xA05F0000);
 
     flashWait();
+}
+
+bool ARMDebug::flashFinalize(uint32_t addr)
+{
+    uint32_t r13, r15;
+
+    // Set stack
+    apRead(addr, r13);
+    regWrite(15, r13);
+    // Set PC to the reset routine
+    apRead(addr + 4, r15);
+    regWrite(15, r15);
+
+    debugRun();
+
+    return true;
 }
 
 bool ARMDebug::writeBufferSRAM(uint32_t addr, const uint8_t *data, unsigned count)

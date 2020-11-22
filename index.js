@@ -439,7 +439,7 @@ function uploadSWDFile()
 		xhr.onreadystatechange = function() {
 		  if(xhr.readyState == 3) {
 		    var data = xhr.response.substr(xhr.seenBytes);
-		    console.log(data);
+		    //console.log(data);
 
 		    if(data.indexOf("Error") != -1) {
 		    	document.getElementById("swdbar").style.width = "100%";
@@ -451,11 +451,7 @@ function uploadSWDFile()
 
 			    var progress = Math.round(100 * xhr.seenTotalPages / file.size);
 			    document.getElementById("swdbar").style.width = progress + "%";
-			    if(progress == 100) {
-			    	document.getElementById("swdbar").innerHTML = "<p>" +  progress + "% (STM32 Reset Required)</p>";
-			    }else{
-			    	document.getElementById("swdbar").innerHTML = "<p>" +  progress + "%</p>";
-			    }
+			    document.getElementById("swdbar").innerHTML = "<p>" +  progress + "%</p>";
 				
 			    xhr.seenBytes = xhr.responseText.length;
 			}

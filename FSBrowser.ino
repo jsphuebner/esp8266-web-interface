@@ -415,6 +415,7 @@ void setup(void){
   //WIFI INIT
   WiFi.mode(WIFI_AP_STA);
   WiFi.setPhyMode(WIFI_PHY_MODE_11B);
+  WiFi.setOutputPower(25); //dbm
   WiFi.begin();
   sta_tick.attach(10, staCheck);
   
@@ -743,8 +744,13 @@ void setup(void){
           fs.close();
           SPIFFS.remove("/" + filename);
           
+          swd.flashFinalize(addr);
           swd.debugHaltOnReset(0);
-          //swd.debugReset();
+          if(addr == 0x08000000) {
+            swd.debugReset(); //soft-reset
+          }else{
+            swd.memStore(0xE000ED0C, 0x05FA0004); //hard-reset
+          }
 
           server.sendContent(""); //end stream
         } else {
