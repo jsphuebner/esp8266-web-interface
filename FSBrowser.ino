@@ -535,7 +535,7 @@ void setup(void){
 
       swd.debugHalt();
       swd.debugHaltOnReset(1);
-      swd.debugReset();
+      swd.reset();
       swd.unlockFlash();
 
       //METHOD #1
@@ -650,7 +650,7 @@ void setup(void){
         addrEnd = 0x0801ffff;
       }
       server.sendHeader("Content-Disposition", "attachment; filename = \"" + filename + "\"");
-      server.setContentLength(addrEnd - addr); //CONTENT_LENGTH_UNKNOWN
+      server.setContentLength(addrEnd - addr + 1); //CONTENT_LENGTH_UNKNOWN
       server.send(200, "application/octet-stream", "");
 
       uint32_t addrNext = addr;
@@ -667,7 +667,7 @@ void setup(void){
         addrNext++;
       } while (addrNext <= addrEnd);
 
-      //server.sendContent(""); //end stream
+      server.sendContent(""); //end stream
 
     } else {
       server.send(200, "text/plain", "SWD Error");
@@ -698,7 +698,7 @@ void setup(void){
 
           swd.debugHalt();
           swd.debugHaltOnReset(1);
-          swd.debugReset();
+          swd.reset();
           swd.unlockFlash();
 
           const uint16_t PAGE_SIZE_BYTES = 1024;
@@ -754,12 +754,8 @@ void setup(void){
 
           swd.flashFinalize(addr);
           swd.debugHaltOnReset(0);
-          if (addr == 0x08000000) {
-            swd.debugReset(); //soft-reset
-          } else {
-            swd.memStore(0xE000ED0C, 0x05FA0004); //hard-reset
-          }
-
+          swd.reset(); //hard-reset
+          
           server.sendContent(""); //end stream
         } else {
           server.send(200, "text/plain", "File Error");

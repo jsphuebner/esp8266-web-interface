@@ -52,6 +52,9 @@ public:
      */
     bool begin();
 
+    // Hard reset
+    bool reset();
+
     // Turn on debugging and enter halt state
     bool debugHalt();
 

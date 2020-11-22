@@ -79,6 +79,16 @@ bool ARMDebug::begin()
     return true;
 }
 
+bool ARMDebug::reset()
+{
+    //Force reset even if BOOT0 is tied to GND
+    if (apWrite(MEM_TAR, REG_SCB_AIRCR))
+        if (apWrite(MEM_DRW, 0x05FA0004))
+            return true;
+
+    return false;
+}
+
 bool ARMDebug::getIDCODE(uint32_t &idcode)
 {
     // Retrieve IDCODE
