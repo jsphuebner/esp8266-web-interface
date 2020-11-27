@@ -506,7 +506,7 @@ void setup(void){
       bool debugHalt = swd.debugHalt();
       bool debugReset = false;
       if (server.hasArg("hard")) {
-        swd.memStore(0xE000ED0C, 0x05FA0004);
+        swd.reset();
         debugReset = true;
       } else {
         debugReset = swd.debugReset();
@@ -523,11 +523,6 @@ void setup(void){
     char output[128];
 
     if (swd.begin()) {
-
-      //Testing
-      addr = 0x08000000;
-      //addrEnd = 0x08000fff;
-      addrEnd = 0x0801ffff;
 
       uint32_t addrTotal = addrEnd - addr;
       server.setContentLength(addrTotal * 5); //CONTENT_LENGTH_UNKNOWN
@@ -744,7 +739,7 @@ void setup(void){
               yield(); //Prevent Reset by Watch-Dog
             }
             swd.flashloaderRUN(addrIndex, addrBuffer);
-            delay(2000); //swd.memWait();
+            delay(2400); //Must wait for flashloader to finish
 
             addrIndex = addrNext;
           } while (addrNext <= addrEnd);
@@ -752,10 +747,9 @@ void setup(void){
           fs.close();
           SPIFFS.remove("/" + filename);
 
-          swd.flashFinalize(addr);
           swd.debugHaltOnReset(0);
           swd.reset(); //hard-reset
-          
+
           server.sendContent(""); //end stream
         } else {
           server.send(200, "text/plain", "File Error");
