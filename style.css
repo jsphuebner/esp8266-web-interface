@@ -61,8 +61,14 @@ div.navbar {
 	padding-right: 1em;
 	z-index: 100;
 	white-space: nowrap;
+    width:100%;
 }
-a.navbar { padding: 1em; border-left: 1px solid #ddd; vertical-align: center }
+a.navbar {
+    padding: 1em;
+    border-left: 1px solid #ddd;
+    vertical-align: center;
+    text-decoration: none;
+}
 h2 { padding-top: 2em; }
 input[type=number]{
     width: 6em;
@@ -74,6 +80,8 @@ body {
 	-webkit-text-size-adjust: none;
 	-moz-text-size-adjust: none;
 	-ms-text-size-adjust: none;
+    margin:0;
+    padding:0;
 }
 
 /*label { display: inline-block; width: 12em; }*/
