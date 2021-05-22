@@ -34,19 +34,16 @@
 
 
 	<div class="navbar">
-		<!--
-		<div class="navbar tablink" href="javascript:updateTables()"><img src="refresh.png" style="margin-top: -1em; margin-bottom: -8px; margin-right: 0.5em">Refresh</div>
-		<div style="float:left">
-		    <input type="checkbox" title="Keep refreshing until unchecked" id="autorefresh"><label for="autorefresh">Auto</label>
-		</div>
-	    -->
 	    <a class="tablink" onclick="openPage('dashboard', this, 'white')" style="background-color:white">DASHBOARD</a>
         <a class="tablink" onclick="openPage('commands', this, 'white')">COMMANDS</a>
 	    <a class="tablink" onclick="openPage('update', this, 'white')">UPDATE</a>
 	    <a class="tablink" onclick="openPage('parameters', this, 'white')">PARAMETERS</a>
 		<a class="tablink" onclick="openPage('spotvalues', this, 'white')">SPOT VALUES</a>
 		<a class="tablink" onclick="openPage('plot', this, 'white')">PLOT</a>
-
+		<a class="tablink" href="javascript:updateTables()"><img src="refresh.png" style="margin-top: -1em; margin-bottom: -8px; margin-right: 0.5em">Refresh</a>
+		<div style="float:left">
+		    <input type="checkbox" title="Keep refreshing until unchecked" id="autorefresh"><label for="autorefresh">Auto</label>
+		</div>
 	</div>
 
 	<!-- DASHBOARD -->
