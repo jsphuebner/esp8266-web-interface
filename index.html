@@ -30,6 +30,8 @@
 </head>
 <body onload="onLoad()">
 
+	<div id="content">
+
 
 	<div class="navbar">
 		<!--
@@ -37,22 +39,24 @@
 		<div style="float:left">
 		    <input type="checkbox" title="Keep refreshing until unchecked" id="autorefresh"><label for="autorefresh">Auto</label>
 		</div>
-	-->
-	    <a class="navbar tablink" onclick="openPage('dashboard', this, 'white')">DASHBOARD</a>
-        <a class="navbar tablink" onclick="openPage('commands', this, 'white')">COMMANDS</a>
-	    <a class="navbar tablink" onclick="openPage('update', this, 'white')">UPDATE</a>
-	    <a class="navbar tablink" onclick="openPage('parameters', this, 'white')">PARAMETERS</a>
-		<a class="navbar tablink" onclick="openPage('spotvalues', this, 'white')">SPOT VALUES</a>
-		<a class="navbar tablink" onclick="openPage('plot', this, 'white')">PLOT</a>
+	    -->
+	    <a class="tablink" onclick="openPage('dashboard', this, 'white')" style="background-color:white">DASHBOARD</a>
+        <a class="tablink" onclick="openPage('commands', this, 'white')">COMMANDS</a>
+	    <a class="tablink" onclick="openPage('update', this, 'white')">UPDATE</a>
+	    <a class="tablink" onclick="openPage('parameters', this, 'white')">PARAMETERS</a>
+		<a class="tablink" onclick="openPage('spotvalues', this, 'white')">SPOT VALUES</a>
+		<a class="tablink" onclick="openPage('plot', this, 'white')">PLOT</a>
 
 	</div>
 
-	<!-- <div id="dashboard" class="tabdiv" style="display:block; background-color:white;">-->
-	<div id="dashboard" class="tabdiv dashboard-content">
+	<!-- DASHBOARD -->
+	<div id="dashboard" class="tabdiv dashboard-content" style="display:block;">
 		<h2>Dashboard</h2>
 	</div>
 
-	<div id="commands" class="tabdiv">
+
+    <!-- COMMANDS -->
+	<div id="commands" class="tabdiv commands-content">
 	    <h2 id="commands">Commands</h2>
 	    <p><button onclick="sendCmd('start 2');">Start Inverter in manual Mode</button></p>
 	    <p><button onclick="sendCmd('stop');">Stop Inverter</button></p>
@@ -63,7 +67,9 @@
 	    <p><a href="/remote.html">Start Remote Support Session</a></p>
 	</div>
 
-	<div id="update" class="tabdiv">
+
+    <!-- UPDATE -->
+	<div id="update" class="tabdiv update-content">
 	    <h2 id="update">UART Update</h2>
 	    <p>Use binary files (stm32_sine/foc.bin) for updating inverter firmware. Upload any other file for updating this web interface.</p>
 	    <form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
@@ -87,25 +93,11 @@
 	    <a href="/swd/zero" target="_blank">Erase Flash</a> | <a href="#" onclick="resetSWD();">Hard Reset</a> | <a href="/swd/bin?bootloader">Download Bootloader</a> | <a href="/swd/bin?flash">Download Flash</a>
 	</div>
 
-	<div id="parameters" class="tabdiv">
-		<div class="parameters-left">
-		    <table id="params">
-		    <thead>
-		        <tr>
-		            <th>I</th>
-		            <th>Name</th>
-		            <th>Value</th>
-		            <th>Unit</th>
-		            <th>Minimum</th>
-		            <th>Maximum</th>
-		            <th>Default</th>
-		        </tr>
-		    </thead>
-		    <tbody id="paramBody">
-		    </tbody>
-		    </table>
-		</div>
-		<div class="parameters-left">
+
+    <!-- PARAMETERS -->
+	<div id="parameters" class="tabdiv parameters-content">
+
+		<div class="parameters-right">
 			<p><button onclick="sendCmd('save');">Save Parameters to Flash</button></p>
 		    <p><button onclick="sendCmd('load');">Restore Parameters from Flash</button></p>
 		    <p><a href="https://openinverter.org/wiki/Parameters" target="_blank">Parameter Reference</a>
@@ -133,9 +125,30 @@
 		    <p><img src="ajax-loader.gif" style="visibility: hidden" id="loader1">
 		    <button onclick="toggleVisibility();">Toggle Category Visibility</button></p>
 		</div>
+
+		<div class="parameters-left">
+		    <table id="params">
+		    <thead>
+		        <tr>
+		            <th>I</th>
+		            <th>Name</th>
+		            <th>Value</th>
+		            <th>Unit</th>
+		            <th>Minimum</th>
+		            <th>Maximum</th>
+		            <th>Default</th>
+		        </tr>
+		    </thead>
+		    <tbody id="paramBody">
+		    </tbody>
+		    </table>
+		</div>
+
 	</div>
 
-	<div id="spotvalues" class="tabdiv">
+
+    <!-- SPOT VALUES -->
+	<div id="spotvalues" class="tabdiv spotvalues-content">
 	    <h2 id="spot">Spot Values</h2>
 	    <p><img src="ajax-loader.gif" style="visibility: hidden" id="loader2">
 	    <button onclick="showGauges()">Show Gauges</button>
@@ -159,7 +172,9 @@
 	    </table>
 	</div>
 
-	<div id="plot" class="tabdiv">
+
+    <!-- PLOT -->
+	<div id="plot" class="tabdiv plot-content">
 	    <h2 id="plot">Plot</h2>
 	    <canvas id="canvas" width=100 height=40></canvas>
 	    <p>
@@ -172,6 +187,8 @@
 	    <p>Charting by <a href="http://chartjs.org/" target="_blank">chart.js</a></p>
 	    <p>Gauges by <a href="https://github.com/Mikhus/canvas-gauges" target="_blank">Mykhailo Stadnyk</a></p>
 	</div>
+
+</div>
 
 </body>
 </html>
