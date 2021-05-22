@@ -623,3 +623,26 @@ function getPlotItems()
 	return items;
 }
 
+
+function openPage(pageName, elmnt, color) {
+	// hide all tabs
+    var i, tabdiv, tablinks;
+    tabdiv = document.getElementsByClassName("tabdiv");
+    for (i = 0; i < tabdiv.length; i++) {
+        tabdiv[i].style.display = "none";
+    }
+
+    // un-highlight all tabs
+    tablinks = document.getElementsByClassName("tablink");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].style.backgroundColor = "";
+    }
+
+    // show selected tab
+    document.getElementById(pageName).style.display = "block";
+    elmnt.style.backgroundColor = color;
+}
+
+// Get the element with id="defaultOpen" and click on it
+//document.getElementById("dashboard-link").click();
+
