@@ -1,20 +1,136 @@
 import web
+import json
 
 urls = (
-    '/cmd', 'cmd',
-    '/(.*)', 'hello'
+    '/cmd', 'cmd'
 )
 app = web.application(urls, globals())
 
+parameters = """
+{
+   "curkp": {"unit":"","value":32.00,"isparam":true,"minimum":0.00,"maximum":20000.00,"default":32.00,"category":"Motor","i":0},
+   "curki": {"unit":"","value":20000.00,"isparam":true,"minimum":0.00,"maximum":100000.00,"default":20000.00,"category":"Motor","i":1},
+   "curkifrqgain": {"unit":"dig/Hz","value":50.00,"isparam":true,"minimum":0.00,"maximum":1000.00,"default":50.00,"category":"Motor","i":2},
+   "fwkp": {"unit":"","value":-100.00,"isparam":true,"minimum":-10000.00,"maximum":0.00,"default":-100.00,"category":"Motor","i":3},
+   "syncofs": {"unit":"dig","value":0.00,"isparam":true,"minimum":0.00,"maximum":65535.00,"default":0.00,"category":"Motor","i":4},
+   "polepairs": {"unit":"","value":4.00,"isparam":true,"minimum":1.00,"maximum":16.00,"default":2.00,"category":"Motor","i":5},
+   "respolepairs": {"unit":"","value":2.00,"isparam":true,"minimum":1.00,"maximum":16.00,"default":1.00,"category":"Motor","i":6},
+   "sincosofs": {"unit":"dig","value":2048.00,"isparam":true,"minimum":1.00,"maximum":4096.00,"default":2048.00,"category":"Motor","i":7},
+   "encmode": {"unit":"0=Single, 1=AB, 2=ABZ, 3=SPI, 4=Resolver, 5=SinCos","value":4.00,"isparam":true,"minimum":0.00,"maximum":5.00,"default":0.00,"category":"Motor","i":8},
+   "fmax": {"unit":"Hz","value":200.00,"isparam":true,"minimum":21.00,"maximum":1000.00,"default":200.00,"category":"Motor","i":9},
+   "numimp": {"unit":"ppr","value":60.00,"isparam":true,"minimum":8.00,"maximum":8192.00,"default":60.00,"category":"Motor","i":10},
+   "dirchrpm": {"unit":"rpm","value":100.00,"isparam":true,"minimum":0.00,"maximum":20000.00,"default":100.00,"category":"Motor","i":11},
+   "dirmode": {"unit":"0=Button, 1=Switch, 2=ButtonReversed, 3=SwitchReversed, 4=DefaultForward","value":1.00,"isparam":true,"minimum":0.00,"maximum":4.00,"default":1.00,"category":"Motor","i":12},
+   "snsm": {"unit":"12=KTY83-110, 13=KTY84-130, 14=Leaf, 15=KTY81-110, 16=Toyota","value":15.00,"isparam":true,"minimum":12.00,"maximum":16.00,"default":12.00,"category":"Motor","i":13},
+   "pwmfrq": {"unit":"0=17.6kHz, 1=8.8kHz, 2=4.4KHz","value":2.00,"isparam":true,"minimum":0.00,"maximum":2.00,"default":1.00,"category":"Inverter","i":14},
+   "pwmpol": {"unit":"0=ActHigh, 1=ActLow","value":0.00,"isparam":true,"minimum":0.00,"maximum":1.00,"default":0.00,"category":"Inverter","i":15},
+   "deadtime": {"unit":"dig","value":130.00,"isparam":true,"minimum":0.00,"maximum":255.00,"default":63.00,"category":"Inverter","i":16},
+   "ocurlim": {"unit":"A","value":1000.00,"isparam":true,"minimum":-65536.00,"maximum":65536.00,"default":100.00,"category":"Inverter","i":17},
+   "il1gain": {"unit":"dig/A","value":3.09,"isparam":true,"minimum":-100.00,"maximum":100.00,"default":4.68,"category":"Inverter","i":18},
+   "il2gain": {"unit":"dig/A","value":3.09,"isparam":true,"minimum":-100.00,"maximum":100.00,"default":4.68,"category":"Inverter","i":19},
+   "udcgain": {"unit":"dig/V","value":5.00,"isparam":true,"minimum":0.00,"maximum":4095.00,"default":6.15,"category":"Inverter","i":20},
+   "udcofs": {"unit":"dig","value":0.00,"isparam":true,"minimum":0.00,"maximum":4095.00,"default":0.00,"category":"Inverter","i":21},
+   "udclim": {"unit":"V","value":540.00,"isparam":true,"minimum":0.00,"maximum":1000.00,"default":540.00,"category":"Inverter","i":22},
+   "snshs": {"unit":"0=JCurve, 1=Semikron, 2=MBB600, 3=KTY81, 4=PT1000, 5=NTCK45_2k2, 6=Leaf, 7=BMW-i3","value":1.00,"isparam":true,"minimum":0.00,"maximum":7.00,"default":0.00,"category":"Inverter","i":23},
+   "pinswap": {"unit":"0=None, 1=Currents12, 2=SinCos, 4=PWMOutput13, 8=PWMOutput23","value":8.00,"isparam":true,"minimum":0.00,"maximum":15.00,"default":0.00,"category":"Inverter","i":24},
+   "potmin": {"unit":"dig","value":0.00,"isparam":true,"minimum":0.00,"maximum":4095.00,"default":0.00,"category":"Throttle","i":25},
+   "potmax": {"unit":"dig","value":4095.00,"isparam":true,"minimum":0.00,"maximum":4095.00,"default":4095.00,"category":"Throttle","i":26},
+   "pot2min": {"unit":"dig","value":4095.00,"isparam":true,"minimum":0.00,"maximum":4095.00,"default":4095.00,"category":"Throttle","i":27},
+   "pot2max": {"unit":"dig","value":4095.00,"isparam":true,"minimum":0.00,"maximum":4095.00,"default":4095.00,"category":"Throttle","i":28},
+   "potmode": {"unit":"0=SingleRegen, 1=DualChannel, 2=CAN, 3=CANDual","value":0.00,"isparam":true,"minimum":0.00,"maximum":3.00,"default":0.00,"category":"Throttle","i":29},
+   "throtramp": {"unit":"%/10ms","value":100.00,"isparam":true,"minimum":0.09,"maximum":100.00,"default":100.00,"category":"Throttle","i":30},
+   "throtramprpm": {"unit":"rpm","value":20000.00,"isparam":true,"minimum":0.00,"maximum":20000.00,"default":20000.00,"category":"Throttle","i":31},
+   "throtcur": {"unit":"A/%","value":1.00,"isparam":true,"minimum":0.00,"maximum":10.00,"default":1.00,"category":"Throttle","i":32},
+   "brknompedal": {"unit":"%","value":-50.00,"isparam":true,"minimum":-100.00,"maximum":0.00,"default":-50.00,"category":"Regen","i":33},
+   "regenramp": {"unit":"%/10ms","value":100.00,"isparam":true,"minimum":0.09,"maximum":100.00,"default":100.00,"category":"Regen","i":34},
+   "brknom": {"unit":"%","value":30.00,"isparam":true,"minimum":0.00,"maximum":100.00,"default":30.00,"category":"Regen","i":35},
+   "brkmax": {"unit":"%","value":-30.00,"isparam":true,"minimum":-100.00,"maximum":0.00,"default":-30.00,"category":"Regen","i":36},
+   "brkcruise": {"unit":"%","value":-30.00,"isparam":true,"minimum":-100.00,"maximum":0.00,"default":-30.00,"category":"Regen","i":37},
+   "brkrampstr": {"unit":"Hz","value":10.00,"isparam":true,"minimum":0.00,"maximum":400.00,"default":10.00,"category":"Regen","i":38},
+   "brkout": {"unit":"%","value":-50.00,"isparam":true,"minimum":-100.00,"maximum":-1.00,"default":-50.00,"category":"Regen","i":39},
+   "bmslimhigh": {"unit":"%","value":50.00,"isparam":true,"minimum":0.00,"maximum":100.00,"default":50.00,"category":"Derating","i":40},
+   "bmslimlow": {"unit":"%","value":-1.00,"isparam":true,"minimum":-100.00,"maximum":0.00,"default":-1.00,"category":"Derating","i":41},
+   "udcmin": {"unit":"V","value":5.00,"isparam":true,"minimum":0.00,"maximum":1000.00,"default":450.00,"category":"Derating","i":42},
+   "udcmax": {"unit":"V","value":520.00,"isparam":true,"minimum":0.00,"maximum":1000.00,"default":520.00,"category":"Derating","i":43},
+   "idcmax": {"unit":"A","value":5000.00,"isparam":true,"minimum":0.00,"maximum":5000.00,"default":5000.00,"category":"Derating","i":44},
+   "idcmin": {"unit":"A","value":-5000.00,"isparam":true,"minimum":-5000.00,"maximum":0.00,"default":-5000.00,"category":"Derating","i":45},
+   "idckp": {"unit":"dig","value":2.00,"isparam":true,"minimum":0.09,"maximum":20.00,"default":2.00,"category":"Derating","i":46},
+   "idcflt": {"unit":"dig","value":9.00,"isparam":true,"minimum":0.00,"maximum":11.00,"default":9.00,"category":"Derating","i":47},
+   "tmphsmax": {"unit":"°C","value":110.00,"isparam":true,"minimum":50.00,"maximum":150.00,"default":85.00,"category":"Derating","i":48},
+   "tmpmmax": {"unit":"°C","value":300.00,"isparam":true,"minimum":70.00,"maximum":300.00,"default":300.00,"category":"Derating","i":49},
+   "throtmax": {"unit":"%","value":100.00,"isparam":true,"minimum":0.00,"maximum":100.00,"default":100.00,"category":"Derating","i":50},
+   "throtmin": {"unit":"%","value":-100.00,"isparam":true,"minimum":-100.00,"maximum":0.00,"default":-100.00,"category":"Derating","i":51},
+   "chargemode": {"unit":"0=Off, 3=Boost, 4=Buck","value":0.00,"isparam":true,"minimum":0.00,"maximum":4.00,"default":0.00,"category":"Charger","i":52},
+   "chargecur": {"unit":"A","value":0.00,"isparam":true,"minimum":0.00,"maximum":50.00,"default":0.00,"category":"Charger","i":53},
+   "chargekp": {"unit":"dig","value":80.00,"isparam":true,"minimum":0.00,"maximum":100.00,"default":80.00,"category":"Charger","i":54},
+   "chargeki": {"unit":"dig","value":10.00,"isparam":true,"minimum":0.00,"maximum":100.00,"default":10.00,"category":"Charger","i":55},
+   "chargeflt": {"unit":"dig","value":8.00,"isparam":true,"minimum":0.00,"maximum":10.00,"default":8.00,"category":"Charger","i":56},
+   "chargepwmin": {"unit":"%","value":0.00,"isparam":true,"minimum":0.00,"maximum":99.00,"default":0.00,"category":"Charger","i":57},
+   "chargepwmax": {"unit":"%","value":90.00,"isparam":true,"minimum":0.00,"maximum":99.00,"default":90.00,"category":"Charger","i":58},
+   "idlespeed": {"unit":"rpm","value":-100.00,"isparam":true,"minimum":-100.00,"maximum":10000.00,"default":-100.00,"category":"Automation","i":59},
+   "idlethrotlim": {"unit":"%","value":50.00,"isparam":true,"minimum":0.00,"maximum":100.00,"default":50.00,"category":"Automation","i":60},
+   "idlemode": {"unit":"0=always, 1=nobrake, 2=cruise, 3=off","value":0.00,"isparam":true,"minimum":0.00,"maximum":3.00,"default":0.00,"category":"Automation","i":61},
+   "speedkp": {"unit":"","value":0.25,"isparam":true,"minimum":0.00,"maximum":100.00,"default":0.25,"category":"Automation","i":62},
+   "speedflt": {"unit":"","value":5.00,"isparam":true,"minimum":0.00,"maximum":16.00,"default":5.00,"category":"Automation","i":63},
+   "cruisemode": {"unit":"0=Button, 1=Switch, 2=CAN","value":0.00,"isparam":true,"minimum":0.00,"maximum":2.00,"default":0.00,"category":"Automation","i":64},
+   "udcsw": {"unit":"V","value":0.00,"isparam":true,"minimum":0.00,"maximum":1000.00,"default":330.00,"category":"Contactor Control","i":65},
+   "udcswbuck": {"unit":"V","value":540.00,"isparam":true,"minimum":0.00,"maximum":1000.00,"default":540.00,"category":"Contactor Control","i":66},
+   "tripmode": {"unit":"0=AllOff, 1=DcSwOn, 2=PrechargeOn, 3=AutoResume","value":0.00,"isparam":true,"minimum":0.00,"maximum":3.00,"default":0.00,"category":"Contactor Control","i":67},
+   "pwmfunc": {"unit":"0=tmpm, 1=tmphs, 2=speed, 3=speedfrq","value":0.00,"isparam":true,"minimum":0.00,"maximum":3.00,"default":0.00,"category":"Aux PWM","i":68},
+   "pwmgain": {"unit":"","value":100.00,"isparam":true,"minimum":-100000.00,"maximum":100000.00,"default":100.00,"category":"Aux PWM","i":69},
+   "pwmofs": {"unit":"dig","value":0.00,"isparam":true,"minimum":-65535.00,"maximum":65535.00,"default":0.00,"category":"Aux PWM","i":70},
+   "canspeed": {"unit":"0=250k, 1=500k, 2=800k, 3=1M","value":1.00,"isparam":true,"minimum":0.00,"maximum":3.00,"default":1.00,"category":"Communication","i":71},
+   "canperiod": {"unit":"0=100ms, 1=10ms","value":0.00,"isparam":true,"minimum":0.00,"maximum":1.00,"default":0.00,"category":"Communication","i":72},
+   "nodeid": {"unit":"","value":1.00,"isparam":true,"minimum":1.00,"maximum":63.00,"default":1.00,"category":"Communication","i":73},
+   "manualiq": {"unit":"A","value":0.00,"isparam":true,"minimum":-400.00,"maximum":400.00,"default":0.00,"category":"Testing","i":74},
+   "manualid": {"unit":"A","value":0.00,"isparam":true,"minimum":-400.00,"maximum":400.00,"default":0.00,"category":"Testing","i":75},
+   "version": {"unit":"4=5.05.R-foc","value":4.00,"isparam":false},
+   "hwver": {"unit":"0=Rev1, 1=Rev2, 2=Rev3, 3=Tesla, 4=TeslaM3, 5=BluePill, 6=Prius, 7=PriusMG1","value":1.00,"isparam":false},
+   "opmode": {"unit":"0=Off, 1=Run, 2=ManualRun, 3=Boost, 4=Buck, 5=Sine, 6=AcHeat","value":0.00,"isparam":false},
+   "lasterr": {"unit":"0=NONE, 1=OVERCURRENT, 2=THROTTLE1, 3=THROTTLE2, 4=CANTIMEOUT, 5=EMCYSTOP, 6=MPROT, 7=DESAT, 8=OVERVOLTAGE, 9=ENCODER, 10=PRECHARGE, 11=TMPHSMAX, 12=CURRENTLIMIT, 13=PWMSTUCK, 14=HICUROFS1, 15=HICUROFS2, 16=HIRESOFS, 17=LORESAMP, 18=TMPMMAX,","value":0.00,"isparam":false},
+   "status": {"unit":"0=None, 1=UdcLow, 2=UdcHigh, 4=UdcBelowUdcSw, 8=UdcLim, 16=EmcyStop, 32=MProt, 64=PotPressed, 128=TmpHs, 256=WaitStart","value":256.00,"isparam":false},
+   "udc": {"unit":"V","value":2.00,"isparam":false},
+   "idc": {"unit":"A","value":0.00,"isparam":false},
+   "il1": {"unit":"A","value":0.00,"isparam":false},
+   "il2": {"unit":"A","value":0.00,"isparam":false},
+   "id": {"unit":"A","value":0.00,"isparam":false},
+   "iq": {"unit":"A","value":0.00,"isparam":false},
+   "ud": {"unit":"dig","value":0.00,"isparam":false},
+   "uq": {"unit":"dig","value":0.00,"isparam":false},
+   "heatcur": {"unit":"A","value":0.00,"isparam":false},
+   "fstat": {"unit":"Hz","value":0.00,"isparam":false},
+   "speed": {"unit":"rpm","value":0.00,"isparam":false},
+   "cruisespeed": {"unit":"rpm","value":-1.00,"isparam":false},
+   "turns": {"unit":"","value":0.00,"isparam":false},
+   "amp": {"unit":"dig","value":0.00,"isparam":false},
+   "angle": {"unit":"°","value":0.00,"isparam":false},
+   "pot": {"unit":"dig","value":33.00,"isparam":false},
+   "pot2": {"unit":"dig","value":19.00,"isparam":false},
+   "potnom": {"unit":"%","value":0.00,"isparam":false},
+   "dir": {"unit":"-1=Reverse, 0=Neutral, 1=Forward","value":1.00,"isparam":false},
+   "tmphs": {"unit":"°C","value":18.75,"isparam":false},
+   "tmpm": {"unit":"°C","value":77.50,"isparam":false},
+   "uaux": {"unit":"V","value":16.43,"isparam":false},
+   "pwmio": {"unit":"","value":0.00,"isparam":false},
+   "canio": {"unit":"1=Cruise, 2=Start, 4=Brake, 8=Fwd, 16=Rev, 32=Bms","value":0.00,"isparam":false},
+   "din_cruise": {"unit":"0=Off, 1=On, 2=na","value":0.00,"canid":1,"canoffset":0,"canlength":1,"cangain":1,"isrx":false,"isparam":false},
+   "din_start": {"unit":"0=Off, 1=On, 2=na","value":0.00,"canid":1,"canoffset":1,"canlength":1,"cangain":1,"isrx":false,"isparam":false},
+   "din_brake": {"unit":"0=Off, 1=On, 2=na","value":0.00,"canid":1,"canoffset":2,"canlength":1,"cangain":1,"isrx":false,"isparam":false},
+   "din_mprot": {"unit":"0=Error, 1=Ok, 2=na","value":1.00,"isparam":false},
+   "din_forward": {"unit":"0=Off, 1=On, 2=na","value":1.00,"canid":1,"canoffset":3,"canlength":1,"cangain":1,"isrx":false,"isparam":false},
+   "din_reverse": {"unit":"0=Off, 1=On, 2=na","value":0.00,"canid":1,"canoffset":4,"canlength":1,"cangain":1,"isrx":false,"isparam":false},
+   "din_emcystop": {"unit":"0=Error, 1=Ok, 2=na","value":1.00,"isparam":false},
+   "din_ocur": {"unit":"0=Error, 1=Ok, 2=na","value":1.00,"isparam":false},
+   "din_desat": {"unit":"0=Error, 1=Ok, 2=na","value":1.00,"isparam":false},
+   "din_bms": {"unit":"0=Off, 1=On, 2=na","value":0.00,"canid":1,"canoffset":5,"canlength":1,"cangain":1,"isrx":false,"isparam":false},
+   "cpuload": {"unit":"%","value":0.00,"isparam":false}
+}
+"""
+
 class cmd:
     def GET(self):
-        return '{}'
-
-class hello:
-    def GET(self, name):
-        if not name:
-            name = 'World'
-        return 'Hello, ' + name + '!'
+        web.header('Content-Type', 'application/json')
+        return parameters
 
 if __name__ == "__main__":
     app.run()
