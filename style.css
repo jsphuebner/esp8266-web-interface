@@ -18,6 +18,28 @@
  *
  */
 
+a {
+    text-decoration: none;
+}
+
+a:visited {
+    color: black;
+}
+
+h2 {
+    padding-top: 5px;
+}
+
+body { 
+    font-family: sans-serif;
+    font-size: 12pt; 
+    -webkit-text-size-adjust: none;
+    -moz-text-size-adjust: none;
+    -ms-text-size-adjust: none;
+    margin:0;
+    padding:0;
+}
+
 .graph {
     width: 500px; /* width and height are arbitrary, just make sure the #bar styles are changed accordingly */
     height: 30px;
@@ -55,8 +77,26 @@
     border: 1px solid red;
 }
 
+/* Logo */
+
+#logo {
+    padding: 10px;
+    height: 130px;
+}
+
+#logo img {
+    width: 100px;
+    height: 100px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 25px;
+    padding-right: 25px;
+}
+
+/* Navbar */
+
 .navbar { 
-	background-color: #aaaaaa;
+	background-color: #4CAF50;
 	z-index: 100;
     float: left;
     width: 180px;
@@ -74,42 +114,57 @@
     margin:0;
 }
 
-h2 {
-    padding-top: 1em;
+.navbar img {
+    display: block;
+    float: left;
+    padding-left: 10px;
+    padding-top: 8px;
+    vertical-align: middle
 }
+
+/* Button & forms */
 
 input[type=number]{
     width: 6em;
 } 
 
-body { 
-	font-family: sans-serif;
-	font-size: 12pt; 
-	-webkit-text-size-adjust: none;
-	-moz-text-size-adjust: none;
-	-ms-text-size-adjust: none;
-    margin:0;
-    padding:0;
+form {
+    margin:0px; padding:0px; display:inline;
 }
 
-/*label { display: inline-block; width: 12em; }*/
-
-button, input[type=file], input[type=button] { 
+button { 
 	font-size: 100%;
-	padding: 5px 24px;
-	border-radius: 8px;
-	background-color: #e7e7e7;
+	padding: 10px;
+	background-color: #4CAF50;
 	color: black;
 	-webkit-transition-duration: 0.4s; /* Safari */
     transition-duration: 0.4s;
+    border: 2px solid #4CAF50;
+    //display: block;
+    margin: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 button:hover,input[type=file]:hover,input[type=button]:hover {
     background-color: #efefef;
+    color: black;
 }
+
+.buttonimg {
+    padding: 0;
+    padding-right: 10px;
+}
+
+input[type=file], input[type=button] {
+}
+
+/* tables */
 
 table {
     border-collapse: collapse;
+    width: 100%;
 }
 
 th, td {
@@ -130,22 +185,16 @@ tr:hover {background-color:#f5f5f5;}
     background-color:#FFFFFF;
 }
 
-
-/*
-#spotvalues table {
-    width:100%
-    margin-left:180px;
-}
-*/
-
 #paramBody table {
     width:100%;
 }
 
 .tablink {
-    width:200px;
-    padding:20px;
-    margin:10px;
+    width: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 40px;
 }
 
 /* content */
@@ -154,55 +203,78 @@ tr:hover {background-color:#f5f5f5;}
     width:100%;
 }
 
-/* dashobrd */
-
-.dashboard-content {
-    min-height:100%;
-    margin-left:180px;
-    width: 100%;
-}
-
-/* commands */
-.commands-content {
-    width:100%;
-    margin-left:180px;
-}
-
-/* update */
-
-.update-content {
-    width: 100%;
-    margin-left: 180px;
-}
 /* paramaters */
 
-.parameters-content {
-    margin-left: 180px;
-    margin-right: 200px;
+#params table {
+    width: 100%;
 }
 
-.parameters-left {
+#canvas {
+    width: 100%;
+}
+
+/* content divs */
+
+.main-content {
+    margin-left: 180px;
+    margin-right: 350px;
+}
+
+.main-left {
     float: left;
     width: 100%;
 }
 
-.parameters-right {
+.main-right {
     position: absolute;
     top: 0;
     right :0;
-    width: 400px;
+    width: 325px;
     height: 100%;
 }
 
-/* spot values */
+/* dashboard */
 
-.spotvalues-content {
-    width:100%;
-    margin-left:180px;
+#top-row {
+    width: 900px;
 }
 
-/* plot */
-.plot-content {
-    width: 100%;
-    margin-left: 180px;
+#top-left {
+    float: left;
+    padding: 15px;
+    margin: 5px;
+    width: 45%;
+    border-radius: 10px;
+    border: 2px solid #444;
+    height: 200px;
+}
+
+#top-right {
+    float: left;
+    padding: 15px;
+    margin: 5px;
+    width: 45%;
+    border-radius: 10px;
+    border: 2px solid #444;
+    height: 200px;
+}
+
+#bottom-left {
+    float: left;
+    padding: 15px;
+    margin: 5px;
+    width: 45%;
+    border-radius: 10px;
+    border: 2px solid #444;
+    height: 200px;
+}
+
+#bottom-right {
+    float: left;
+    padding: 15px;
+    margin: 5px;
+    width: 45%;
+    border-radius: 10px;
+    border: 2px solid #444;
+    height: 200px;
 }
