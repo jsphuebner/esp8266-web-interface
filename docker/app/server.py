@@ -127,10 +127,14 @@ parameters = """
 }
 """
 
-class cmd:
+class cmd(object):
     def GET(self):
         web.header('Content-Type', 'application/json')
-        return parameters
+        data = web.input()
+        if data.cmd == "json":
+            return parameters
+        if data.cmd == "errors":
+            return "error 1\nmessage 2\nsomething else"
 
 if __name__ == "__main__":
     app.run()
