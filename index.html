@@ -55,6 +55,8 @@
 				<img class="buttonimg" src="/icons/database.svg">DATA LOGGER</a>
 			<a class="tablink" href="/wifi">
 				<img class="buttonimg" src="/icons/wifi.svg">WIFI SETTINGS</a>
+			<a class="tablink" href="/support">
+				<img class="buttonimg" src="/icons/help-circle.svg">SUPPORT</a>
 
 			<br><br>
 			<a class="tablink" href="javascript:updateTables()"><img src="refresh.png" style="margin-top: -1em; margin-bottom: -8px; margin-right: 0.5em">Refresh</a>
@@ -74,19 +76,21 @@
 		    	<img class="buttonimg" src="/icons/square.svg">Stop Inverter</button>
 		    	<button onclick="sendCmd('errors');">Display Error Memory</button>
 		        <p><input type="text" id="customcmd"/> <button onclick="sendCmd(document.getElementById('customcmd').value);">Send Custom Command</button></p>
-		        <p><a href="/remote.html">Start Remote Support Session</a></p>
+		        <!-- <p><a href="/remote.html">Start Remote Support Session</a></p> -->
 		    </div>
             
             <div class="main-left">
 				<h2>Dashboard</h2>
 				<div id="top-row">
                     <div id="top-left">
-                    	top-left
+                    	<p>Inverter status : WaitStart</p>
+                    	<p>Last error : None</p
+                    	<p>Battery voltage (udc) : 351v</p>
                     </div>
                     <div id="top-right">
 						<h3>Inverter messages</h3>
 						<pre><div id="message"></div></pre>
-						<p>Messages: <button onclick="clearMessages();">Clear</button></p>
+						<!-- <button onclick="clearMessages();">Clear</button>-->
 					</div>
 				</div>
 				<div id="bottom-row">
@@ -166,8 +170,9 @@
                 <hr>
                 <h3>Load Parameters from file</h3>
 			    <form id="paramform" enctype="multipart/form-data" action="edit" method="POST">
-			        <input id="paramfile" name="paramfile" type="file" />
+			        <input id="paramfile" name="paramfile" type="file" hidden />
 			        <input type="button" onclick="loadParametersFromFile();" value="Apply Parameter File" />
+			        <label for="paramfile">Load Parameters from File</label>
 			    </form>
 			    
 			    <hr>			    
