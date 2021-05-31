@@ -53,7 +53,9 @@
 				<img class="buttonimg" src="/icons/activity.svg">PLOT</a>
 			<a class="tablink" onclick="openPage('logger', this, 'white')">
 				<img class="buttonimg" src="/icons/database.svg">DATA LOGGER</a>
-			<a class="tablink" href="/wifi">
+			<a class="tablink" onclick="openPage('canmapping', this, 'white')">
+				<img class="buttonimg" src="/icons/repeat.svg">CAN MAPPING</a>
+			<a class="tablink" onclick="openPage('wifi', this, 'white')">
 				<img class="buttonimg" src="/icons/wifi.svg">WIFI SETTINGS</a>
 			<a class="tablink" href="/support">
 				<img class="buttonimg" src="/icons/help-circle.svg">SUPPORT</a>
@@ -279,6 +281,42 @@
 			<div class="main-left">
 				<textarea id="textArea" rows="50" style="display:block; width: 100%;">
 				</textarea>
+			</div>
+		</div>
+
+		<!-- CAN MAPPING -->
+		<div id="canmapping" class="tabdiv main-content">
+			<div class="main-right">
+			</div>
+			<div class="main-left">
+				<h2>CAN Mapping</h2>
+				<p>On this page you can configure the CAN mapping settings for your OpenInverter board. CAN mapping allows you to send and receive data via CAN bus. You can specify spot values that you would like to transmit on the CAN bus. Additionally you can specify spot values that you would like to set based on data received on the CAN bus.</p>
+			</div>
+		</div>
+
+
+		<!-- WIFI SETTINGS -->
+		<div id="wifi" class="tabdiv main-content">
+			<div class="main-right">
+			</div>
+			<div class="main-left">
+				<h2>WiFi Settings</h2>
+				<h3>Access Point Settings</h3>
+                <p>Here you can specify SSID and password of the access point that is created by the inverter.</p>
+                <form id="apform" enctype="multipart/form-data" action="wifi" method="POST">
+                    <p><label for="apSSID">AP SSID: </label><input id="apSSID" name="apSSID" type="text" value="%apSSID%"/>
+                    <p><label for="apPW">AP WPA2 Password: </label><input id="apPW" name="apPW" type="text" title="Must be at leat 8 characters long" onkeyup="onAPPW(this.value)"/><br>
+                    <p><input id="apsubmit" type="submit" value="Modify" disabled/>
+                </form>
+                <hr>
+                <h3>Station Settings</3>
+                <p>Here you can specify a Wifi network that the inverter joins.</p>
+                <form id="apform" enctype="multipart/form-data" action="wifi" method="POST">
+                    <p><label for="staSSID">Network SSID: </label><input id="staSSID" name="staSSID" type="text" value="%staSSID%"/>
+                    <p><label for="staPW">WPA2 Password: </label><input id="staPW" name="staPW" type="text" />
+                    <p>Current IP Address: %staIP%
+                    <p><input type="submit" value="Modify" />
+                </form>
 			</div>
 		</div>
 
