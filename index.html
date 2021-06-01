@@ -296,6 +296,50 @@
 			<div class="main-left">
 				<h2>CAN Mapping</h2>
 				<p>On this page you can configure the CAN mapping settings for your OpenInverter board. CAN mapping allows you to send and receive data via CAN bus. You can specify spot values that you would like to transmit on the CAN bus. Additionally you can specify spot values that you would like to set based on data received on the CAN bus.</p>
+				<div id="addcanmapping">
+					<h3>New CAN Mapping</h3>
+					<form>
+						<table>
+							<tr>
+								<td>Transmit or receive</td>
+								<td>
+								    <select id="txrx">
+						    			<option value="tx">Transmit</option>
+							    		<option value="rx">Receive</option>
+							    	</select>
+							    </td>
+							    <td>Choose transmit to take spot values and send them out the CAN bus. Choose receive to set spot values based on data seen on the CAN bus.</td>
+							</tr>
+							<tr>
+								<td>Spot value</td>
+								<td>
+								</td>
+							</tr>
+						    <tr>
+						    	<td>CAN ID</td>
+						    	<td><input type="number" step="1" min="0" max="2047" id="canid"></td>
+						    	<td>Set the ID of the CAN frame to send/recieve</td>
+						    </tr>
+		    				<tr>
+		    					<td>Position</td>
+		    					<td><input type="number" step="1" min="0" max="63" id="canpos"></td>
+		    					<td>Specify the position (offset) within the frame to place (transmit) or find (receive) this value</td>
+		    				</tr>
+			    			<tr>
+			    				<td>Bits</td>
+			    				<td><input type="number" step="1" min="1" max="32" id="canbits"></td>
+			    				<td>Specify the lenth of this field in bits</td>
+			    			</tr>
+				    		<tr>
+				    			<td>Gain</td>
+				    			<td><input type="number" step="1" min="1" max="100" id="cangain"></td>
+				    			<td>Specify a gain to scale the value up or down</td>
+				    		</tr>
+					    </table>
+					</form>
+				</div>
+				<button onclick="document.getElementById('addcanmapping').style.display='block';">
+					<img class="buttonimg" src="/icons/plus-circle.svg">Add a new CAN mapping</button>
 			</div>
 		</div>
 
