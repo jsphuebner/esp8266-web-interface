@@ -103,14 +103,8 @@ body {
 .navbar { 
 	background-color: #4CAF50;
 	z-index: 100;
-    float: left;
-    width: 180px;
-    top:0;
-    left:0;
-    margin:0;
     min-height:100%;
-    position:fixed;
-    overflow-x: hidden;
+    order: 1;
 }
 
 .navbar a {
@@ -126,6 +120,22 @@ body {
     padding-left: 10px;
     padding-top: 8px;
     vertical-align: middle
+}
+
+#version {
+    position: absolute;
+    bottom: 0px;
+    padding: 0px;
+    margin: 0px;
+    text-align: center;
+    width: 100%;
+}
+
+#version p {
+    font-size: 12px;
+    padding: 0px;
+    margin: 0px;
+    color: #444;
 }
 
 /* Button & forms */
@@ -146,7 +156,6 @@ button {
 	-webkit-transition-duration: 0.4s; /* Safari */
     transition-duration: 0.4s;
     border: 2px solid #4CAF50;
-    //display: block;
     margin: 5px;
     display: flex;
     justify-content: center;
@@ -206,7 +215,7 @@ tr:hover {background-color:#f5f5f5;}
 /* content */
 
 #content {
-    width:100%;
+    display: flex;
 }
 
 /* paramaters */
@@ -222,22 +231,22 @@ tr:hover {background-color:#f5f5f5;}
 /* content divs */
 
 .main-content {
-    margin-left: 180px;
-    margin-right: 350px;
+    order: 2;
+    margin: 0px;
+    flex: 10 1 300px;
 }
 
 .main-left {
-    float: left;
-    width: 100%;
+    order: 2;
+    flex: 10 1 200px;
+    margin-right: 10px;
 }
 
 .main-right {
-    position: absolute;
-    top: 0;
-    right :0;
-    width: 325px;
     height: 100%;
     padding-top: 10px;
+    order: 3;
+    flex: 0 0 240px ;
 }
 
 /* dashboard */
@@ -250,7 +259,6 @@ tr:hover {background-color:#f5f5f5;}
     float: left;
     padding: 15px;
     margin: 5px;
-    width: 45%;
     border-radius: 10px;
     border: 2px solid #444;
     height: 200px;
@@ -260,7 +268,6 @@ tr:hover {background-color:#f5f5f5;}
     float: left;
     padding: 15px;
     margin: 5px;
-    width: 45%;
     border-radius: 10px;
     border: 2px solid #444;
     height: 200px;
@@ -270,7 +277,6 @@ tr:hover {background-color:#f5f5f5;}
     float: left;
     padding: 15px;
     margin: 5px;
-    width: 45%;
     border-radius: 10px;
     border: 2px solid #444;
     height: 200px;
@@ -280,7 +286,6 @@ tr:hover {background-color:#f5f5f5;}
     float: left;
     padding: 15px;
     margin: 5px;
-    width: 45%;
     border-radius: 10px;
     border: 2px solid #444;
     height: 200px;

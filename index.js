@@ -639,7 +639,7 @@ function openPage(pageName, elmnt, color) {
     }
 
     // show selected tab
-    document.getElementById(pageName).style.display = "block";
+    document.getElementById(pageName).style.display = "flex";
     elmnt.style.backgroundColor = color;
 }
 
