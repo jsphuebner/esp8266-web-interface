@@ -299,7 +299,7 @@
 				<div id="addcanmapping">
 					<h3>New CAN Mapping</h3>
 					<form>
-						<table>
+						<table id="canmapping">
 							<tr>
 								<td>Transmit or receive</td>
 								<td>
@@ -308,12 +308,14 @@
 							    		<option value="rx">Receive</option>
 							    	</select>
 							    </td>
-							    <td>Choose transmit to take spot values and send them out the CAN bus. Choose receive to set spot values based on data seen on the CAN bus.</td>
+							    <td>Choose transmit to take spot values from your OpenInverter board and send them out in frames on the CAN bus where they can be seen by other devices. Choose receive to set spot values based on data seen on the CAN bus.</td>
 							</tr>
 							<tr>
 								<td>Spot value</td>
 								<td>
+									<select id="addCanMappingSpotValueDropDown"></select>
 								</td>
+								<td>Select the spot value transmit or receive.</td>
 							</tr>
 						    <tr>
 						    	<td>CAN ID</td>

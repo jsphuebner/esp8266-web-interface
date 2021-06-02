@@ -29,6 +29,7 @@ function onLoad()
 	updateTables();
 	generateChart();
 	checkSubscribedParameterSet();
+	populateSpotValueDropDown();
 }
 
 /** @brief generates chart at bottom of page */
@@ -623,7 +624,7 @@ function getPlotItems()
 	return items;
 }
 
-
+/** @brief switch to a different page tab */
 function openPage(pageName, elmnt, color) {
 	// hide all tabs
     var i, tabdiv, tablinks;
@@ -645,4 +646,20 @@ function openPage(pageName, elmnt, color) {
 
 // Get the element with id="defaultOpen" and click on it
 //document.getElementById("dashboard-link").click();
+
+/** @brief Populate the 'spot value' drop-down on the 'Add new CAN mapping' form */
+function populateSpotValueDropDown(){
+	var select = document.getElementById("addCanMappingSpotValueDropDown");
+	inverter.getParamList(function(values) {
+		for (var name in values) {
+			var param = values[name];
+			if (!param.isparam) {
+				var el = document.createElement("option");
+				el.textContent = name;
+				el.value = name;
+				select.appendChild(el);
+			}
+		}
+	});
+}
 
