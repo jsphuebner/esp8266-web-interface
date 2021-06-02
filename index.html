@@ -296,6 +296,19 @@
 			<div class="main-left">
 				<h2>CAN Mapping</h2>
 				<p>On this page you can configure the CAN mapping settings for your OpenInverter board. CAN mapping allows you to send and receive data via CAN bus. You can specify spot values that you would like to transmit on the CAN bus. Additionally you can specify spot values that you would like to set based on data received on the CAN bus.</p>
+
+				<!-- Existing CAN mappings -->
+				<h3>Existing CAN Mappings</h3>
+				<table id="existingCanMappingTable" class="existing-can-mapping">
+					<tr>
+						<th>ID</th>
+						<th>Offset</th>
+						<th>Length</th>
+						<th>Gain</th>
+					</tr>
+				</table>
+
+				<!-- Add new CAN mapping form -->
 				<div id="addcanmapping">
 					<h3>New CAN Mapping</h3>
 					<form>
@@ -338,6 +351,7 @@
 				    			<td>Specify a gain to scale the value up or down</td>
 				    		</tr>
 					    </table>
+					    <button><img class="buttonimg" src="/icons/check-circle.svg">Save CAN mapping</button>
 					</form>
 				</div>
 				<button onclick="document.getElementById('addcanmapping').style.display='block';">

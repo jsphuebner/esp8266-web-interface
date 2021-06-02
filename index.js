@@ -30,6 +30,7 @@ function onLoad()
 	generateChart();
 	checkSubscribedParameterSet();
 	populateSpotValueDropDown();
+	populateExistingCanMappingTable();
 }
 
 /** @brief generates chart at bottom of page */
@@ -662,4 +663,33 @@ function populateSpotValueDropDown(){
 		}
 	});
 }
+
+/** @brief Populate the table of existing CAN mappings */
+function populateExistingCanMappingTable() {
+	var existigCanMappingTable = document.getElementById("existingCanMappingTable")
+	inverter.getParamList(function(values) {
+		for (var name in values) {
+			var param = values[name];
+			if (typeof param.canid !== 'undefined'){
+				var tr = existigCanMappingTable.insertRow(-1);
+				// canid
+				var canIdCell = tr.insertCell(-1);
+	        	canIdCell.innerHTML = param.canid;
+	        	// canoffset
+				var canOffsetCell = tr.insertCell(-1);
+	        	canOffsetCell.innerHTML = param.canoffset;
+	        	// canlength
+				var canLengthCell = tr.insertCell(-1);
+	        	canLengthCell.innerHTML = param.canlength;
+	        	// cangain
+				var canGainCell = tr.insertCell(-1);
+	        	canGainCell.innerHTML = param.cangain;
+			}
+		}
+	});
+}
+
+
+
+
 
