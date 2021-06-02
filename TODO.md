@@ -13,3 +13,4 @@
 * Support page
 * Make it all work on a small screen (menu could collapse to just icons and/or popout on mouseover)
 * Show version string at bottom of menu
+* Visual feedback that changes have been accepted when modifying params
