@@ -301,6 +301,8 @@
 				<h3>Existing CAN Mappings</h3>
 				<table id="existingCanMappingTable" class="existing-can-mapping">
 					<tr>
+						<th>Spot Value</th>
+						<th>Transmit or Receive</th>
 						<th>ID</th>
 						<th>Offset</th>
 						<th>Length</th>
@@ -336,12 +338,12 @@
 						    	<td>Set the ID of the CAN frame to send/recieve</td>
 						    </tr>
 		    				<tr>
-		    					<td>Position</td>
+		    					<td>Offset</td>
 		    					<td><input type="number" step="1" min="0" max="63" id="canpos"></td>
 		    					<td>Specify the position (offset) within the frame to place (transmit) or find (receive) this value</td>
 		    				</tr>
 			    			<tr>
-			    				<td>Bits</td>
+			    				<td>Length</td>
 			    				<td><input type="number" step="1" min="1" max="32" id="canbits"></td>
 			    				<td>Specify the lenth of this field in bits</td>
 			    			</tr>
