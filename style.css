@@ -31,7 +31,7 @@ h2 {
 }
 
 h3 {
-    padding-top: 0px;
+    padding: 5px 0px 10px 0px;
     margin: 0px;
 }
 
@@ -103,7 +103,6 @@ html, body {
 
 .navbar { 
 	background-color: #4CAF50;
-	z-index: 100;
     order: 1;
 }
 
@@ -301,7 +300,7 @@ tr:hover {background-color:#f5f5f5;}
     padding: 10px;
     border-radius: 20px;
     background: #DDD;
-    padding-top: 30px;
+    margin-top: 30px;
 }
 
 #addcanmapping h3 {
