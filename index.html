@@ -171,23 +171,17 @@
 			    <a download="params.json" href="data:text/json,{ }" id="paramDownload"><button>
 			    	<img class="buttonimg" src="/icons/download.svg"> Download Parameter File</button></a>
 
+			    <form id="paramform" enctype="multipart/form-data" action="edit" method="POST">
+			        <input id="paramfile" name="paramfile" type="file" onchange="loadParametersFromFile();" hidden />
+			        <label class="" for="paramfile"><img class="buttonimg" src="/icons/file-text.svg">Load Parameters from File</label>
+			    </form>
+
 			    <a href="https://openinverter.org/wiki/Parameters" target="_blank"><button>
 			    	<img class="buttonimg" src="/icons/help-circle.svg">Parameter Reference</button></a>
-
-                <hr>
-                <h3>Load Parameters from file</h3>
-			    <form id="paramform" enctype="multipart/form-data" action="edit" method="POST">
-			        <input id="paramfile" name="paramfile" type="file" hidden />
-			        <input type="button" onclick="loadParametersFromFile();" value="Apply Parameter File" />
-			        <label for="paramfile">Load Parameters from File</label>
-			    </form>
-			    
-			    <hr>			    
 			    
 			    <h3>Subscribe to parameter set</h3>
 			    <input id="token" type="text" onchange="checkToken(this.value, 'Requesting parameter set', true)" size="40">
 			    
-			    <h3>asdf</h3>
 			    <p><img src="ajax-loader.gif" style="visibility: hidden" id="loader1">
 			    <button onclick="toggleVisibility();">Toggle Category Visibility</button></p>
 			    <p>

@@ -149,6 +149,27 @@ form {
     margin:0px; padding:0px; display:inline;
 }
 
+label {
+    font-size: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: black;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+    border: 2px solid #4CAF50;
+    margin: 5px;
+    display: flex;
+    justify-content: safe left;
+    align-items: center;
+
+    flex-grow: 0;
+}
+
+label:hover {
+    background-color: #efefef;
+    color: black;
+}
+
 button { 
 	font-size: 100%;
 	padding: 10px;
@@ -163,7 +184,7 @@ button {
     align-items: center;
 }
 
-button:hover,input[type=file]:hover,input[type=button]:hover {
+button:hover, input[type=file]:hover, input[type=button]:hover {
     background-color: #efefef;
     color: black;
 }
