@@ -35,7 +35,7 @@ h3 {
     margin: 0px;
 }
 
-body { 
+html, body { 
     font-family: sans-serif;
     font-size: 12pt; 
     -webkit-text-size-adjust: none;
@@ -43,6 +43,7 @@ body {
     -ms-text-size-adjust: none;
     margin:0;
     padding:0;
+    height: 100%;
 }
 
 .graph {
@@ -103,7 +104,6 @@ body {
 .navbar { 
 	background-color: #4CAF50;
 	z-index: 100;
-    min-height:100%;
     order: 1;
 }
 
@@ -218,6 +218,7 @@ tr:hover {background-color:#f5f5f5;}
 
 #content {
     display: flex;
+    height: 100%;
 }
 
 /* paramaters */
@@ -293,11 +294,20 @@ tr:hover {background-color:#f5f5f5;}
     height: 200px;
 }
 
+/* CAN Mapping */
+
 #addcanmapping {
     display: none;
     padding: 10px;
     border-radius: 20px;
     background: #DDD;
+    padding-top: 30px;
 }
 
+#addcanmapping h3 {
+    padding: 8px;
+}
 
+#canmapping tbody {
+    padding: 100px;
+}
