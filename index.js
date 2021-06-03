@@ -672,6 +672,12 @@ function populateExistingCanMappingTable() {
 			var param = values[name];
 			if (typeof param.canid !== 'undefined'){
 				var tr = existigCanMappingTable.insertRow(-1);
+				// name of spot value
+				var canNameCell = tr.insertCell(-1);
+				canNameCell.innerHTML = name;
+				// tx/rx
+				var canTxRxCell = tr.insertCell(-1);
+				canTxRxCell.innerHTML = param.isrx ? "Receive" : "Transmit";;
 				// canid
 				var canIdCell = tr.insertCell(-1);
 	        	canIdCell.innerHTML = param.canid;
