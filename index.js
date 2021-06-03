@@ -337,6 +337,21 @@ function canmap(direction, name)
 /** @brief Loads a parameterset from json file and sends each parameter to the inverter */
 function loadParametersFromFile()
 {
+
+	// Get the modal popup and empty its contents
+    var modalContent = document.getElementById('modal-content');
+    //modalContent.innerHTML = "";
+
+    // Add heading to modal
+    var heading = document.createElement("H2");
+    var headingText = document.createTextNode("Importing Parameters ...");
+    heading.appendChild(headingText);
+    modalContent.append(heading);
+
+    // show modal
+    var modal = document.getElementById('modal');
+    modal.style.display = "block";
+
 	var file = document.getElementById('paramfile');
 	
 	if(file.files.length)
@@ -346,7 +361,7 @@ function loadParametersFromFile()
 		reader.onload = function(e)
 		{
 			var params = JSON.parse(e.target.result);
-			document.getElementById("message").innerHTML = "Start setting parameters\r\n";
+			//document.getElementById("message").innerHTML = "Start setting parameters\r\n";
 			setParam(params, 0);
 		};
 
@@ -364,10 +379,12 @@ function setParam(params, index)
 	if (index < keys.length)
 	{
 		var key = keys[index];
-		document.getElementById("message").innerHTML += "Setting " + key + " to " + params[key] + " - ";
+		//document.getElementById("message").innerHTML += "Setting " + key + " to " + params[key] + " - ";
+		document.getElementById("modal-content").innerHTML += "Setting " + key + " to " + params[key] + " - ";
 
 		inverter.sendCmd("set " + key + " " + params[key], function(reply) {
-			document.getElementById("message").innerHTML += reply;
+			//document.getElementById("message").innerHTML += reply;
+			document.getElementById("modal-content").innerHTML += reply + "<br>";
 			setParam(params, index + 1);
 		});
 	}
