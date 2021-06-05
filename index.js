@@ -709,7 +709,7 @@ function populateExistingCanMappingTable() {
 	        	canGainCell.innerHTML = param.cangain;
 	        	// delete button
 				var canDeleteCell = tr.insertCell(-1);
-	        	canDeleteCell.innerHTML = "<button><img class=\"buttonimg\" src=\"/icons/trash.svg\">Delete CAN Mapping</button>";
+	        	canDeleteCell.innerHTML = "<button><img class=\"buttonimg\" src=\"/icon-trash.png\">Delete CAN Mapping</button>";
 			}
 		}
 	});

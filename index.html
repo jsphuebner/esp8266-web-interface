@@ -46,25 +46,25 @@
 		    </div>
 
 		    <a class="tablink" onclick="openPage('dashboard', this, 'white')" style="background-color:white">
-		    	<img class="buttonimg" src="/icons/grid.svg">DASHBOARD</a>
+		    	<img class="buttonimg" src="/icon-grid.png">DASHBOARD</a>
 	        <!--<a class="tablink" onclick="openPage('commands', this, 'white')">
-	        	<img class="buttonimg" src="/icons/terminal.svg">COMMANDS</a>-->
+	        	<img class="buttonimg" src="/icon-terminal.png">COMMANDS</a>-->
 		    <a class="tablink" onclick="openPage('update', this, 'white')">
-		    	<img class="buttonimg" src="/icons/cpu.svg">UPDATE</a>
+		    	<img class="buttonimg" src="/icon-cpu.png">UPDATE</a>
 		    <a class="tablink" onclick="openPage('parameters', this, 'white')">
-		    	<img class="buttonimg" src="/icons/sliders.svg">PARAMETERS</a>
+		    	<img class="buttonimg" src="/icon-sliders.png">PARAMETERS</a>
 			<a class="tablink" onclick="openPage('spotvalues', this, 'white')">
-				<img class="buttonimg" src="/icons/target.svg">SPOT VALUES</a>
+				<img class="buttonimg" src="/icon-target.png">SPOT VALUES</a>
 			<a class="tablink" onclick="openPage('plot', this, 'white')">
-				<img class="buttonimg" src="/icons/activity.svg">PLOT</a>
+				<img class="buttonimg" src="/icon-activity.png">PLOT</a>
 			<a class="tablink" onclick="openPage('logger', this, 'white')">
-				<img class="buttonimg" src="/icons/database.svg">DATA LOGGER</a>
+				<img class="buttonimg" src="/icon-database.png">DATA LOGGER</a>
 			<a class="tablink" onclick="openPage('canmapping', this, 'white')">
-				<img class="buttonimg" src="/icons/repeat.svg">CAN MAPPING</a>
+				<img class="buttonimg" src="/icon-repeat.png">CAN MAPPING</a>
 			<a class="tablink" onclick="openPage('wifi', this, 'white')">
-				<img class="buttonimg" src="/icons/wifi.svg">WIFI SETTINGS</a>
+				<img class="buttonimg" src="/icon-wifi.png">WIFI SETTINGS</a>
 			<a class="tablink" href="/support">
-				<img class="buttonimg" src="/icons/help-circle.svg">SUPPORT</a>
+				<img class="buttonimg" src="/icon-help-circle.png">SUPPORT</a>
 
 			<br><br>
 			<a class="tablink" href="javascript:updateTables()"><img src="refresh.png" style="margin-top: -1em; margin-bottom: -8px; margin-right: 0.5em">Refresh</a>
@@ -84,9 +84,9 @@
 			<div class="main-right">
 				<h3>Actions</h3>
 				<button onclick="sendCmd('start 2');">
-		    	<img class="buttonimg" src="/icons/play.svg">Start Inverter in manual Mode</button>
+		    	<img class="buttonimg" src="/icon-play.png">Start Inverter in manual Mode</button>
 		        <button onclick="sendCmd('stop');">
-		    	<img class="buttonimg" src="/icons/square.svg">Stop Inverter</button>
+		    	<img class="buttonimg" src="/icon-square.png">Stop Inverter</button>
 		    	<button onclick="sendCmd('errors');">Display Error Memory</button>
 		        <p><input type="text" id="customcmd"/> <button onclick="sendCmd(document.getElementById('customcmd').value);">Send Custom Command</button></p>
 		        <!-- <p><a href="/remote.html">Start Remote Support Session</a></p> -->
@@ -126,13 +126,13 @@
 			<div class="main-right">
 				<h3>Actions</h3>
                 <a href="/swd/zero" target="_blank"><button>
-                	<img class="buttonimg" src="/icons/trash-2.svg">Erase Flash</button></a>
+                	<img class="buttonimg" src="/icon-trash-2.png">Erase Flash</button></a>
                 <a href="#" onclick="resetSWD();"><button>
-                	<img class="buttonimg" src="/icons/rotate-ccw.svg">Hard Reset</button></a>
+                	<img class="buttonimg" src="/icon-rotate-ccw.png">Hard Reset</button></a>
                 <a href="/swd/bin?bootloader"><button>
-                	<img class="buttonimg" src="/icons/download.svg">Download Bootloader</button></a>
+                	<img class="buttonimg" src="/icon-download.png">Download Bootloader</button></a>
                 <a href="/swd/bin?flash"><button>
-                	<img class="buttonimg" src="/icons/download.svg">Download Flash</button></a>
+                	<img class="buttonimg" src="/icon-download.png">Download Flash</button></a>
 			</div>
 
 			<div class="main-left">
@@ -166,25 +166,25 @@
 			<div class="main-right">
 				<h3>Save & load</h3>
 				<button onclick="sendCmd('save');">
-					<img class="buttonimg" src="/icons/save.svg">Save Parameters to Flash</button>
+					<img class="buttonimg" src="/icon-save.png">Save Parameters to Flash</button>
 			    <button onclick="sendCmd('load');">
-			    	<img class="buttonimg" src="/icons/rotate-ccw.svg">Restore Parameters from Flash</button>
+			    	<img class="buttonimg" src="/icon-rotate-ccw.png">Restore Parameters from Flash</button>
 			    <form id="paramdb" action="https://openinverter.org/parameters/api.php" method="POST" enctype="multipart/form-data">
 			        <input type="text" style="display: none;" id="parameters_json" name="data"></input>
 			        <input type="hidden" id="parameters_token" name="token" />
-			        <button onclick="parameterSubmit();"><image class="buttonimg" src="/icons/upload-cloud.svg"> Submit Parameters to Openinverter</button>
+			        <button onclick="parameterSubmit();"><image class="buttonimg" src="/icon-upload-cloud.png"> Submit Parameters to Openinverter</button>
 			    </form>
 
 			    <a download="params.json" href="data:text/json,{ }" id="paramDownload"><button>
-			    	<img class="buttonimg" src="/icons/download.svg"> Download Parameter File</button></a>
+			    	<img class="buttonimg" src="/icon-download.png"> Download Parameter File</button></a>
 
 			    <form id="paramform" enctype="multipart/form-data" action="edit" method="POST">
 			        <input id="paramfile" name="paramfile" type="file" onchange="loadParametersFromFile();" hidden />
-			        <label class="" for="paramfile"><img class="buttonimg" src="/icons/file-text.svg">Load Parameters from File</label>
+			        <label class="" for="paramfile"><img class="buttonimg" src="/icon-file-text.png">Load Parameters from File</label>
 			    </form>
 
 			    <a href="https://openinverter.org/wiki/Parameters" target="_blank"><button>
-			    	<img class="buttonimg" src="/icons/help-circle.svg">Parameter Reference</button></a>
+			    	<img class="buttonimg" src="/icon-help-circle.png">Parameter Reference</button></a>
 			    
 			    <h3>Subscribe to parameter set</h3>
 			    <input id="token" type="text" onchange="checkToken(this.value, 'Requesting parameter set', true)" size="40">
@@ -252,11 +252,11 @@
 		<div id="plot" class="tabdiv main-content">
 			<div class="main-right">
                 <button onclick="startPlot()">
-                	<img class="buttonimg" src="/icons/play.svg">Start Plot</button>
+                	<img class="buttonimg" src="/icon-play.png">Start Plot</button>
 			    <button onclick="stopPlot()">
-			    	<img class="buttonimg" src="/icons/square.svg">Stop Plot</button>
+			    	<img class="buttonimg" src="/icon-square.png">Stop Plot</button>
 			    <button onclick="pauseResumePlot()" disabled id="pauseButton">
-			    	<img class="buttonimg" src="/icons/pause.svg">Pause Plot</button>
+			    	<img class="buttonimg" src="/icon-pause.png">Pause Plot</button>
 			</div>
 
 			<div class="main-left">
@@ -357,11 +357,11 @@
 				    			<td>Specify a gain to scale the value up or down</td>
 				    		</tr>
 					    </table>
-					    <button><img class="buttonimg" src="/icons/check-circle.svg">Save CAN mapping</button>
+					    <button><img class="buttonimg" src="/icon-check-circle.png">Save CAN mapping</button>
 					</form>
 				</div>
 				<button onclick="document.getElementById('addcanmapping').style.display='block';">
-					<img class="buttonimg" src="/icons/plus-circle.svg">Add a new CAN mapping</button>
+					<img class="buttonimg" src="/icon-plus-circle.png">Add a new CAN mapping</button>
 			</div>
 		</div>
 
