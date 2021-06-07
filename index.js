@@ -31,6 +31,16 @@ function onLoad()
 	checkSubscribedParameterSet();
 	populateSpotValueDropDown();
 	populateExistingCanMappingTable();
+	populateVersion();
+	// run the poll function every 3 seconds
+	var autoRefresh = setInterval(refresh, 3000);
+}
+
+/** @brief automatically update data on the UI */
+function refresh(){
+	inverter.refreshParams();
+	updateTables();
+	populateVersion();
 }
 
 /** @brief generates chart at bottom of page */
@@ -260,9 +270,9 @@ function updateTables()
 		document.getElementById("paramDownload").href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(params, null, 2));
 		document.getElementById("loader1").style.visibility = "hidden";
 		document.getElementById("loader2").style.visibility = "hidden";
-		
+		/*
 		if (document.getElementById("autorefresh").checked)
- 			updateTables();	
+ 			updateTables();	*/
 	});
 }
 
@@ -337,20 +347,9 @@ function canmap(direction, name)
 /** @brief Loads a parameterset from json file and sends each parameter to the inverter */
 function loadParametersFromFile()
 {
-
-	// Get the modal popup and empty its contents
-    var modalContent = document.getElementById('modal-content');
-    //modalContent.innerHTML = "";
-
-    // Add heading to modal
-    var heading = document.createElement("H2");
-    var headingText = document.createTextNode("Importing Parameters ...");
-    heading.appendChild(headingText);
-    modalContent.append(heading);
-
-    // show modal
-    var modal = document.getElementById('modal');
-    modal.style.display = "block";
+    modal.setLargeModalHeader("Loading parameters")
+    modal.emptyLargeModal();
+    modal.showLargeModal();
 
 	var file = document.getElementById('paramfile');
 	
@@ -361,7 +360,6 @@ function loadParametersFromFile()
 		reader.onload = function(e)
 		{
 			var params = JSON.parse(e.target.result);
-			//document.getElementById("message").innerHTML = "Start setting parameters\r\n";
 			setParam(params, 0);
 		};
 
@@ -379,12 +377,11 @@ function setParam(params, index)
 	if (index < keys.length)
 	{
 		var key = keys[index];
-		//document.getElementById("message").innerHTML += "Setting " + key + " to " + params[key] + " - ";
-		document.getElementById("modal-content").innerHTML += "Setting " + key + " to " + params[key] + " - ";
-
+		modal.appendToLargeModal("Setting " + key + " to " + params[key] + "<br>");
 		inverter.sendCmd("set " + key + " " + params[key], function(reply) {
-			//document.getElementById("message").innerHTML += reply;
-			document.getElementById("modal-content").innerHTML += reply + "<br>";
+			modal.appendToLargeModal(reply + "<br>");
+			// auto-scroll text in modal as it is added
+			modal.largeModalScrollToBottom();
 			setParam(params, index + 1);
 		});
 	}
@@ -683,7 +680,7 @@ function populateSpotValueDropDown(){
 
 /** @brief Populate the table of existing CAN mappings */
 function populateExistingCanMappingTable() {
-	var existigCanMappingTable = document.getElementById("existingCanMappingTable")
+	var existigCanMappingTable = document.getElementById("existingCanMappingTable");
 	inverter.getParamList(function(values) {
 		for (var name in values) {
 			var param = values[name];
@@ -717,5 +714,12 @@ function populateExistingCanMappingTable() {
 
 
 
-
+/** @brief fill out version */
+function populateVersion() {
+	var versionDiv = document.getElementById("version");
+	versionDiv.innerHTML = "";
+	inverter.getParam('version', function(reply) {
+        versionDiv.innerHTML += "Version : " + reply;
+	});
+}
 

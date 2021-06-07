@@ -20,6 +20,7 @@
 
 var inverter = {
 	firmwareVersion: 0,
+	paramsCache: undefined,
 	
 	sendCmd: function(cmd, replyFunc, repeat)
 	{
@@ -56,6 +57,7 @@ var inverter = {
 						inverter.firmwareVersion = parseFloat(param.value);
 				}
 			} catch(ex) {}
+			this.paramsCache = params;
 			if (replyFunc) replyFunc(params);
 		});
 	},
@@ -101,6 +103,24 @@ var inverter = {
 			return enums;
 		}
 		return false;
+	},
+
+	refreshParams: function()
+	{
+		console.log("Refresshing params");
+		inverter.getParamList(function(params){
+			inverter.paramsCache = params;
+		});
+	},
+
+	getParam: function(paramName, replyFunc)
+	{
+		console.log("Getting param : " + paramName);
+		if ( inverter.paramsCache !== undefined ){
+			if ( paramName in inverter.paramsCache ){
+			    replyFunc(inverter.paramsCache[paramName]);	
+			}
+		}
 	}
 
 

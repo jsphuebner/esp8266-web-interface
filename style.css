@@ -340,7 +340,7 @@ tr:hover {background-color:#f5f5f5;}
 
 /* modal */
 
-.modal {
+.modal-overlay {
     display: none;
     position: fixed;
     width: 100%;
@@ -353,13 +353,24 @@ tr:hover {background-color:#f5f5f5;}
     //overflow: auto;
 }
 
-.modal-content {
+.large-modal-container {
     background-color: #fefefe;
     margin: 5% auto;
     padding: 40px;
     border: 1px solid #888;
     width: 50%;
     height: 75%;
+}
+
+.large-modal-container h2 {
+    padding-bottom: 10px;
+    display: inline;
+}
+
+.modal-content {
+    border: 1px solid #DDD;
+    height: 90%;
+    width: 100%;
     overflow: auto;
 }
 
@@ -370,4 +381,11 @@ tr:hover {background-color:#f5f5f5;}
   font-weight: bold;
 }
 
-
+.small-modal-container {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 40px;
+    border: 1px solid #888;
+    width: 200px;
+    height: 100px;
+}

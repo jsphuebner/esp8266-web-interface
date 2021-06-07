@@ -24,9 +24,11 @@
 <title>Huebner Inverter Management Console</title>
 <link href="style.css" rel="stylesheet" type="text/css" />
 <script src="chart.min.js" type="text/javascript"></script>
+<script src="modal.js" type="text/javascript"></script>
 <script src="inverter.js" type="text/javascript"></script>
 <script src="index.js" type="text/javascript"></script>
-<script src="subscription.js" type="text/javascript"></script>
+
+<!-- <script src="subscription.js" type="text/javascript"></script> -->
 <!-- <script src="log.js" type="text/javascript"></script> -->
 </head>
 
@@ -34,9 +36,21 @@
 
 	<div id="content">
 
-		<div id="modal" class="modal">
-			<div id="modal-content" class="modal-content">
-				<span class="modal-close" onclick="document.getElementById('modal').style.display = 'none';">&times;</span>
+        <!-- Large modal -->
+		<div id="large-modal-overlay" class="modal-overlay">
+			<div id="large-modal-container" class="large-modal-container">
+    			<!-- <span class="modal-close" onclick="document.getElementById('modal-overlay').style.display = 'none';">&times;</span>-->
+    			<h2 id="large-modal-header"></h2>
+		    	<div id="large-modal-content" class="modal-content"></div>
+		    	<button onclick="modal.hideLargeModal();">Close</button>
+		    </div>
+		</div>
+
+		<!-- Small modal -->
+		<div id="small-modal-overlay" class="modal-overlay">
+			<div id="small-modal-container" class="small-modal-container">
+				<h2 id="small-modal-header"></h2>
+				<div id="small-modal-content" class="modal-content"></div>
 			</div>
 		</div>
 
@@ -66,16 +80,13 @@
 			<a class="tablink" href="/support">
 				<img class="buttonimg" src="/icon-help-circle.png">SUPPORT</a>
 
-			<br><br>
+			<!-- <br><br>
 			<a class="tablink" href="javascript:updateTables()"><img src="refresh.png" style="margin-top: -1em; margin-bottom: -8px; margin-right: 0.5em">Refresh</a>
 			<div style="float:left">
 			    <input type="checkbox" title="Keep refreshing until unchecked" id="autorefresh"><label for="autorefresh">Auto</label>
-			</div>
+			</div> -->
 
-			<div id="version">
-				<p>Firmware : v5.0.1</p>
-				<p>Web UI : v2.0</p>
-			</div>
+			<div id="version"></div>
 
 		</div>
 
