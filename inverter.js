@@ -121,6 +121,21 @@ var inverter = {
 			    replyFunc(inverter.paramsCache[paramName]);	
 			}
 		}
+	},
+
+    /** @brief Add/Delete a CAN mapping
+     * @param direction, tx, rx, or del
+     * @param name, spot value name
+     * @param id, canid of message
+     * @param pos, offset within frame
+     * @param bits, length of field
+     * @param gain, multiplier
+     */
+	canMapping: function(direction, name, id, pos, bits, gain)
+	{
+		var cmd = "can " + direction + " " + name + " " + id + " " + pos + " " + bits + " " + gain;
+		console.log("canMapping : " + cmd);
+		inverter.sendCmd(cmd);
 	}
 
 
