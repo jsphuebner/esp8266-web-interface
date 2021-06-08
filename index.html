@@ -42,7 +42,7 @@
     			<!-- <span class="modal-close" onclick="document.getElementById('modal-overlay').style.display = 'none';">&times;</span>-->
     			<h2 id="large-modal-header"></h2>
 		    	<div id="large-modal-content" class="modal-content"></div>
-		    	<button onclick="modal.hideLargeModal();">Close</button>
+		    	<button onclick="modal.hideModal('large');">Close</button>
 		    </div>
 		</div>
 
@@ -51,6 +51,56 @@
 			<div id="small-modal-container" class="small-modal-container">
 				<h2 id="small-modal-header"></h2>
 				<div id="small-modal-content" class="modal-content"></div>
+			</div>
+		</div>
+
+		<!-- 'Add CAN Mapping' modal -->
+		<div id="can-mapping-modal-overlay" class="modal-overlay">
+			<div id="can-mapping-modal-container" class="can-mapping-modal-container">
+				<span class="modal-close" onclick="modal.hideModal('can-mapping');">&times;</span>
+				<h3>New CAN Mapping</h3>
+				<!-- <form> -->
+					<table id="canmappingtable">
+						<tr>
+							<td>Transmit or receive</td>
+							<td>
+							    <select id="txrx">
+					    			<option value="tx">Transmit</option>
+						    		<option value="rx">Receive</option>
+						    	</select>
+						    </td>
+						    <td>Choose transmit to take spot values from your OpenInverter board and send them out in frames on the CAN bus where they can be seen by other devices. Choose receive to set spot values based on data seen on the CAN bus.</td>
+						</tr>
+						<tr>
+							<td>Spot value</td>
+							<td>
+								<select id="addCanMappingSpotValueDropDown"></select>
+							</td>
+							<td>Select the spot value to transmit or receive.</td>
+						</tr>
+					    <tr>
+					    	<td>CAN ID</td>
+					    	<td><input type="number" step="1" min="0" max="2047" id="canid"></td>
+					    	<td>Set the ID of the CAN frame to send/recieve</td>
+					    </tr>
+	    				<tr>
+	    					<td>Offset</td>
+	    					<td><input type="number" step="1" min="0" max="63" id="canpos"></td>
+	    					<td>Specify the position (offset) within the frame to place (transmit) or find (receive) this value</td>
+	    				</tr>
+		    			<tr>
+		    				<td>Length</td>
+		    				<td><input type="number" step="1" min="1" max="32" id="canbits"></td>
+		    				<td>Specify the length of this field in bits</td>
+		    			</tr>
+			    		<tr>
+			    			<td>Gain</td>
+			    			<td><input type="number" step="1" min="1" max="100" id="cangain"></td>
+			    			<td>Specify a gain to scale the value up or down</td>
+			    		</tr>
+				    </table>
+				    <button onclick="ui.canMapping();"><img class="buttonimg" src="/icon-check-circle.png">Save CAN mapping</button>
+				<!-- </form> -->
 			</div>
 		</div>
 
@@ -324,54 +374,7 @@
 						<th>Delete CAN Mapping</th>
 					</tr>
 				</table>
-
-				<!-- Add new CAN mapping form -->
-				<div id="addcanmapping">
-					<h3>New CAN Mapping</h3>
-					<form>
-						<table id="canmapping">
-							<tr>
-								<td>Transmit or receive</td>
-								<td>
-								    <select id="txrx">
-						    			<option value="tx">Transmit</option>
-							    		<option value="rx">Receive</option>
-							    	</select>
-							    </td>
-							    <td>Choose transmit to take spot values from your OpenInverter board and send them out in frames on the CAN bus where they can be seen by other devices. Choose receive to set spot values based on data seen on the CAN bus.</td>
-							</tr>
-							<tr>
-								<td>Spot value</td>
-								<td>
-									<select id="addCanMappingSpotValueDropDown"></select>
-								</td>
-								<td>Select the spot value transmit or receive.</td>
-							</tr>
-						    <tr>
-						    	<td>CAN ID</td>
-						    	<td><input type="number" step="1" min="0" max="2047" id="canid"></td>
-						    	<td>Set the ID of the CAN frame to send/recieve</td>
-						    </tr>
-		    				<tr>
-		    					<td>Offset</td>
-		    					<td><input type="number" step="1" min="0" max="63" id="canpos"></td>
-		    					<td>Specify the position (offset) within the frame to place (transmit) or find (receive) this value</td>
-		    				</tr>
-			    			<tr>
-			    				<td>Length</td>
-			    				<td><input type="number" step="1" min="1" max="32" id="canbits"></td>
-			    				<td>Specify the lenth of this field in bits</td>
-			    			</tr>
-				    		<tr>
-				    			<td>Gain</td>
-				    			<td><input type="number" step="1" min="1" max="100" id="cangain"></td>
-				    			<td>Specify a gain to scale the value up or down</td>
-				    		</tr>
-					    </table>
-					    <button><img class="buttonimg" src="/icon-check-circle.png">Save CAN mapping</button>
-					</form>
-				</div>
-				<button onclick="document.getElementById('addcanmapping').style.display='block';">
+				<button onclick="modal.showModal('can-mapping');">
 					<img class="buttonimg" src="/icon-plus-circle.png">Add a new CAN mapping</button>
 			</div>
 		</div>
