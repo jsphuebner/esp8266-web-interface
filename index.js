@@ -33,7 +33,7 @@ function onLoad()
 	populateExistingCanMappingTable();
 	populateVersion();
 	// run the poll function every 3 seconds
-	var autoRefresh = setInterval(refresh, 3000);
+	var autoRefresh = setInterval(refresh, 10000);
 }
 
 /** @brief automatically update data on the UI */
@@ -333,6 +333,7 @@ function clearMessages()
 /** @brief Maps a spot value to a CAN message
  * @param direction "rx" or "tx"
  * @param name name of spot value to be mapped */
+ /*
 function canmap(direction, name)
 {
     var canid = document.getElementById('canid' + name).value;
@@ -343,13 +344,14 @@ function canmap(direction, name)
     
     sendCmd(cmd);
 }
+*/
 
 /** @brief Loads a parameterset from json file and sends each parameter to the inverter */
 function loadParametersFromFile()
 {
-    modal.setLargeModalHeader("Loading parameters")
-    modal.emptyLargeModal();
-    modal.showLargeModal();
+    modal.setModalHeader('large', "Loading parameters");
+    modal.emptyModal('large');
+    modal.showModal('large');
 
 	var file = document.getElementById('paramfile');
 	
@@ -377,9 +379,9 @@ function setParam(params, index)
 	if (index < keys.length)
 	{
 		var key = keys[index];
-		modal.appendToLargeModal("Setting " + key + " to " + params[key] + "<br>");
+		modal.appendToModal('large', "Setting " + key + " to " + params[key] + "<br>");
 		inverter.sendCmd("set " + key + " " + params[key], function(reply) {
-			modal.appendToLargeModal(reply + "<br>");
+			modal.appendToModal('large', reply + "<br>");
 			// auto-scroll text in modal as it is added
 			modal.largeModalScrollToBottom();
 			setParam(params, index + 1);
@@ -681,6 +683,8 @@ function populateSpotValueDropDown(){
 /** @brief Populate the table of existing CAN mappings */
 function populateExistingCanMappingTable() {
 	var existigCanMappingTable = document.getElementById("existingCanMappingTable");
+	// emtpy the table
+	while (existigCanMappingTable.rows.length > 1) existigCanMappingTable.deleteRow(1);
 	inverter.getParamList(function(values) {
 		for (var name in values) {
 			var param = values[name];
@@ -706,7 +710,8 @@ function populateExistingCanMappingTable() {
 	        	canGainCell.innerHTML = param.cangain;
 	        	// delete button
 				var canDeleteCell = tr.insertCell(-1);
-	        	canDeleteCell.innerHTML = "<button><img class=\"buttonimg\" src=\"/icon-trash.png\">Delete CAN Mapping</button>";
+				var cmd = "inverter.canMapping('del', '" + name + "');populateExistingCanMappingTable();";
+	        	canDeleteCell.innerHTML = "<button onclick=\"" + cmd + "\"><img class=\"buttonimg\" src=\"/icon-trash.png\">Delete CAN Mapping</button>";
 			}
 		}
 	});
@@ -719,7 +724,30 @@ function populateVersion() {
 	var versionDiv = document.getElementById("version");
 	versionDiv.innerHTML = "";
 	inverter.getParam('version', function(reply) {
+		console.log("version" + typeof(reply));
         versionDiv.innerHTML += "Version : " + reply;
 	});
+}
+
+var ui = {
+
+	/** @brief Add a CAN Mapping */
+	canMapping: function()
+	{
+		// fetch values from form
+		var direction = document.getElementById('txrx').value;
+		var name = document.getElementById('addCanMappingSpotValueDropDown').value;
+		var canid = document.getElementById('canid').value;
+	    var canpos = document.getElementById('canpos').value;
+	    var canbits = document.getElementById('canbits').value;
+	    var cangain = document.getElementById('cangain').value;
+	    // send new CAN mapping to inverter
+	    inverter.canMapping(direction, name, canid, canpos, canbits, cangain);
+	    // hide form
+	    modal.hideModal('can-mapping');
+	    // refresh CAN mapping table
+	    populateExistingCanMappingTable();
+	},
+
 }
 

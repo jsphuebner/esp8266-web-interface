@@ -1,36 +1,68 @@
 
 var modal = {
-
-	// LARGE MODAL
 	
-	/** @brief Show the large modal dialog */
-	showLargeModal: function()
+	/** @brief Show the large dialog
+	 * @param modal name of the modal. Valid values : large, small, can-mapping. */
+	showModal: function(modal)
 	{
-        document.getElementById("large-modal-overlay").style.display = 'block';
+		var m = document.getElementById(modal + "-modal-overlay");
+		if ( m !== undefined ){
+			m.style.display = 'block';
+		}
+		else {
+			console.log("warning, showModal, bad modal choice");
+		}
 	},
 
-    /** @brief Hide the large modal dialog */
-	hideLargeModal: function()
+    /** @brief Hide the modal dialog */
+	hideModal: function(modal)
 	{
-        document.getElementById("large-modal-overlay").style.display = 'none';
+		var m = document.getElementById(modal + "-modal-overlay");
+		if ( m !== undefined ){
+			m.style.display = 'none';
+		}
+		else {
+			console.log("warning, hideModal, bad modal choice");
+		}
 	},
 
 	//* @brief Set the header text on the large modal */
-	setLargeModalHeader: function(headerText)
+	setModalHeader: function(modal, headerText)
 	{
-        document.getElementById("large-modal-header").innerHTML = headerText;
+		var m = document.getElementById(modal + "-modal-header");
+		if ( m !== undefined ){
+			m.innerHTML = headerText;
+		}
+		else {
+			console.log("warning, setModalHeader, bad modal choice");
+		}
 	},
 
 	//* @brief Empty the contents of the large modal */
-	emptyLargeModal: function()
+	emptyModal: function(modal)
 	{
-		document.getElementById("large-modal-content").innerHTML = "";
+		var m = document.getElementById(modal + "-modal-content");
+		console.log("modal " + m);
+		if ( m !== undefined ){
+			m.innerHTML = "";
+		}
+		else {
+			console.log("warning, emptyModal, bad modal choice");
+		}
 	},
 
 	//* @brief Append content to large modal */
-	appendToLargeModal: function(appendText)
+	appendToModal: function(modal, appendText)
 	{
-        document.getElementById("large-modal-content").innerHTML += appendText;
+		var modalId = modal + "-modal-content";
+		console.log("appendToModal : looking for div " + modalId);
+		var modalContent = document.getElementById(modalId);
+		if ( modalContent !== undefined ){
+			modalContent.innerHTML += appendText;
+		}
+		else {
+			console.log("warning, appendToModal, bad modal choice");
+		}
 	},
 
 	//* @brief auto-scroll large modal content */
@@ -39,29 +71,4 @@ var modal = {
 		largeModalContent.scrollTop = largeModalContent.scrollHeight;
 	},
 
-    // SMALL MODAL
-
-    /** @brief show the small modal pop up */
-	showSmallModal: function()
-	{
-        document.getElementById("small-modal-overlay").style.display = 'block';
-	},
-
-    /** @brief hide the small modal pop up */
-	hideSmallModal: function()
-	{
-        document.getElementById("small-modal-overlay").style.display = 'none';
-	},
-
-	/** @brief Set the header text on the small modal */
-	setSmallModalHeader: function(headerText)
-	{
-        document.getElementById("small-modal-header").innerHTML = headerText;
-	},
-
-	/** @brief Empty the contents of the small modal */
-	emptySmallModal: function()
-	{
-		document.getElementById("small-modal-overlay-content").innerHTML = "";
-	}
 };
