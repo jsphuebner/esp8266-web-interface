@@ -33,7 +33,7 @@ function onLoad()
 	populateExistingCanMappingTable();
 	populateVersion();
 	// run the poll function every 3 seconds
-	var autoRefresh = setInterval(refresh, 10000);
+	var autoRefresh = setInterval(refresh, 5000);
 }
 
 /** @brief automatically update data on the UI */
@@ -41,6 +41,7 @@ function refresh(){
 	inverter.refreshParams();
 	updateTables();
 	populateVersion();
+	ui.refreshStatusBox();
 }
 
 /** @brief generates chart at bottom of page */
@@ -723,10 +724,14 @@ function populateExistingCanMappingTable() {
 function populateVersion() {
 	var versionDiv = document.getElementById("version");
 	versionDiv.innerHTML = "";
+	/*
 	inverter.getParam('version', function(reply) {
-		console.log("version" + typeof(reply));
-        versionDiv.innerHTML += "Version : " + reply;
+		//console.log("version" + typeof(reply));
+        versionDiv.innerHTML += "Version : " + reply.value;
 	});
+	*/
+	var version = paramsCache.get('version');
+	versionDiv.innerHTML += "Version : " + version;
 }
 
 var ui = {
@@ -749,5 +754,79 @@ var ui = {
 	    populateExistingCanMappingTable();
 	},
 
+	refreshStatusBox: function()
+	{
+
+		var statusDiv = document.getElementById('top-left');
+
+		var status = paramsCache.get('status');
+		console.log("status : " + status);
+
+		if ( status == null ){
+			return;
+		}
+
+		var lasterr = paramsCache.get('lasterr');
+		var udc = paramsCache.get('udc');
+		var tmphs = paramsCache.get('tmphs');
+		var opmode = paramsCache.get('opmode');
+
+		statusDiv.innerHTML = "";
+
+		var tbl = document.createElement('table');
+		var tbody = document.createElement('tbody');
+		// status
+		var tr = document.createElement('tr');
+		var td = document.createElement('td');
+		td.appendChild(document.createTextNode('Status'));
+		tr.appendChild(td);
+		td = document.createElement('td');
+		td.appendChild(document.createTextNode(status));
+		tr.appendChild(td);
+		tbody.appendChild(tr);
+		// opmode
+		tr = document.createElement('tr');
+	    td = document.createElement('td');
+		td.appendChild(document.createTextNode('Opmode'));
+		tr.appendChild(td);
+		td = document.createElement('td');
+		td.appendChild(document.createTextNode(opmode));
+		tr.appendChild(td);
+		tbody.appendChild(tr);
+		// lasterr
+		tr = document.createElement('tr');
+		td = document.createElement('td');
+		td.appendChild(document.createTextNode('Last error'));
+		tr.appendChild(td);
+		td = document.createElement('td');
+		td.appendChild(document.createTextNode(lasterr));
+		tr.appendChild(td);
+		tbody.appendChild(tr);
+		// udc
+		tr = document.createElement('tr');
+		td = document.createElement('td');
+		td.appendChild(document.createTextNode('Battery voltage (udc)'));
+		tr.appendChild(td);
+		td = document.createElement('td');
+		td.appendChild(document.createTextNode(udc));
+		tr.appendChild(td);
+		tbody.appendChild(tr);
+		// tmphs
+		tr = document.createElement('tr');
+		td = document.createElement('td');
+		td.appendChild(document.createTextNode('Inverter temperature'));
+		tr.appendChild(td);
+		td = document.createElement('td');
+		td.appendChild(document.createTextNode(tmphs));
+		tr.appendChild(td);
+		tbody.appendChild(tr);
+
+
+		tbl.appendChild(tbody);
+		statusDiv.appendChild(tbl);
+
+    }
+
 }
+
 

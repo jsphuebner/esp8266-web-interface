@@ -18,9 +18,26 @@
  *
  */
 
+ var paramsCache = {
+ 	data: undefined,
+
+ 	get: function(name)
+ 	{
+ 		if ( paramsCache.data !== undefined )
+ 		{
+ 			if ( paramsCache.data[name].enums ) {
+ 		        return paramsCache.data[name].enums[paramsCache.data[name].value];
+ 		    } else {
+ 		    	return paramsCache.data[name].value;
+ 		    }
+ 		}
+ 		return null;
+ 	}	
+ }
+
 var inverter = {
 	firmwareVersion: 0,
-	paramsCache: undefined,
+	//paramsCache: undefined,
 	
 	sendCmd: function(cmd, replyFunc, repeat)
 	{
@@ -57,7 +74,9 @@ var inverter = {
 						inverter.firmwareVersion = parseFloat(param.value);
 				}
 			} catch(ex) {}
-			this.paramsCache = params;
+			//this.paramsCache = params;
+			paramsCache.data = params;
+			//console.log(params);
 			if (replyFunc) replyFunc(params);
 		});
 	},
@@ -88,6 +107,14 @@ var inverter = {
 			inverter.sendCmd("stream " + repeat + " " + items.join(','), process);
 	},
 	
+
+	/** @brief given the 'unit' string provided by the inverter api, parse out
+	 * the key value pairs and return them in an array.
+	 * @param unit, e.g. "0=None, 1=UdcLow, 2=UdcHigh, 4=UdcBelowUdcSw"
+	 * Example return : ['None', 'UdcLow', 'UdcHigh',,'udcBelowUdcSw']. Note,
+	 * the extra comma is intentional. The position in the array is determined
+	 * by the index on the left hand side of the equals in the 'unit' string.
+	 */
 	parseEnum: function(unit)
 	{
 		var expr = /(\-{0,1}[0-9]+)=([a-zA-Z0-9_\-\.]+)[,\s]{0,2}|([a-zA-Z0-9_\-\.]+)[,\s]{1,2}/g;
@@ -100,6 +127,7 @@ var inverter = {
 			{
 				enums[res[1]] = res[2];
 			} while (res = expr.exec(unit))
+			//console.log('enums : ' + enums);
 			return enums;
 		}
 		return false;
@@ -107,15 +135,16 @@ var inverter = {
 
 	refreshParams: function()
 	{
-		console.log("Refresshing params");
+		//console.log("Refresshing params");
 		inverter.getParamList(function(params){
-			inverter.paramsCache = params;
+			//inverter.paramsCache = params;
+			paramsCache.data = params;
 		});
 	},
 
 	getParam: function(paramName, replyFunc)
 	{
-		console.log("Getting param : " + paramName);
+		//console.log("Getting param : " + paramName);
 		if ( inverter.paramsCache !== undefined ){
 			if ( paramName in inverter.paramsCache ){
 			    replyFunc(inverter.paramsCache[paramName]);	
@@ -134,7 +163,6 @@ var inverter = {
 	canMapping: function(direction, name, id, pos, bits, gain)
 	{
 		var cmd = "can " + direction + " " + name + " " + id + " " + pos + " " + bits + " " + gain;
-		console.log("canMapping : " + cmd);
 		inverter.sendCmd(cmd);
 	}
 
