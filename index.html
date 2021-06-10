@@ -148,8 +148,7 @@
 		    	<img class="buttonimg" src="/icon-play.png">Start Inverter in manual Mode</button>
 		        <button onclick="sendCmd('stop');">
 		    	<img class="buttonimg" src="/icon-square.png">Stop Inverter</button>
-		    	<button onclick="sendCmd('errors');">Display Error Memory</button>
-		        <p><input type="text" id="customcmd"/> <button onclick="sendCmd(document.getElementById('customcmd').value);">Send Custom Command</button></p>
+		    	<!-- <button onclick="sendCmd('errors');">Display Error Memory</button>-->
 		        <!-- <p><a href="/remote.html">Start Remote Support Session</a></p> -->
 		    </div>
             
@@ -158,9 +157,7 @@
 
 				<div id="top-row">
                     <div id="top-left">
-                    	<p>Inverter status : WaitStart</p>
-                    	<p>Last error : None</p
-                    	<p>Battery voltage (udc) : 351v</p>
+                    	<img src="ajax-loader.gif">
                     </div>
                     <div id="top-right">
 						<h3>Inverter messages</h3>
@@ -174,7 +171,9 @@
                     	bottom-left
                     </div>
                     <div id="bottom-right">
-					    bottom-right
+                    	<h3>Command</h2>
+                    	<div id="commandoutput"></div>
+					    &gt;&gt;&nbsp;<input type="text" id="commandinput"/> <!-- onchange="ui.dashboardCommand();"/>-->
 					</div>
 				</div>
 				

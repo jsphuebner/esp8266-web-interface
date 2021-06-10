@@ -26,6 +26,17 @@ var subscription;
 /** @brief excutes when page finished loading. Creates tables and chart */
 function onLoad()
 {
+	// Set up listener to execute commands when enter is pressed (dashboard, command box)
+	var commandinput = document.getElementById('commandinput');
+	commandinput.addEventListener("keyup", function(event)
+	{
+		if ( event.keyCode == 13 )
+		{
+            event.preventDefault();
+            ui.dashboardCommand();
+		}
+	})
+
 	updateTables();
 	generateChart();
 	checkSubscribedParameterSet();
@@ -42,6 +53,7 @@ function refresh(){
 	updateTables();
 	populateVersion();
 	ui.refreshStatusBox();
+	ui.refreshMessagesBox();
 }
 
 /** @brief generates chart at bottom of page */
@@ -825,6 +837,29 @@ var ui = {
 		tbl.appendChild(tbody);
 		statusDiv.appendChild(tbl);
 
+    },
+
+    /** @brief execute command entered in the command box on the dashboard */
+    dashboardCommand: function()
+    {
+    	// Get command entered
+    	var commandinput = document.getElementById('commandinput').value;
+    	console.log("running dash command" + commandinput);
+    	// Get output box
+    	var commandoutput = document.getElementById('commandoutput');
+    	inverter.sendCmd(commandinput, function(reply){
+            commandoutput.innerHTML += reply + "<br>";
+            // Scroll output if needed
+    	    commandoutput.scrollTop = commandoutput.scrollHeight;
+    	});
+    },
+
+    /** @brief get error messages from inverter and put them in the messages box on the dash */
+    refreshMessagesBox: function(){
+    	var messageBox = document.getElementById('message');
+    	inverter.sendCmd('errors', function(reply){
+            messageBox.innerHTML = reply;
+    	});
     }
 
 }
