@@ -15,3 +15,4 @@
 - [ ] Show version string at bottom of menu
 - [ ] Visual feedback that changes have been accepted when modifying params
 - [ ] Visual feedback that parameters have been saved
+- [ ] Auto updates for web interface
