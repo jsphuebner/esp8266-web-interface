@@ -184,7 +184,7 @@ form {
     margin:0px; padding:0px; display:inline;
 }
 
-.button label {
+.butt {
     font-size: 100%;
     padding: 5px;
     padding-right: 10px;
@@ -201,7 +201,7 @@ form {
     border-radius: 4px;
 }
 
-.button label:hover {
+.butt label:hover {
     background-color: #efefef;
     color: black;
 }
