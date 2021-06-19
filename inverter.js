@@ -25,11 +25,13 @@
  	{
  		if ( paramsCache.data !== undefined )
  		{
- 			if ( paramsCache.data[name].enums ) {
- 		        return paramsCache.data[name].enums[paramsCache.data[name].value];
- 		    } else {
- 		    	return paramsCache.data[name].value;
- 		    }
+ 			if ( name in paramsCache.data ) {
+	 			if ( paramsCache.data[name].enums ) {
+	 		        return paramsCache.data[name].enums[paramsCache.data[name].value];
+	 		    } else {
+	 		    	return paramsCache.data[name].value;
+	 		    }
+	 		}
  		}
  		return null;
  	}	

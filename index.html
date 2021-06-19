@@ -141,304 +141,282 @@
 		</aside>
 
 		<div id="contentWrapper">
-	    <div id="contentWrapperInner">
+	        <div id="contentWrapperInner">
 
-		<!-- DASHBOARD -->
-		<div id="dashboard" class="tabdiv main-content" style="display:flex;">
-			<div class="main-right">
-				<h3>Actions</h3>
-				<button onclick="sendCmd('start 2');">
-		    	<img class="buttonimg" src="/icon-play.png">Start Inverter in manual Mode</button>
-		        <button onclick="sendCmd('stop');">
-		    	<img class="buttonimg" src="/icon-square.png">Stop Inverter</button>
-		    	<!-- <button onclick="sendCmd('errors');">Display Error Memory</button>-->
-		        <!-- <p><a href="/remote.html">Start Remote Support Session</a></p> -->
-		    </div>
-            
-            <div class="main-left">
-				<h2>Dashboard</h2>
+				<!-- DASHBOARD -->
+				<div id="dashboard" class="tabdiv main-content" style="display:flex;">
+					<div class="main-right">
+						<h3>Actions</h3>
+						<button onclick="sendCmd('start 2');">
+				    	<img class="buttonimg" src="/icon-play.png">Start Inverter in manual Mode</button>
+				        <button onclick="sendCmd('stop');">
+				    	<img class="buttonimg" src="/icon-square.png">Stop Inverter</button>
+				    	<!-- <button onclick="sendCmd('errors');">Display Error Memory</button>-->
+				        <!-- <p><a href="/remote.html">Start Remote Support Session</a></p> -->
+				    </div>
+		            
+		            <div class="main-left">
+						<h2>Dashboard</h2>
 
-				<div id="top-row">
-                    <div id="top-left">
-                    	<img src="ajax-loader.gif">
-                    </div>
-                    <div id="top-right">
-						<h3>Inverter messages</h3>
-						<pre><div id="message"></div></pre>
-						<!-- <button onclick="clearMessages();">Clear</button>-->
+						<div id="top-row">
+		                    <div id="top-left">
+		                    	<img src="ajax-loader.gif">
+		                    </div>
+		                    <div id="top-right">
+								<h3>Inverter messages</h3>
+								<pre><div id="message"></div></pre>
+								<!-- <button onclick="clearMessages();">Clear</button>-->
+							</div>
+						</div>
+
+						<div id="bottom-row">
+		                    <div id="bottom-left">
+		                    	bottom-left
+		                    </div>
+		                    <div id="bottom-right">
+		                    	<h3>Command</h2>
+		                    	<div id="commandoutput"></div>
+							    &gt;&gt;&nbsp;<input type="text" id="commandinput"/> <!-- onchange="ui.dashboardCommand();"/>-->
+							</div>
+						</div>
+						
+				    </div>
+				</div>
+
+			    <!-- UPDATE -->
+				<div id="update" class="tabdiv main-content">
+
+					<div class="main-right">
+						<h3>Actions</h3>
+						<!-- Install new firmware -->
+						<form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
+					        <!-- <input id="updatefile" name="updatefile" type="file" onchange="fileSelected();" />
+					        <input type="button" onclick="uploadFile();" value="Upload" /> -->
+					        <input id="updatefile" name="updatefile" type="file" onchange="uploadFile();" hidden />
+					        <label class="button" for="updatefile"><img class="buttonimg" src="/icon-upload.png">Install firmware from file</label>
+					    </form>
+
+					    <a href="#" onclick=""><button>
+					    	<img class="buttonimg" src="/icon-upload.png">Install bootloader from file</button></a>
+
+					    <a href="#" onclick="ui.showOTAUpdateFirmwareModal();"><button>
+					    	<img class="buttonimg" src="/icon-upload-cloud.png">Over the air firmware update</button></a>
+
+		                <a href="/swd/zero" target="_blank"><button>
+		                	<img class="buttonimg" src="/icon-trash-2.png">Erase Flash</button></a>
+		                <a href="#" onclick="resetSWD();"><button>
+		                	<img class="buttonimg" src="/icon-rotate-ccw.png">Hard Reset</button></a>
+		                <a href="/swd/bin?bootloader"><button>
+		                	<img class="buttonimg" src="/icon-download.png">Download Bootloader</button></a>
+		                <a href="/swd/bin?flash"><button>
+		                	<img class="buttonimg" src="/icon-download.png">Download Flash</button></a>
+		                <a href="#" onclick="ui.showExperimentalFeatures();"><button>
+		                	<img class="buttonimg" src="/icon-zap.png">Show experimental features</button></a>
+					</div>
+
+					<div class="main-left">
+					    <h2 id="update">Update</h2>
+					    <p>On this page you can apply software updates to your OpenInverter board.</p>
+					    <p>To install a new firmware on your OpenInverter board click on the 'Install new firmware' button on the right. Use the stm32_sine.bin file to install the sine firmeware or use the stm32_foc.bin file to install the FOC firmware. You can find information about the latest available releases, including download links, on the OpenInverter forum <a href="https://openinverter.org/forum/viewforum.php?f=7&sid=cdb63cfa1d2f7ab493e7079fc13a8e65">here</a>. </p>
+					    <p>Additionally, you can apply updates to this web interface by uploading individual files here. More information about updating the web interface can be found in its github repository <a href="https://github.com/jsphuebner/esp8266-web-interface">here</a>.</p>
+
+		                <!--
+					    <form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
+					        <input id="updatefile" name="updatefile" type="file" onchange="fileSelected();" />
+					        <input type="button" onclick="uploadFile();" value="Upload" />
+					    </form>
+
+					    <div id="progress" class="graph">
+					        <div id="bar" style="width: 0"></div>
+					    </div>
+		                
+		                <div id="experimentalupdate" style="display:none;">
+						    <h2 id="swdupdate">SWD Update</h2>
+						    <p>Use binary files (stm32_loader.bin, stm32_sine/foc.bin) for updating inverter bootloader/firmware.</p>
+						    <form id="swdform" enctype="multipart/form-data" action="edit" method="POST">
+						        <input id="swdfile" name="swdfile" type="file" onchange="fileSelected();" accept=".bin" />
+						        <input type="button" onclick="uploadSWDFile();" value="Upload" />
+						    </form>
+						    <div id="progress" class="graph">
+						    <div id="swdbar" style="width: 0"></div>
+			    		    </div>
+			    		</div>
+
+			    		<a onclick="ui.showExperimentalUpdate();">Show experimental features</a>
+			    	-->
+
 					</div>
 				</div>
 
-				<div id="bottom-row">
-                    <div id="bottom-left">
-                    	bottom-left
-                    </div>
-                    <div id="bottom-right">
-                    	<h3>Command</h2>
-                    	<div id="commandoutput"></div>
-					    &gt;&gt;&nbsp;<input type="text" id="commandinput"/> <!-- onchange="ui.dashboardCommand();"/>-->
+			    <!-- PARAMETERS -->
+				<div id="parameters" class="tabdiv main-content">
+
+					<div class="main-right">
+						<h3>Save & load</h3>
+						<button onclick="sendCmd('save');">
+							<img class="buttonimg" src="/icon-save.png">Save Parameters to Flash</button>
+					    <button onclick="sendCmd('load');">
+					    	<img class="buttonimg" src="/icon-rotate-ccw.png">Restore Parameters from Flash</button>
+					    <form id="paramdb" action="https://openinverter.org/parameters/api.php" method="POST" enctype="multipart/form-data">
+					        <input type="text" style="display: none;" id="parameters_json" name="data"></input>
+					        <input type="hidden" id="parameters_token" name="token" />
+					        <button onclick="parameterSubmit();"><image class="buttonimg" src="/icon-upload-cloud.png"> Submit Parameters to Openinverter</button>
+					    </form>
+
+					    <a download="params.json" href="data:text/json,{ }" id="paramDownload"><button>
+					    	<img class="buttonimg" src="/icon-download.png">Download Parameter File</button></a>
+
+		                <!-- Load params from file -->
+					    <form id="paramform" enctype="multipart/form-data" action="edit" method="POST">
+					        <input id="paramfile" name="paramfile" type="file" onchange="loadParametersFromFile();" hidden />
+					        <label class="button" for="paramfile"><img class="buttonimg" src="/icon-file-text.png">Load Parameters from File</label>
+					    </form>
+
+					    <a href="https://openinverter.org/wiki/Parameters" target="_blank"><button>
+					    	<img class="buttonimg" src="/icon-help-circle.png">Parameter Reference</button></a>
+					    
+					    <h3>Subscribe to parameter set</h3>
+					    <input id="token" type="text" onchange="checkToken(this.value, 'Requesting parameter set', true)" size="40">
+					    
+					    <p><img src="ajax-loader.gif" style="visibility: hidden" id="loader1">
+					    <button onclick="toggleVisibility();">Toggle Category Visibility</button></p>
+					    <p>
+					</div>
+
+					<div class="main-left">
+						<h2>Parameters</h2>
+					    <table id="params">
+					    <thead>
+					        <tr>
+					            <th>I</th>
+					            <th>Name</th>
+					            <th>Value</th>
+					            <th>Unit</th>
+					            <th>Minimum</th>
+					            <th>Maximum</th>
+					            <th>Default</th>
+					        </tr>
+					    </thead>
+					    <tbody id="paramBody">
+					    </tbody>
+					    </table>
+					</div>
+
+				</div>
+
+			    <!-- SPOT VALUES -->
+				<div id="spotvalues" class="tabdiv main-content">
+
+					<div class="main-right">
+					    <button onclick="showGauges()">Show Gauges</button>
+				        <button onclick="showLog()">Show Data Logger</button>
+				        
+				    </div>
+
+		            <div class="main-left">
+					    <h2 id="spot">Spot Values</h2>
+					    <p><img src="ajax-loader.gif" style="visibility: hidden" id="loader2">
+					    <table id="spotValues">
+					        <thead>
+					            <tr>
+					                <th>Name</th>
+					                <th>Value</th>
+					                <th>Unit</th>
+					                <th>Plot</th>
+					                <th>CAN Id</th>
+					                <th>Position</th>
+					                <th>Bits</th>
+					                <th>Gain</th>
+					                <th>Map to CAN</th>
+					            </tr>
+					        </thead>
+					        <tbody id="spotBody">
+					        </tbody>
+					    </table>
+					</div>
+
+				</div>
+
+			    <!-- PLOT -->
+				<div id="plot" class="tabdiv main-content">
+					<div class="main-right">
+		                <button onclick="startPlot()">
+		                	<img class="buttonimg" src="/icon-play.png">Start Plot</button>
+					    <button onclick="stopPlot()">
+					    	<img class="buttonimg" src="/icon-square.png">Stop Plot</button>
+					    <button onclick="pauseResumePlot()" disabled id="pauseButton">
+					    	<img class="buttonimg" src="/icon-pause.png">Pause Plot</button>
+					</div>
+
+					<div class="main-left">
+						<h2 id="plot">Plot</h2>
+					    <canvas id="canvas" width=100 height=40></canvas>
+					    <p>
+					    
+					    Limit data points to: <input type="number" id="maxValues" step="1" min="10" max="10000" value="1000" />
+					    Burst length: <input type="number" id="burstLength" step="1" min="1" max="1000" value="10" />
+					    <p>Copyright 2018 Johannes Huebner dev@johanneshuebner.com</p>
+					    <p>Charting by <a href="http://chartjs.org/" target="_blank">chart.js</a></p>
+					    <p>Gauges by <a href="https://github.com/Mikhus/canvas-gauges" target="_blank">Mykhailo Stadnyk</a></p>
+					</div>
+
+				    
+				</div>
+
+				<!-- DATA LOGGER -->
+				<div id="logger" class="tabdiv main-content">
+					<div class="main-right">
+		                <label for="samples">Samples per line: </label>
+						<input id="samples" type="number" step="1" min="1" max="2000" value="500">
+						<input type="checkbox" id="minmax">
+						<label for="minmax">Include Min/Max values</label>
+						<button onclick="start()" id="startstop">Start/Stop logging</button>
+						<button onclick="save()">Save As...</button>
+					</div>
+
+					<div class="main-left">
+						<h2>Data Logger</h2>
+						<textarea id="textArea" rows="50" style="display:block; width: 100%;">
+						</textarea>
 					</div>
 				</div>
-				
-		    </div>
-		</div>
 
-	    <!-- UPDATE -->
-		<div id="update" class="tabdiv main-content">
+				<!-- CAN MAPPING -->
+				<div id="canmapping" class="tabdiv main-content">
+					<div class="main-right">
+						<h3>Actions</h3>
+						<button onclick="modal.showModal('can-mapping');">
+							<img class="buttonimg" src="/icon-plus-circle.png">Add new mapping</button>
+						<button onclick="sendCmd('can clear');">
+							<img class="buttonimg" src="/icon-trash-2.png">Remove all mappings</button>
+					</div>
+					<div class="main-left">
+						<h2>CAN Mapping</h2>
+						<p>On this page you can configure the CAN mapping settings for your OpenInverter board. CAN mapping allows you to send and receive data via CAN bus. You can specify spot values that you would like to transmit on the CAN bus. Additionally you can specify spot values that you would like to set based on data received on the CAN bus.</p>
+						<p>A maximum of 8 items per CAN message can be mapped.</p>
 
-			<div class="main-right">
-				<h3>Actions</h3>
-				<!-- Install new firmware -->
-				<form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
-			        <!-- <input id="updatefile" name="updatefile" type="file" onchange="fileSelected();" />
-			        <input type="button" onclick="uploadFile();" value="Upload" /> -->
-			        <input id="updatefile" name="updatefile" type="file" onchange="uploadFile();" hidden />
-			        <label for="updatefile"><img class="buttonimg" src="/icon-upload.png">Install firmware from file</label>
-			    </form>
-
-			    <a href="#" onclick=""><button>
-			    	<img class="buttonimg" src="/icon-upload.png">Install bootloader from file</button></a>
-
-			    <a href="#" onclick="ui.showOTAUpdateFirmwareModal();"><button>
-			    	<img class="buttonimg" src="/icon-upload-cloud.png">Over the air firmware update</button></a>
-
-                <a href="/swd/zero" target="_blank"><button>
-                	<img class="buttonimg" src="/icon-trash-2.png">Erase Flash</button></a>
-                <a href="#" onclick="resetSWD();"><button>
-                	<img class="buttonimg" src="/icon-rotate-ccw.png">Hard Reset</button></a>
-                <a href="/swd/bin?bootloader"><button>
-                	<img class="buttonimg" src="/icon-download.png">Download Bootloader</button></a>
-                <a href="/swd/bin?flash"><button>
-                	<img class="buttonimg" src="/icon-download.png">Download Flash</button></a>
-                <a href="#" onclick="ui.showExperimentalFeatures();"><button>
-                	<img class="buttonimg" src="/icon-zap.png">Show experimental features</button></a>
-			</div>
-
-			<div class="main-left">
-			    <h2 id="update">Update</h2>
-			    <p>On this page you can apply software updates to your OpenInverter board.</p>
-			    <p>To install a new firmware on your OpenInverter board click on the 'Install new firmware' button on the right. Use the stm32_sine.bin file to install the sine firmeware or use the stm32_foc.bin file to install the FOC firmware. You can find information about the latest available releases, including download links, on the OpenInverter forum <a href="https://openinverter.org/forum/viewforum.php?f=7&sid=cdb63cfa1d2f7ab493e7079fc13a8e65">here</a>. </p>
-			    <p>Additionally, you can apply updates to this web interface by uploading individual files here. More information about updating the web interface can be found in its github repository <a href="https://github.com/jsphuebner/esp8266-web-interface">here</a>.</p>
-
-                <!--
-			    <form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
-			        <input id="updatefile" name="updatefile" type="file" onchange="fileSelected();" />
-			        <input type="button" onclick="uploadFile();" value="Upload" />
-			    </form>
-
-			    <div id="progress" class="graph">
-			        <div id="bar" style="width: 0"></div>
-			    </div>
-                
-                <div id="experimentalupdate" style="display:none;">
-				    <h2 id="swdupdate">SWD Update</h2>
-				    <p>Use binary files (stm32_loader.bin, stm32_sine/foc.bin) for updating inverter bootloader/firmware.</p>
-				    <form id="swdform" enctype="multipart/form-data" action="edit" method="POST">
-				        <input id="swdfile" name="swdfile" type="file" onchange="fileSelected();" accept=".bin" />
-				        <input type="button" onclick="uploadSWDFile();" value="Upload" />
-				    </form>
-				    <div id="progress" class="graph">
-				    <div id="swdbar" style="width: 0"></div>
-	    		    </div>
-	    		</div>
-
-	    		<a onclick="ui.showExperimentalUpdate();">Show experimental features</a>
-	    	-->
-
-			</div>
-		</div>
-
-	    <!-- PARAMETERS -->
-		<div id="parameters" class="tabdiv main-content">
-
-			<div class="main-right">
-				<h3>Save & load</h3>
-				<button onclick="sendCmd('save');">
-					<img class="buttonimg" src="/icon-save.png">Save Parameters to Flash</button>
-			    <button onclick="sendCmd('load');">
-			    	<img class="buttonimg" src="/icon-rotate-ccw.png">Restore Parameters from Flash</button>
-			    <form id="paramdb" action="https://openinverter.org/parameters/api.php" method="POST" enctype="multipart/form-data">
-			        <input type="text" style="display: none;" id="parameters_json" name="data"></input>
-			        <input type="hidden" id="parameters_token" name="token" />
-			        <button onclick="parameterSubmit();"><image class="buttonimg" src="/icon-upload-cloud.png"> Submit Parameters to Openinverter</button>
-			    </form>
-
-			    <a download="params.json" href="data:text/json,{ }" id="paramDownload"><button>
-			    	<img class="buttonimg" src="/icon-download.png">Download Parameter File</button></a>
-
-                <!-- Load params from file -->
-			    <form id="paramform" enctype="multipart/form-data" action="edit" method="POST">
-			        <input id="paramfile" name="paramfile" type="file" onchange="loadParametersFromFile();" hidden />
-			        <label class="" for="paramfile"><img class="buttonimg" src="/icon-file-text.png">Load Parameters from File</label>
-			    </form>
-
-			    <a href="https://openinverter.org/wiki/Parameters" target="_blank"><button>
-			    	<img class="buttonimg" src="/icon-help-circle.png">Parameter Reference</button></a>
-			    
-			    <h3>Subscribe to parameter set</h3>
-			    <input id="token" type="text" onchange="checkToken(this.value, 'Requesting parameter set', true)" size="40">
-			    
-			    <p><img src="ajax-loader.gif" style="visibility: hidden" id="loader1">
-			    <button onclick="toggleVisibility();">Toggle Category Visibility</button></p>
-			    <p>
-			</div>
-
-			<div class="main-left">
-				<h2>Parameters</h2>
-			    <table id="params">
-			    <thead>
-			        <tr>
-			            <th>I</th>
-			            <th>Name</th>
-			            <th>Value</th>
-			            <th>Unit</th>
-			            <th>Minimum</th>
-			            <th>Maximum</th>
-			            <th>Default</th>
-			        </tr>
-			    </thead>
-			    <tbody id="paramBody">
-			    </tbody>
-			    </table>
-			</div>
-
-		</div>
-
-	    <!-- SPOT VALUES -->
-		<div id="spotvalues" class="tabdiv main-content">
-
-			<div class="main-right">
-			    <button onclick="showGauges()">Show Gauges</button>
-		        <button onclick="showLog()">Show Data Logger</button>
-		        
-		    </div>
-
-            <div class="main-left">
-			    <h2 id="spot">Spot Values</h2>
-			    <p><img src="ajax-loader.gif" style="visibility: hidden" id="loader2">
-			    <table id="spotValues">
-			        <thead>
-			            <tr>
-			                <th>Name</th>
-			                <th>Value</th>
-			                <th>Unit</th>
-			                <th>Plot</th>
-			                <th>CAN Id</th>
-			                <th>Position</th>
-			                <th>Bits</th>
-			                <th>Gain</th>
-			                <th>Map to CAN</th>
-			            </tr>
-			        </thead>
-			        <tbody id="spotBody">
-			        </tbody>
-			    </table>
-			</div>
-
-		</div>
-
-	    <!-- PLOT -->
-		<div id="plot" class="tabdiv main-content">
-			<div class="main-right">
-                <button onclick="startPlot()">
-                	<img class="buttonimg" src="/icon-play.png">Start Plot</button>
-			    <button onclick="stopPlot()">
-			    	<img class="buttonimg" src="/icon-square.png">Stop Plot</button>
-			    <button onclick="pauseResumePlot()" disabled id="pauseButton">
-			    	<img class="buttonimg" src="/icon-pause.png">Pause Plot</button>
-			</div>
-
-			<div class="main-left">
-				<h2 id="plot">Plot</h2>
-			    <canvas id="canvas" width=100 height=40></canvas>
-			    <p>
-			    
-			    Limit data points to: <input type="number" id="maxValues" step="1" min="10" max="10000" value="1000" />
-			    Burst length: <input type="number" id="burstLength" step="1" min="1" max="1000" value="10" />
-			    <p>Copyright 2018 Johannes Huebner dev@johanneshuebner.com</p>
-			    <p>Charting by <a href="http://chartjs.org/" target="_blank">chart.js</a></p>
-			    <p>Gauges by <a href="https://github.com/Mikhus/canvas-gauges" target="_blank">Mykhailo Stadnyk</a></p>
-			</div>
-
-		    
-		</div>
-
-		<!-- DATA LOGGER -->
-		<div id="logger" class="tabdiv main-content">
-			<div class="main-right">
-                <label for="samples">Samples per line: </label>
-				<input id="samples" type="number" step="1" min="1" max="2000" value="500">
-				<input type="checkbox" id="minmax">
-				<label for="minmax">Include Min/Max values</label>
-				<button onclick="start()" id="startstop">Start/Stop logging</button>
-				<button onclick="save()">Save As...</button>
-			</div>
-
-			<div class="main-left">
-				<h2>Data Logger</h2>
-				<textarea id="textArea" rows="50" style="display:block; width: 100%;">
-				</textarea>
-			</div>
-		</div>
-
-		<!-- CAN MAPPING -->
-		<div id="canmapping" class="tabdiv main-content">
-			<div class="main-right">
-				<h3>Actions</h3>
-				<button onclick="modal.showModal('can-mapping');">
-					<img class="buttonimg" src="/icon-plus-circle.png">Add new mapping</button>
-				<button onclick="sendCmd('can clear');">
-					<img class="buttonimg" src="/icon-trash-2.png">Remove all mappings</button>
-			</div>
-			<div class="main-left">
-				<h2>CAN Mapping</h2>
-				<p>On this page you can configure the CAN mapping settings for your OpenInverter board. CAN mapping allows you to send and receive data via CAN bus. You can specify spot values that you would like to transmit on the CAN bus. Additionally you can specify spot values that you would like to set based on data received on the CAN bus.</p>
-				<p>A maximum of 8 items per CAN message can be mapped.</p>
-
-				<!-- Existing CAN mappings -->
-				<h3>Existing CAN Mappings</h3>
-				<table id="existingCanMappingTable" class="existing-can-mapping">
-					<tr>
-						<th>Spot Value</th>
-						<th>Transmit or Receive</th>
-						<th>ID</th>
-						<th>Offset</th>
-						<th>Length</th>
-						<th>Gain</th>
-						<th>Delete Mapping</th>
-					</tr>
-				</table>
-				
-			</div>
-		</div>
+						<!-- Existing CAN mappings -->
+						<h3>Existing CAN Mappings</h3>
+						<table id="existingCanMappingTable" class="existing-can-mapping">
+							<tr>
+								<th>Spot Value</th>
+								<th>Transmit or Receive</th>
+								<th>ID</th>
+								<th>Offset</th>
+								<th>Length</th>
+								<th>Gain</th>
+								<th>Delete Mapping</th>
+							</tr>
+						</table>
+						
+					</div>
+				</div>
 
 
-		<!-- WIFI SETTINGS -->
-		<div id="wifi" class="tabdiv main-content">
-			<div class="main-right">
-			</div>
-			<div class="main-left">
-				<h2>WiFi Settings</h2>
-				<h3>Access Point Settings</h3>
-                <p>Here you can specify SSID and password of the access point that is created by the inverter.</p>
-                <form id="apform" enctype="multipart/form-data" action="wifi" method="POST">
-                    <p><label for="apSSID">AP SSID: </label><input id="apSSID" name="apSSID" type="text" value="%apSSID%"/>
-                    <p><label for="apPW">AP WPA2 Password: </label><input id="apPW" name="apPW" type="text" title="Must be at leat 8 characters long" onkeyup="onAPPW(this.value)"/><br>
-                    <p><input id="apsubmit" type="submit" value="Modify" disabled/>
-                </form>
-                <hr>
-                <h3>Station Settings</3>
-                <p>Here you can specify a Wifi network that the inverter joins.</p>
-                <form id="apform" enctype="multipart/form-data" action="wifi" method="POST">
-                    <p><label for="staSSID">Network SSID: </label><input id="staSSID" name="staSSID" type="text" value="%staSSID%"/>
-                    <p><label for="staPW">WPA2 Password: </label><input id="staPW" name="staPW" type="text" />
-                    <p>Current IP Address: %staIP%
-                    <p><input type="submit" value="Modify" />
-                </form>
-			</div>
-		</div>
+				<!-- WIFI SETTINGS -->
+				<div id="wifi" class="tabdiv main-content"></div>
 
-	    </div> <!-- end contentWrapper -->
+	        </div> <!-- end contentWrapper -->
 	    </div> <!-- end contentWrapperInner -->
 
 </div>
