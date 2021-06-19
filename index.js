@@ -42,9 +42,9 @@ function onLoad()
 	checkSubscribedParameterSet();
 	populateSpotValueDropDown();
 	populateExistingCanMappingTable();
-	ui.populateVersion();
+	ui.populateWiFiTab();
 	// run the poll function every 3 seconds
-	var autoRefresh = setInterval(refresh, 5000);
+	var autoRefresh = setInterval(refresh, 10000);
 }
 
 /** @brief automatically update data on the UI */
@@ -54,6 +54,7 @@ function refresh(){
 	ui.populateVersion();
 	ui.refreshStatusBox();
 	ui.refreshMessagesBox();
+	
 }
 
 /** @brief generates chart at bottom of page */
@@ -936,7 +937,6 @@ var ui = {
     	console.log("installOTAFirmwareUpdate start");
     	// get release selected
     	var releaseURL = document.getElementById('ota-release').value;
-    	releaseURL = "https://github-releases.githubusercontent.com/154054578/bb91ac00-b0fe-11eb-965d-fa86f7832bec?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20210618%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20210618T194113Z&X-Amz-Expires=300&X-Amz-Signature=2bb69b9336b79199073b2d51f276cdbf4879123d054817964d5177ea37dc2c21&X-Amz-SignedHeaders=host&actor_id=0&key_id=0&repo_id=154054578&response-content-disposition=attachment%3B%20filename%3Dstm32_foc.bin&response-content-type=application%2Foctet-stream";
 
     	// hide the form
     	var otaUpdateForm = document.getElementById('ota-update-form').display = 'none';
@@ -993,6 +993,26 @@ var ui = {
 		xmlhttp.open("POST", "/edit");
 		xmlhttp.send(fd);
 	},
+
+	/** WiFi */
+
+	wifiValidatePasswordLength: function(pw)
+	{
+		document.getElementById("apsubmit").disabled = pw.length < 8;
+	},
+
+	populateWiFiTab: function()
+	{
+		console.log("updating wifi");
+		var wifiTab = document.getElementById("wifi");
+		var wifiFetchRequest = new XMLHttpRequest();
+		wifiFetchRequest.onload = function()
+		{
+			wifiTab.innerHTML = this.responseText;
+		}
+		wifiFetchRequest.open("GET", "/wifi");
+		wifiFetchRequest.send();
+	}
 
 }
 
