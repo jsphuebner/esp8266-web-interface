@@ -20,6 +20,7 @@
 
 a {
     text-decoration: none;
+    color: #4CAF50;
 }
 
 a:visited {
@@ -101,19 +102,22 @@ html, body {
 
 /* Navbar */
 
-.navbar { 
+#navbar { 
 	background-color: #4CAF50;
-    order: 1;
+    /*order: 1;*/
+    min-height: 100vh;
+    position: fixed;
+    width: 200px;
 }
 
-.navbar a {
+#navbar a {
     text-decoration: none;
     display: block;
     margin:0;
     color: black;
 }
 
-.navbar img {
+#navbar img {
     display: block;
     float: left;
     padding-left: 10px;
@@ -121,13 +125,18 @@ html, body {
     vertical-align: middle
 }
 
+
+/* version */
+
+
 #version {
     position: absolute;
     bottom: 0px;
     padding: 0px;
+    padding-left: 5px;
     margin: 0px;
     text-align: center;
-    width: 100%;
+    float: left;
 }
 
 #version p {
@@ -136,6 +145,31 @@ html, body {
     margin: 0px;
     color: #444;
     margin-bottom: auto;
+}
+
+/* contentWrapper */
+
+#contentWrapper {
+    display: block;
+    width: calc(100% - 200px);
+    flex: 1;
+    height: 100%;
+    min-height: 100vh;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 200px;
+}
+
+#contentWrapperInner {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    width: 100%;
+    min-height: 100vh;
+    position: relative;
+    align-items: stretch;
 }
 
 /* Button & forms */
@@ -150,7 +184,8 @@ form {
 
 label {
     font-size: 100%;
-    padding: 10px;
+    padding: 5px;
+    padding-right: 10px;
     background-color: #4CAF50;
     color: black;
     -webkit-transition-duration: 0.4s; /* Safari */
@@ -171,7 +206,8 @@ label:hover {
 
 button { 
 	font-size: 100%;
-	padding: 10px;
+	padding: 5px;
+    padding-right: 10px;
 	background-color: #4CAF50;
 	color: black;
 	-webkit-transition-duration: 0.4s; /* Safari */
@@ -367,7 +403,7 @@ tr:hover {background-color:#f5f5f5;}
 }
 
 .modal-content {
-    border: 1px solid #DDD;
+    //border: 1px solid #DDD;
     height: 90%;
     width: 100%;
     overflow: auto;

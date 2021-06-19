@@ -104,7 +104,7 @@
 			</div>
 		</div>
 
-		<div class="navbar">
+		<aside id="navbar" class="navbar">
 			<div id="logo">
 			    <img src="logo.png">
 		    </div>
@@ -138,7 +138,10 @@
 
 			<div id="version"></div>
 
-		</div>
+		</aside>
+
+		<div id="contentWrapper">
+	    <div id="contentWrapperInner">
 
 		<!-- DASHBOARD -->
 		<div id="dashboard" class="tabdiv main-content" style="display:flex;">
@@ -185,6 +188,20 @@
 
 			<div class="main-right">
 				<h3>Actions</h3>
+				<!-- Install new firmware -->
+				<form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
+			        <!-- <input id="updatefile" name="updatefile" type="file" onchange="fileSelected();" />
+			        <input type="button" onclick="uploadFile();" value="Upload" /> -->
+			        <input id="updatefile" name="updatefile" type="file" onchange="uploadFile();" hidden />
+			        <label for="updatefile"><img class="buttonimg" src="/icon-upload.png">Install firmware from file</label>
+			    </form>
+
+			    <a href="#" onclick=""><button>
+			    	<img class="buttonimg" src="/icon-upload.png">Install bootloader from file</button></a>
+
+			    <a href="#" onclick="ui.showOTAUpdateFirmwareModal();"><button>
+			    	<img class="buttonimg" src="/icon-upload-cloud.png">Over the air firmware update</button></a>
+
                 <a href="/swd/zero" target="_blank"><button>
                 	<img class="buttonimg" src="/icon-trash-2.png">Erase Flash</button></a>
                 <a href="#" onclick="resetSWD();"><button>
@@ -193,30 +210,41 @@
                 	<img class="buttonimg" src="/icon-download.png">Download Bootloader</button></a>
                 <a href="/swd/bin?flash"><button>
                 	<img class="buttonimg" src="/icon-download.png">Download Flash</button></a>
+                <a href="#" onclick="ui.showExperimentalFeatures();"><button>
+                	<img class="buttonimg" src="/icon-zap.png">Show experimental features</button></a>
 			</div>
 
 			<div class="main-left">
-			    <h2 id="update">UART Update</h2>
-			    <p>Use binary files (stm32_sine/foc.bin) for updating inverter firmware. Upload any other file for updating this web interface.</p>
+			    <h2 id="update">Update</h2>
+			    <p>On this page you can apply software updates to your OpenInverter board.</p>
+			    <p>To install a new firmware on your OpenInverter board click on the 'Install new firmware' button on the right. Use the stm32_sine.bin file to install the sine firmeware or use the stm32_foc.bin file to install the FOC firmware. You can find information about the latest available releases, including download links, on the OpenInverter forum <a href="https://openinverter.org/forum/viewforum.php?f=7&sid=cdb63cfa1d2f7ab493e7079fc13a8e65">here</a>. </p>
+			    <p>Additionally, you can apply updates to this web interface by uploading individual files here. More information about updating the web interface can be found in its github repository <a href="https://github.com/jsphuebner/esp8266-web-interface">here</a>.</p>
+
+                <!--
 			    <form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
 			        <input id="updatefile" name="updatefile" type="file" onchange="fileSelected();" />
 			        <input type="button" onclick="uploadFile();" value="Upload" />
 			    </form>
+
 			    <div id="progress" class="graph">
 			        <div id="bar" style="width: 0"></div>
 			    </div>
+                
+                <div id="experimentalupdate" style="display:none;">
+				    <h2 id="swdupdate">SWD Update</h2>
+				    <p>Use binary files (stm32_loader.bin, stm32_sine/foc.bin) for updating inverter bootloader/firmware.</p>
+				    <form id="swdform" enctype="multipart/form-data" action="edit" method="POST">
+				        <input id="swdfile" name="swdfile" type="file" onchange="fileSelected();" accept=".bin" />
+				        <input type="button" onclick="uploadSWDFile();" value="Upload" />
+				    </form>
+				    <div id="progress" class="graph">
+				    <div id="swdbar" style="width: 0"></div>
+	    		    </div>
+	    		</div>
 
-			    <h2 id="swdupdate">SWD Update</h2>
-			    <p>Use binary files (stm32_loader.bin, stm32_sine/foc.bin) for updating inverter bootloader/firmware.</p>
-			    <form id="swdform" enctype="multipart/form-data" action="edit" method="POST">
-			        <input id="swdfile" name="swdfile" type="file" onchange="fileSelected();" accept=".bin" />
-			        <input type="button" onclick="uploadSWDFile();" value="Upload" />
-			    </form>
-			    <div id="progress" class="graph">
-			    <div id="swdbar" style="width: 0"></div>
-			    </div>
-			    <br/><br/>
-			    
+	    		<a onclick="ui.showExperimentalUpdate();">Show experimental features</a>
+	    	-->
+
 			</div>
 		</div>
 
@@ -236,8 +264,9 @@
 			    </form>
 
 			    <a download="params.json" href="data:text/json,{ }" id="paramDownload"><button>
-			    	<img class="buttonimg" src="/icon-download.png"> Download Parameter File</button></a>
+			    	<img class="buttonimg" src="/icon-download.png">Download Parameter File</button></a>
 
+                <!-- Load params from file -->
 			    <form id="paramform" enctype="multipart/form-data" action="edit" method="POST">
 			        <input id="paramfile" name="paramfile" type="file" onchange="loadParametersFromFile();" hidden />
 			        <label class="" for="paramfile"><img class="buttonimg" src="/icon-file-text.png">Load Parameters from File</label>
@@ -281,7 +310,7 @@
 			<div class="main-right">
 			    <button onclick="showGauges()">Show Gauges</button>
 		        <button onclick="showLog()">Show Data Logger</button>
-		        <button onclick="sendCmd('can clear');">Reset CAN Mapping</button>
+		        
 		    </div>
 
             <div class="main-left">
@@ -355,6 +384,11 @@
 		<!-- CAN MAPPING -->
 		<div id="canmapping" class="tabdiv main-content">
 			<div class="main-right">
+				<h3>Actions</h3>
+				<button onclick="modal.showModal('can-mapping');">
+					<img class="buttonimg" src="/icon-plus-circle.png">Add new mapping</button>
+				<button onclick="sendCmd('can clear');">
+					<img class="buttonimg" src="/icon-trash-2.png">Remove all mappings</button>
 			</div>
 			<div class="main-left">
 				<h2>CAN Mapping</h2>
@@ -371,11 +405,10 @@
 						<th>Offset</th>
 						<th>Length</th>
 						<th>Gain</th>
-						<th>Delete CAN Mapping</th>
+						<th>Delete Mapping</th>
 					</tr>
 				</table>
-				<button onclick="modal.showModal('can-mapping');">
-					<img class="buttonimg" src="/icon-plus-circle.png">Add a new CAN mapping</button>
+				
 			</div>
 		</div>
 
@@ -404,6 +437,9 @@
                 </form>
 			</div>
 		</div>
+
+	    </div> <!-- end contentWrapper -->
+	    </div> <!-- end contentWrapperInner -->
 
 </div>
 

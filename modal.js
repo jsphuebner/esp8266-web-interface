@@ -42,7 +42,7 @@ var modal = {
 	emptyModal: function(modal)
 	{
 		var m = document.getElementById(modal + "-modal-content");
-		console.log("modal " + m);
+		//console.log("modal " + m);
 		if ( m !== undefined ){
 			m.innerHTML = "";
 		}
@@ -55,7 +55,7 @@ var modal = {
 	appendToModal: function(modal, appendText)
 	{
 		var modalId = modal + "-modal-content";
-		console.log("appendToModal : looking for div " + modalId);
+		//console.log("appendToModal : looking for div " + modalId);
 		var modalContent = document.getElementById(modalId);
 		if ( modalContent !== undefined ){
 			modalContent.innerHTML += appendText;

@@ -35,7 +35,7 @@ function onLoad()
             event.preventDefault();
             ui.dashboardCommand();
 		}
-	})
+	});
 
 	updateTables();
 	generateChart();
@@ -724,7 +724,7 @@ function populateExistingCanMappingTable() {
 	        	// delete button
 				var canDeleteCell = tr.insertCell(-1);
 				var cmd = "inverter.canMapping('del', '" + name + "');populateExistingCanMappingTable();";
-	        	canDeleteCell.innerHTML = "<button onclick=\"" + cmd + "\"><img class=\"buttonimg\" src=\"/icon-trash.png\">Delete CAN Mapping</button>";
+	        	canDeleteCell.innerHTML = "<button onclick=\"" + cmd + "\"><img class=\"buttonimg\" src=\"/icon-trash.png\">Delete mapping</button>";
 			}
 		}
 	});
@@ -747,6 +747,9 @@ function populateVersion() {
 }
 
 var ui = {
+
+    // The API endpoint to query to get firmware release available in Github
+	githubFirmwareReleaseURL: 'https://api.github.com/repos/jsphuebner/stm32-sine/releases',
 
 	/** @brief Add a CAN Mapping */
 	canMapping: function()
@@ -860,7 +863,137 @@ var ui = {
     	inverter.sendCmd('errors', function(reply){
             messageBox.innerHTML = reply;
     	});
-    }
+    },
+
+    /** @brief fetch a list of firmware release available from Github */
+    populateReleasesDropdown: function(selectId)
+    {
+    	var releases = undefined;
+    	var getReleasesRequest = new XMLHttpRequest();
+    	var select = document.getElementById(selectId);
+
+    	getReleasesRequest.onload = function()
+    	{
+    		var releases = JSON.parse(this.responseText);
+
+    		for ( let r = 0; r < releases.length; r++ )
+    		{
+    			// each release can have multiple assets (sine vs foc), step through them
+    			for ( let a = 0; a < releases[r].assets.length; a++ )
+    			{
+    				if ( releases[r].assets[a].name.endsWith('.bin') )
+    				{
+    					var rName = releases[r].tag_name + " : " + releases[r].assets[a].name;
+    					var rUrl = releases[r].assets[a].browser_download_url;
+        				var selection = "<option value=\"" + rUrl + "\">" + rName + "</option>";
+        				select.innerHTML += selection;
+    				}
+    				
+    			}
+    		}
+    	};
+
+    	getReleasesRequest.onerror = function()
+		{
+			alert("error");
+		};
+
+		getReleasesRequest.open("GET", ui.githubFirmwareReleaseURL, true);
+		getReleasesRequest.send();
+    },
+
+    
+
+    /** @brief bring up the modal for installing a new firmware over-the-air */
+    showOTAUpdateFirmwareModal: function() {
+    	// empty the modal in case there's still something in there
+    	modal.emptyModal('large');
+
+    	// Insert the form
+    	var form = `
+    	  <form id="ota-update-form">
+    	    <h2>Over the air firmware update</h2>
+    	    <p>Choose a release to install</p>
+    	    <select id="ota-release"></select>
+    	    <a onclick="ui.installOTAFirmwareUpdate();"><button>
+    	        <img class="buttonimg" src="/icon-check-circle.png">Install firmware</button></a>
+    	  </form> 
+          <div id="ota-release-selected-div" style="display:hidden;"></div>
+    	  <div id="progress" class="graph" style="display:hidden;">
+		    <div id="bar" style="width: 0"></div>
+		  </div>
+    	`;
+    	modal.appendToModal('large', form);
+
+    	// get list of available releases
+    	ui.populateReleasesDropdown('ota-release');
+
+        modal.showModal('large');
+    },
+
+    /** @brief install over-the-air update */
+    installOTAFirmwareUpdate: function()
+    {
+    	console.log("installOTAFirmwareUpdate start");
+    	// get release selected
+    	var releaseURL = document.getElementById('ota-release').value;
+    	releaseURL = "https://github-releases.githubusercontent.com/154054578/bb91ac00-b0fe-11eb-965d-fa86f7832bec?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20210618%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20210618T194113Z&X-Amz-Expires=300&X-Amz-Signature=2bb69b9336b79199073b2d51f276cdbf4879123d054817964d5177ea37dc2c21&X-Amz-SignedHeaders=host&actor_id=0&key_id=0&repo_id=154054578&response-content-disposition=attachment%3B%20filename%3Dstm32_foc.bin&response-content-type=application%2Foctet-stream";
+
+    	// hide the form
+    	var otaUpdateForm = document.getElementById('ota-update-form').display = 'none';
+
+    	// Display what version we're installing
+    	var otaReleaseSelectedDiv = document.getElementById('ota-release-selected-div');
+    	otaReleaseSelectedDiv.innerHTML += "<p>Installing firmware from " + releaseURL;
+
+    	// fetch the release
+    	var releaseRequest = new XMLHttpRequest();
+    	releaseRequest.responseType = "blob";
+    	releaseRequest.onload = function()
+    	{
+    		console.log("here");
+    		var releaseBlob = releaseRequest.response;
+    		console.log(releaseBlob);
+    		// build form we will submit to /edit to upload the file blob
+    		var editFormData = new FormData();
+    		editFormData.append("updatefile", releaseBlob, "stm32.bin");
+    		var uploadRequest = new XMLHttpRequest();
+    		uploadRequest.onload = function(response)
+    		{
+    			console.log(response);
+    		}
+    		uploadRequest.open("POST", "/edit");
+    		uploadRequest.send(editFormData);
+    	}
+    	releaseRequest.open("GET", releaseURL);
+    	releaseRequest.send();
+    },
+
+    /** @brief uploads file to web server, if bin-file uploaded, starts a firmware upgrade */
+    doOTAUpdate: function() 
+	{
+		var xmlhttp = new XMLHttpRequest();
+		var form = document.getElementById('uploadform');
+		
+		if (form.getFormData)
+			var fd = form.getFormData();
+		else
+			var fd = new FormData(form);
+		var file = document.getElementById('updatefile').files[0].name;
+
+		xmlhttp.onload = function() 
+		{
+			if (file.endsWith(".bin"))
+			{
+				runUpdate(-1, "/" + file);
+			}
+			document.getElementById("bar").innerHTML = "<p>Upload complete</p>";
+			setTimeout(function() { document.getElementById("bar").innerHTML = "" }, 5000);
+		}
+
+		xmlhttp.open("POST", "/edit");
+		xmlhttp.send(fd);
+	},
 
 }
 
