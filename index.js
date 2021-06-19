@@ -42,7 +42,7 @@ function onLoad()
 	checkSubscribedParameterSet();
 	populateSpotValueDropDown();
 	populateExistingCanMappingTable();
-	populateVersion();
+	ui.populateVersion();
 	// run the poll function every 3 seconds
 	var autoRefresh = setInterval(refresh, 5000);
 }
@@ -51,7 +51,7 @@ function onLoad()
 function refresh(){
 	inverter.refreshParams();
 	updateTables();
-	populateVersion();
+	ui.populateVersion();
 	ui.refreshStatusBox();
 	ui.refreshMessagesBox();
 }
@@ -732,24 +732,23 @@ function populateExistingCanMappingTable() {
 
 
 
-/** @brief fill out version */
-function populateVersion() {
-	var versionDiv = document.getElementById("version");
-	versionDiv.innerHTML = "";
-	/*
-	inverter.getParam('version', function(reply) {
-		//console.log("version" + typeof(reply));
-        versionDiv.innerHTML += "Version : " + reply.value;
-	});
-	*/
-	var version = paramsCache.get('version');
-	versionDiv.innerHTML += "Version : " + version;
-}
+
 
 var ui = {
 
     // The API endpoint to query to get firmware release available in Github
 	githubFirmwareReleaseURL: 'https://api.github.com/repos/jsphuebner/stm32-sine/releases',
+
+	/** @brief fill out version */
+	populateVersion: function() 
+	{
+		var versionDiv = document.getElementById("version");
+		versionDiv.innerHTML = "";
+		var firmwareVersion = String(paramsCache.get('version'));
+		console.log(firmwareVersion);
+		versionDiv.innerHTML += "firmware : " + firmwareVersion + "<br>";
+		versionDiv.innerHTML += "web : v1.99"
+	},
 
 	/** @brief Add a CAN Mapping */
 	canMapping: function()
