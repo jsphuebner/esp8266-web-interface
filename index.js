@@ -238,22 +238,9 @@ function updateTables()
 			}
 			else
 			{
-				var can = param.canid != undefined;
 				var checkHtml = '<INPUT type="checkbox" data-name="' + name + '" data-axis="left" /> l';
 				checkHtml += ' <INPUT type="checkbox" data-name="' + name + '" data-axis="right" /> r';
-				var canIdHtml = '<INPUT type="number" step="1" min="0" max="2047" id="canid' + name + '" value="' + (can ? param.canid : "") + '"/>';
-				var canPosHtml = '<INPUT type="number" step="1" min="0" max="63" id="canpos' + name + '" value="' + (can ? param.canoffset : "") + '"/>';
-				var canBitsHtml = '<INPUT type="number" step="1" min="1" max="32" id="canbits' + name + '" value="' + (can ? param.canlength : "") + '"/>';
-				var canGainHtml = '<INPUT type="number" step="1" min="1" max="100" id="cangain' + name + '" value="' + (can ? param.cangain : "") + '"/>';
-				var buttonHtml = '<BUTTON id="' + name + '" onclick="canmap(\'tx\', this.id)">TX</BUTTON>';
-				buttonHtml += ' <BUTTON id="' + name + '" onclick="canmap(\'rx\', this.id)">RX</BUTTON>'
 				var unit = param.unit;
-				
-				if (can)
-				{
-					buttonHtml = param.isrx ? "RX" : "TX";
-					buttonHtml += ' <BUTTON id="' + name + '" onclick="canmap(\'del\', this.id)">Unmap</BUTTON>';
-				}
 
 				if (param.enums)
 				{
@@ -278,15 +265,12 @@ function updateTables()
 					display = param.value;
 				}
 
-				addRow(tableSpot, [ name, display, unit, checkHtml, canIdHtml, canPosHtml, canBitsHtml, canGainHtml, buttonHtml ]);
+				addRow(tableSpot, [ name, display, unit, checkHtml ]);
 			}
 		}
 		document.getElementById("paramDownload").href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(params, null, 2));
 		document.getElementById("loader1").style.visibility = "hidden";
 		document.getElementById("loader2").style.visibility = "hidden";
-		/*
-		if (document.getElementById("autorefresh").checked)
- 			updateTables();	*/
 	});
 }
 
@@ -865,6 +849,28 @@ var ui = {
     	});
     },
 
+
+    /** Firmware update from file */
+
+    showUpdateFirmwareModal: function()
+    {
+    	modal.emptyModal('large');
+    	modal.setModalHeader('large', "Update firmware from file");
+    	var form = `
+   	      <form id="update-form">
+    	    <a onclick="ui.installFirmwareUpdate();"><button>
+    	        <img class="buttonimg" src="/icon-check-circle.png">Install firmware</button></a>
+    	  </form> 
+    	  <div id="progress" class="graph" style="display:none;">
+		    <div id="bar" style="width: 0"></div>
+		  </div>
+    	`;
+    	modal.appendToModal('large', form);
+    	modal.showModal('large');
+    },
+
+    /** Over-the-air updates */
+
     /** @brief fetch a list of firmware release available from Github */
     populateReleasesDropdown: function(selectId)
     {
@@ -901,9 +907,7 @@ var ui = {
 		getReleasesRequest.open("GET", ui.githubFirmwareReleaseURL, true);
 		getReleasesRequest.send();
     },
-
     
-
     /** @brief bring up the modal for installing a new firmware over-the-air */
     showOTAUpdateFirmwareModal: function() {
     	// empty the modal in case there's still something in there
@@ -1012,6 +1016,24 @@ var ui = {
 		}
 		wifiFetchRequest.open("GET", "/wifi");
 		wifiFetchRequest.send();
+	},
+
+	submitWiFiChange: function()
+	{
+		// get the form values
+		var apSSID = document.getElementById("apSSID").value;
+		var apPW = document.getElementById("apPW").value;
+		var staSSID = document.getElementById("staSSID").value;
+		var staPW = document.getElementById("staPW").value;
+		// submit the changes
+		var wifiTab = document.getElementById("wifi");
+		var wifiUpdateRequest = new XMLHttpRequest();
+		wifiUpdateRequest.onload = function()
+		{
+			wifiTab.innerHTML = this.responseText;
+		}
+		wifiUpdateRequest.open("POST", "/wifi")
+		wifiUpdateRequest.send()
 	}
 
 }
