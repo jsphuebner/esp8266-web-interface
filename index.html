@@ -335,12 +335,20 @@
 			    <!-- PLOT -->
 				<div id="plot" class="tabdiv main-content">
 					<div class="main-right">
+						<h3>Actions</h3>
 		                <button onclick="startPlot()">
 		                	<img class="buttonimg" src="/icon-play.png">Start Plot</button>
 					    <button onclick="stopPlot()">
 					    	<img class="buttonimg" src="/icon-square.png">Stop Plot</button>
 					    <button onclick="pauseResumePlot()" disabled id="pauseButton">
 					    	<img class="buttonimg" src="/icon-pause.png">Pause Plot</button>
+					    <h3>Configure Plot</h3>
+					    Data points : <input type="number" id="maxValues" step="1" min="10" max="10000" value="1000" /><br>
+					    Burst length : <input type="number" id="burstLength" step="1" min="1" max="1000" value="10" />
+					    <form id="plotConfiguration">
+					    	<a onclick="ui.addPlotItem();"><button>
+					    		<img class="buttonimg" src="/icon-plus-circle.png">Add field to plot</button></a>
+					    </form>
 					</div>
 
 					<div class="main-left">
@@ -348,8 +356,7 @@
 					    <canvas id="canvas" width=100 height=40></canvas>
 					    <p>
 					    
-					    Limit data points to: <input type="number" id="maxValues" step="1" min="10" max="10000" value="1000" />
-					    Burst length: <input type="number" id="burstLength" step="1" min="1" max="1000" value="10" />
+					    
 					    <p>Copyright 2018 Johannes Huebner dev@johanneshuebner.com</p>
 					    <p>Charting by <a href="http://chartjs.org/" target="_blank">chart.js</a></p>
 					    <p>Gauges by <a href="https://github.com/Mikhus/canvas-gauges" target="_blank">Mykhailo Stadnyk</a></p>

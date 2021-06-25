@@ -235,6 +235,25 @@ button:hover, input[type=file]:hover, input[type=button]:hover {
 input[type=file], input[type=button] {
 }
 
+select {
+    appearance: none;
+    font-size: 12pt;
+    margin: 5px;
+    padding: 5px;
+    padding-left: 10px;
+    border: 2px solid #4CAF50;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: #FFF;
+}
+
+input[type=number] {
+    padding: 5px;
+    border: 2px solid #4CAF50;
+    border-radius: 4px;
+    font-size: 12pt;
+}
+
 /* tables */
 
 table {
@@ -307,7 +326,7 @@ tr:hover {background-color:#f5f5f5;}
     height: 100%;
     padding-top: 10px;
     order: 3;
-    flex: 0 0 350px ;
+    flex: 0 0 320px ;
 }
 
 /* dashboard */
@@ -449,4 +468,10 @@ tr:hover {background-color:#f5f5f5;}
 
 #wifiInner {
     display: block;
+}
+
+/* plot */
+
+.plotField {
+    display: flex;
 }

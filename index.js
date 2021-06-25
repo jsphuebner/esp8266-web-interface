@@ -537,7 +537,9 @@ function runUpdate(step,file)
 /** @brief start plotting selected spot values */
 function startPlot()
 {
-	items = getPlotItems();
+	//items = getPlotItems();
+	items = ui.getPlotItems();
+	console.log(items);
 	var colours = [ 'rgb(255, 99, 132)', 'rgb(54, 162, 235)', 'rgb(255, 159, 64)', 'rgb(153, 102, 255)', 'rgb(255, 205, 86)', 'rgb(75, 192, 192)' ];
 
 	chart.config.data.datasets = new Array();
@@ -620,6 +622,7 @@ function acquire()
 	});
 }
 
+/*
 function getPlotItems()
 {
 	var items = {};
@@ -638,6 +641,7 @@ function getPlotItems()
 	}
 	return items;
 }
+*/
 
 /** @brief switch to a different page tab */
 function openPage(pageName, elmnt, color) {
@@ -730,7 +734,7 @@ var ui = {
 		var versionDiv = document.getElementById("version");
 		versionDiv.innerHTML = "";
 		var firmwareVersion = String(paramsCache.get('version'));
-		console.log(firmwareVersion);
+		//console.log(firmwareVersion);
 		versionDiv.innerHTML += "firmware : " + firmwareVersion + "<br>";
 		versionDiv.innerHTML += "web : v1.99"
 	},
@@ -759,7 +763,7 @@ var ui = {
 		var statusDiv = document.getElementById('top-left');
 
 		var status = paramsCache.get('status');
-		console.log("status : " + status);
+		//console.log("status : " + status);
 
 		if ( status == null ){
 			return;
@@ -1034,6 +1038,85 @@ var ui = {
 		}
 		wifiUpdateRequest.open("POST", "/wifi")
 		wifiUpdateRequest.send()
+	},
+
+	/** Plot */
+
+    /** @brief Add new field chooser to plot configuration form */
+	addPlotItem: function()
+	{
+		// Get the form
+		var plotFields = document.getElementById("plotConfiguration");
+
+		// container for the two drop downs
+		var selectDiv = document.createElement("div");
+		selectDiv.classList.add('plotField');
+		plotFields.appendChild(selectDiv);
+
+		// Create a drop down and populate it with the possible spot values
+		var selectSpotValue = document.createElement("select");
+		selectSpotValue.classList.add('plotFieldSelect');
+		for ( var key in paramsCache.data )
+		{
+			if ( ! paramsCache.data[key].isparam )
+			{
+				var option = document.createElement("option");
+				option.value = key;
+				option.text = key;
+				selectSpotValue.appendChild(option);
+			}
+		}
+		selectDiv.appendChild(selectSpotValue);
+
+		// Create the left/right drop down
+		var selectLeftRight = document.createElement("select");
+		selectLeftRight.classList.add("leftright");
+
+		var optionLeft = document.createElement("option");
+		optionLeft.value = 'left';
+		optionLeft.text = 'left';
+		selectLeftRight.appendChild(optionLeft);
+
+		var optionRight = document.createElement("option");
+		optionRight.value = 'right';
+		optionRight.text = 'right';
+		selectLeftRight.appendChild(optionRight);
+		selectDiv.appendChild(selectLeftRight);
+
+		// Add the delete button
+		var deleteButton = document.createElement("button");
+		var deleteButtonImg = document.createElement('img');
+		deleteButtonImg.src = '/icon-trash.png';
+		deleteButton.appendChild(deleteButtonImg);
+		deleteButton.onclick = function() { this.parentNode.remove(); };
+		selectDiv.appendChild(deleteButton);
+	},
+
+	getPlotItems: function()
+	{
+		var items = {};
+    	items.names = new Array();
+	    items.axes = new Array();
+		var plotItemsForm = document.getElementById("plotConfiguration");
+		var formItems = document.forms["plotConfiguration"].elements;
+		//for ( var i=0; i < formItems.length; i++ ) { console.log(formItems[i]); }
+		for ( var i = 0; i < formItems.length; i++ )
+		{
+
+            // Gather up field selections			
+			if ( formItems[i].type === 'select-one' && formItems[i].classList.contains('plotFieldSelect') )
+			{
+				items.names.push(formItems[i].value);
+			}
+
+			// Gather up left/right selections
+			if ( formItems[i].type === 'select-one' && formItems[i].classList.contains('leftright') )
+			{
+				items.axes.push(formItems[i].value);
+			}
+
+		}
+        return items;
 	}
 
 }
