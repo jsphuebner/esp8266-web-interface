@@ -265,7 +265,7 @@ function updateTables()
 					display = param.value;
 				}
 
-				addRow(tableSpot, [ name, display, unit, checkHtml ]);
+				addRow(tableSpot, [ name, display, unit ]);
 			}
 		}
 		document.getElementById("paramDownload").href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(params, null, 2));
@@ -397,7 +397,9 @@ function sendCmd(cmd)
 	});
 }
 
+
 /** @brief open new page with gauges for selected spot values */
+/*
 function showGauges()
 {
 	var items = getPlotItems();
@@ -405,6 +407,7 @@ function showGauges()
 
 	window.open(req);
 }
+*/
 
 /** @brief open new page with gauges for selected spot values */
 function showLog()
@@ -1117,6 +1120,31 @@ var ui = {
 
 		}
         return items;
+	},
+
+
+	/* beta features */
+
+    /** @brief If beta features are visible, hide them. If hidden, show them. */
+	toggleBetaFeaturesVisibility: function()
+	{
+		var betaFeatures = document.getElementsByClassName('beta-feature');
+		console.log("There are " + betaFeatures.length + " beta features to show/hide");
+        var betaFeaturesCheckbox = document.getElementById('beta-features-checkbox');
+
+		for ( var i = 0; i < betaFeatures.length; i++ )
+		{
+			if ( betaFeaturesCheckbox.checked )
+			{
+				console.log("setting display:block");
+                betaFeatures[i].style.display = 'block';
+			}
+			else
+			{
+				console.log("setting display:none");
+				betaFeatures[i].style.display = 'none';
+			}
+		}
 	}
 
 }

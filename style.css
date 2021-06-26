@@ -24,7 +24,7 @@ a {
 }
 
 a:visited {
-    color: black;
+    color: #4CAF50;
 }
 
 h2 {
@@ -107,7 +107,7 @@ html, body {
     /*order: 1;*/
     min-height: 100vh;
     position: fixed;
-    width: 200px;
+    width: 180px;
 }
 
 #navbar a {
@@ -133,12 +133,19 @@ html, body {
     position: absolute;
     bottom: 0px;
     padding: 0px;
+    padding-top: 5px;
+    padding-bottom: 5px;
     margin: 0px;
+    margin-left: 10px;
+    margin-bottom: 10px;
     text-align: center;
     float: left;
-    width: 100%;
+    width: 160px;
     font-size: 10pt;
-    padding-bottom: 5px;
+    border: 1px solid black;
+    border-radius: 4px;
+    height: 30px;
+
 }
 
 #version p {
@@ -161,7 +168,7 @@ html, body {
     top: 0;
     right: 0;
     bottom: 0;
-    left: 200px;
+    left: 180px;
 }
 
 #contentWrapperInner {
@@ -175,6 +182,10 @@ html, body {
 }
 
 /* Button & forms */
+
+textarea {
+    width: 90%;
+}
 
 input[type=number]{
     width: 6em;
@@ -240,7 +251,7 @@ select {
     font-size: 12pt;
     margin: 5px;
     padding: 5px;
-    padding-left: 10px;
+    /*padding-left: 10px;*/
     border: 2px solid #4CAF50;
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -248,6 +259,7 @@ select {
 }
 
 input[type=number] {
+    margin: 5px;
     padding: 5px;
     border: 2px solid #4CAF50;
     border-radius: 4px;
@@ -279,9 +291,27 @@ tr:hover {background-color:#f5f5f5;}
     background-color:#FFFFFF;
 }
 
+/*
 #paramBody table {
     width:100%;
 }
+
+#paramBody tbody {
+    height: 75vh;
+    display: block;
+}
+
+#paramBody tr {
+    display: block;
+}
+
+
+#paramBody tbody {
+    display: block;
+    overflow: auto;
+    height: 300px;
+}
+*/
 
 .tablink {
     width: 200px;
@@ -474,4 +504,99 @@ tr:hover {background-color:#f5f5f5;}
 
 .plotField {
     display: flex;
+}
+
+/* Experimental features */
+
+.beta-feature {
+    display: none;
+}
+
+#beta-features-toggle-div {
+    position: absolute;
+    bottom: 50px;
+    padding: 0px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin: 0px;
+    margin-left: 10px;
+    margin-bottom: 10px;
+    text-align: center;
+    float: left;
+    width: 160px;
+    font-size: 10pt;
+    /*border: 1px solid black;*/
+    /*border-radius: 4px;*/
+    height: 30px;
+}
+
+/* switch */
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  /*
+  width: 60px;
+  height: 34px;
+  */
+  width: 30px;
+  height: 17px;
+  margin-right: 10px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 9px;
+  width: 9px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: orange;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(13px);
+  -ms-transform: translateX(13px);
+  transform: translateX(13px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 17px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
 }
