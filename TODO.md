@@ -16,4 +16,4 @@
 - [ ] Visual feedback that changes have been accepted when modifying params
 - [ ] Visual feedback that parameters have been saved
 - [ ] Auto updates for web interface
-- [ ] Experimental features toggle
+- [x] Experimental features toggle
