@@ -29,7 +29,7 @@
 <script src="index.js" type="text/javascript"></script>
 
 <!-- <script src="subscription.js" type="text/javascript"></script> -->
-<!-- <script src="log.js" type="text/javascript"></script> -->
+<script src="log.js" type="text/javascript"></script>
 </head>
 
 <body onload="onLoad()">
@@ -375,18 +375,24 @@
 				<div id="logger" class="tabdiv main-content">
 					<div class="main-right">
                         <h3>Actions</h3>
-						<button onclick="start()" id="startstop">Start/Stop logging</button>
-						<button onclick="save()">Save As...</button>
+						<button onclick="log.start()" id="startstop">
+							<img class="buttonimg" src="/icon-play.png">Start/Stop logging</button>
+						<button onclick="log.save()">
+							<img class="buttonimg" src="/icon-save.png">Save As...</button>
 						<h3>Configure Logger</h3>
-						<label for="samples">Samples per line: </label>
-		                <input id="samples" type="number" step="1" min="1" max="2000" value="500"><br>
-						<input type="checkbox" id="minmax">
-						<label for="minmax">Include Min/Max values</label><br>
+						<label for="data-logger-samples">Samples per line: </label>
+		                <input id="data-logger-samples" type="number" step="1" min="1" max="2000" value="500"><br>
+						<input type="checkbox" id="data-logger-minmax">
+						<label for="data-logger-minmax">Include Min/Max values</label><br>
+						<form id="data-logger-configuration">
+							<a onclick="log.addLogItem();"><button type="button">
+								<img class="buttonimg" src="/icon-plus-circle.png">Add field to log</button></a>
+						</form>
 					</div>
 
 					<div class="main-left">
 						<h2>Data Logger</h2>
-						<textarea id="textArea" rows="50" style="display:block; width: 100%;">
+						<textarea id="data-logger-text-area" rows="50">
 						</textarea>
 					</div>
 				</div>
