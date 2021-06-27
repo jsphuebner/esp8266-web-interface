@@ -27,7 +27,6 @@
 <script src="modal.js" type="text/javascript"></script>
 <script src="inverter.js" type="text/javascript"></script>
 <script src="index.js" type="text/javascript"></script>
-
 <!-- <script src="subscription.js" type="text/javascript"></script> -->
 <script src="log.js" type="text/javascript"></script>
 </head>
@@ -39,7 +38,6 @@
         <!-- Large modal -->
 		<div id="large-modal-overlay" class="modal-overlay">
 			<div id="large-modal-container" class="large-modal-container">
-    			<!-- <span class="modal-close" onclick="document.getElementById('modal-overlay').style.display = 'none';">&times;</span>-->
     			<h2 id="large-modal-header"></h2>
 		    	<div id="large-modal-content" class="modal-content"></div>
 		    	<button onclick="modal.hideModal('large');">Close</button>
@@ -59,60 +57,57 @@
 			<div id="can-mapping-modal-container" class="can-mapping-modal-container">
 				<span class="modal-close" onclick="modal.hideModal('can-mapping');">&times;</span>
 				<h3>New CAN Mapping</h3>
-				<!-- <form> -->
-					<table id="canmappingtable">
-						<tr>
-							<td>Transmit or receive</td>
-							<td>
-							    <select id="txrx">
-					    			<option value="tx">Transmit</option>
-						    		<option value="rx">Receive</option>
-						    	</select>
-						    </td>
-						    <td>Choose transmit to take spot values from your OpenInverter board and send them out in frames on the CAN bus where they can be seen by other devices. Choose receive to set spot values based on data seen on the CAN bus.</td>
-						</tr>
-						<tr>
-							<td>Spot value</td>
-							<td>
-								<select id="addCanMappingSpotValueDropDown"></select>
-							</td>
-							<td>Select the spot value to transmit or receive.</td>
-						</tr>
-					    <tr>
-					    	<td>CAN ID</td>
-					    	<td><input type="number" step="1" min="0" max="2047" id="canid"></td>
-					    	<td>Set the ID of the CAN frame to send/recieve</td>
-					    </tr>
-	    				<tr>
-	    					<td>Offset</td>
-	    					<td><input type="number" step="1" min="0" max="63" id="canpos"></td>
-	    					<td>Specify the position (offset) within the frame to place (transmit) or find (receive) this value</td>
-	    				</tr>
-		    			<tr>
-		    				<td>Length</td>
-		    				<td><input type="number" step="1" min="1" max="32" id="canbits"></td>
-		    				<td>Specify the length of this field in bits</td>
-		    			</tr>
-			    		<tr>
-			    			<td>Gain</td>
-			    			<td><input type="number" step="1" min="1" max="100" id="cangain"></td>
-			    			<td>Specify a gain to scale the value up or down</td>
-			    		</tr>
-				    </table>
-				    <button onclick="ui.canMapping();"><img class="buttonimg" src="/icon-check-circle.png">Save CAN mapping</button>
-				<!-- </form> -->
+				<table id="canmappingtable">
+					<tr>
+						<td>Transmit or receive</td>
+						<td>
+						    <select id="txrx">
+				    			<option value="tx">Transmit</option>
+					    		<option value="rx">Receive</option>
+					    	</select>
+					    </td>
+					    <td>Choose transmit to take spot values from your OpenInverter board and send them out in frames on the CAN bus where they can be seen by other devices. Choose receive to set spot values based on data seen on the CAN bus.</td>
+					</tr>
+					<tr>
+						<td>Spot value</td>
+						<td>
+							<select id="addCanMappingSpotValueDropDown"></select>
+						</td>
+						<td>Select the spot value to transmit or receive.</td>
+					</tr>
+				    <tr>
+				    	<td>CAN ID</td>
+				    	<td><input type="number" step="1" min="0" max="2047" id="canid"></td>
+				    	<td>Set the ID of the CAN frame to send/recieve</td>
+				    </tr>
+    				<tr>
+    					<td>Offset</td>
+    					<td><input type="number" step="1" min="0" max="63" id="canpos"></td>
+    					<td>Specify the position (offset) within the frame to place (transmit) or find (receive) this value</td>
+    				</tr>
+	    			<tr>
+	    				<td>Length</td>
+	    				<td><input type="number" step="1" min="1" max="32" id="canbits"></td>
+	    				<td>Specify the length of this field in bits</td>
+	    			</tr>
+		    		<tr>
+		    			<td>Gain</td>
+		    			<td><input type="number" step="1" min="1" max="100" id="cangain"></td>
+		    			<td>Specify a gain to scale the value up or down</td>
+		    		</tr>
+			    </table>
+			    <button onclick="ui.canMapping();"><img class="buttonimg" src="/icon-check-circle.png">Save CAN mapping</button>
 			</div>
 		</div>
 
 		<aside id="navbar" class="navbar">
+
 			<div id="logo">
 			    <img src="logo.png">
 		    </div>
 
 		    <a class="tablink" onclick="openPage('dashboard', this, 'white')" style="background-color:white">
 		    	<img class="buttonimg" src="/icon-grid.png">DASHBOARD</a>
-	        <!--<a class="tablink" onclick="openPage('commands', this, 'white')">
-	        	<img class="buttonimg" src="/icon-terminal.png">COMMANDS</a>-->
 		    <a class="tablink" onclick="openPage('update', this, 'white')">
 		    	<img class="buttonimg" src="/icon-cpu.png">UPDATE</a>
 		    <a class="tablink" onclick="openPage('parameters', this, 'white')">
@@ -129,21 +124,12 @@
 				<img class="buttonimg" src="/icon-wifi.png">WIFI SETTINGS</a>
 			<a class="tablink" href="/support">
 				<img class="buttonimg" src="/icon-help-circle.png">SUPPORT</a>
-			<!--
-            <a href="#" onclick="ui.showExperimentalFeatures();"><button>
-		        <img class="buttonimg" src="/icon-zap.png">Show experimental features</button></a>
-		    -->
 
-			<!-- <br><br>
-			<a class="tablink" href="javascript:updateTables()"><img src="refresh.png" style="margin-top: -1em; margin-bottom: -8px; margin-right: 0.5em">Refresh</a>
-			<div style="float:left">
-			    <input type="checkbox" title="Keep refreshing until unchecked" id="autorefresh"><label for="autorefresh">Auto</label>
-			</div> -->
-
-            <!-- experimental features -->
+            <!-- beta features toggle -->
             <div id="beta-features-toggle-div" onclick="ui.toggleBetaFeaturesVisibility();">
     			<label class="switch">
-    				<input id="beta-features-checkbox" type="checkbox"><span class="slider round"></span></label><p style="display: inline-block;">Beta features</p>
+    				<input id="beta-features-checkbox" type="checkbox"><span class="slider round"></span>
+    			</label><p style="display: inline-block;">Beta features</p>
     		</div>
 
 			<div id="version"></div>
@@ -155,13 +141,13 @@
 
 				<!-- DASHBOARD -->
 				<div id="dashboard" class="tabdiv main-content" style="display:flex;">
+
 					<div class="main-right">
 						<h3>Actions</h3>
 						<button onclick="sendCmd('start 2');">
 				    	<img class="buttonimg" src="/icon-play.png">Start Inverter in manual Mode</button>
 				        <button onclick="sendCmd('stop');">
 				    	<img class="buttonimg" src="/icon-square.png">Stop Inverter</button>
-				    	<!-- <button onclick="sendCmd('errors');">Display Error Memory</button>-->
 				        <!-- <p><a href="/remote.html">Start Remote Support Session</a></p> -->
 				    </div>
 		            
@@ -175,7 +161,6 @@
 		                    <div id="top-right">
 								<h3>Inverter messages</h3>
 								<pre><div id="message"></div></pre>
-								<!-- <button onclick="clearMessages();">Clear</button>-->
 							</div>
 						</div>
 
@@ -186,7 +171,7 @@
 		                    <div id="bottom-right">
 		                    	<h3>Command</h2>
 		                    	<div id="commandoutput"></div>
-							    &gt;&gt;&nbsp;<input type="text" id="commandinput"/> <!-- onchange="ui.dashboardCommand();"/>-->
+							    &raquo;&nbsp;<input type="text" id="commandinput"/>
 							</div>
 						</div>
 						
@@ -198,26 +183,34 @@
 
 					<div class="main-right">
 						<h3>Actions</h3>
-						<!-- Install new firmware -->
+
+						<!-- Install firmware from file -->
 						<form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
-					        <!-- <input id="updatefile" name="updatefile" type="file" onchange="fileSelected();" />
-					        <input type="button" onclick="uploadFile();" value="Upload" /> -->
 					        <input id="updatefile" name="updatefile" type="file" onchange="uploadFile();" hidden />
 					        <label class="butt" for="updatefile"><img class="buttonimg" src="/icon-upload.png">Install firmware from file</label>
 					    </form>
 
+                        <!-- Install bootloader from file -->
 					    <a href="#" onclick=""><button>
 					    	<img class="buttonimg" src="/icon-upload.png">Install bootloader from file</button></a>
 
+                        <!-- OTA firmware update -->
 					    <a href="#" class="beta-feature" onclick="ui.showOTAUpdateFirmwareModal();"><button>
 					    	<img class="buttonimg" src="/icon-upload-cloud.png">Over the air firmware update</button></a>
 
+                        <!-- Erase flash -->
 		                <a href="/swd/zero" target="_blank"><button>
 		                	<img class="buttonimg" src="/icon-trash-2.png">Erase Flash</button></a>
+
+		                <!-- Hard reset -->
 		                <a href="#" onclick="resetSWD();"><button>
 		                	<img class="buttonimg" src="/icon-rotate-ccw.png">Hard Reset</button></a>
+
+		                <!-- Download bootloader -->
 		                <a href="/swd/bin?bootloader"><button>
 		                	<img class="buttonimg" src="/icon-download.png">Download Bootloader</button></a>
+
+		                <!-- Download flash -->
 		                <a href="/swd/bin?flash"><button>
 		                	<img class="buttonimg" src="/icon-download.png">Download Flash</button></a>
 
@@ -250,9 +243,7 @@
 						    <div id="swdbar" style="width: 0"></div>
 			    		    </div>
 			    		</div>
-
-			    		<a onclick="ui.showExperimentalUpdate();">Show experimental features</a>
-			    	-->
+			    	    -->
 
 					</div>
 				</div>
@@ -261,17 +252,24 @@
 				<div id="parameters" class="tabdiv main-content">
 
 					<div class="main-right">
-						<h3>Save & load</h3>
+						<h3>Actions</h3>
+
+						<!-- Save params to flash -->
 						<button onclick="sendCmd('save');">
 							<img class="buttonimg" src="/icon-save.png">Save Parameters to Flash</button>
+
+						<!-- Restore params from flash -->
 					    <button onclick="sendCmd('load');">
 					    	<img class="buttonimg" src="/icon-rotate-ccw.png">Restore Parameters from Flash</button>
+
+					    <!-- Submit params to OI -->
 					    <form id="paramdb" action="https://openinverter.org/parameters/api.php" method="POST" enctype="multipart/form-data">
 					        <input type="text" style="display: none;" id="parameters_json" name="data"></input>
 					        <input type="hidden" id="parameters_token" name="token" />
 					        <button onclick="parameterSubmit();"><image class="buttonimg" src="/icon-upload-cloud.png"> Submit Parameters to Openinverter</button>
 					    </form>
 
+                        <!-- Download params file -->
 					    <a download="params.json" href="data:text/json,{ }" id="paramDownload"><button>
 					    	<img class="buttonimg" src="/icon-download.png">Download Parameter File</button></a>
 
@@ -281,9 +279,10 @@
 					        <label class="butt" for="paramfile"><img class="buttonimg" src="/icon-file-text.png">Load Parameters from File</label>
 					    </form>
 
+                        <!-- Params reference -->
 					    <a href="https://openinverter.org/wiki/Parameters" target="_blank"><button>
 					    	<img class="buttonimg" src="/icon-help-circle.png">Parameter Reference</button></a>
-					    
+
 					    <h3>Subscribe to parameter set</h3>
 					    <input id="token" type="text" onchange="checkToken(this.value, 'Requesting parameter set', true)" size="40">
 					    
@@ -340,14 +339,22 @@
 
 			    <!-- PLOT -->
 				<div id="plot" class="tabdiv main-content">
+
 					<div class="main-right">
 						<h3>Actions</h3>
+
+						<!-- start plot -->
 		                <button onclick="startPlot()">
 		                	<img class="buttonimg" src="/icon-play.png">Start Plot</button>
+
+		                <!-- stop plot -->
 					    <button onclick="stopPlot()">
 					    	<img class="buttonimg" src="/icon-square.png">Stop Plot</button>
+
+					    <!-- pause plot -->
 					    <button onclick="pauseResumePlot()" disabled id="pauseButton">
 					    	<img class="buttonimg" src="/icon-pause.png">Pause Plot</button>
+
 					    <h3>Configure Plot</h3>
 					    Data points : <input type="number" id="maxValues" step="1" min="10" max="10000" value="1000" /><br>
 					    Burst length : <input type="number" id="burstLength" step="1" min="1" max="1000" value="10" />
@@ -361,24 +368,27 @@
 						<h2 id="plot">Plot</h2>
 					    <canvas id="canvas" width=100 height=40></canvas>
 					    <p>
-					    
-					    
 					    <p>Copyright 2018 Johannes Huebner dev@johanneshuebner.com</p>
 					    <p>Charting by <a href="http://chartjs.org/" target="_blank">chart.js</a></p>
 					    <p>Gauges by <a href="https://github.com/Mikhus/canvas-gauges" target="_blank">Mykhailo Stadnyk</a></p>
 					</div>
-
 				    
 				</div>
 
 				<!-- DATA LOGGER -->
 				<div id="logger" class="tabdiv main-content">
+
 					<div class="main-right">
                         <h3>Actions</h3>
+
+                        <!-- Start logging -->
 						<button onclick="log.start()" id="startstop">
 							<img class="buttonimg" src="/icon-play.png">Start/Stop logging</button>
+
+						<!-- Save -->
 						<button onclick="log.save()">
 							<img class="buttonimg" src="/icon-save.png">Save As...</button>
+
 						<h3>Configure Logger</h3>
 						<label for="data-logger-samples">Samples per line: </label>
 		                <input id="data-logger-samples" type="number" step="1" min="1" max="2000" value="500"><br>
@@ -395,6 +405,7 @@
 						<textarea id="data-logger-text-area" rows="50">
 						</textarea>
 					</div>
+
 				</div>
 
 				<!-- CAN MAPPING -->
@@ -411,7 +422,6 @@
 						<p>On this page you can configure the CAN mapping settings for your OpenInverter board. CAN mapping allows you to send and receive data via CAN bus. You can specify spot values that you would like to transmit on the CAN bus. Additionally you can specify spot values that you would like to set based on data received on the CAN bus.</p>
 						<p>A maximum of 8 items per CAN message can be mapped.</p>
 
-						<!-- Existing CAN mappings -->
 						<h3>Existing CAN Mappings</h3>
 						<table id="existingCanMappingTable" class="existing-can-mapping">
 							<tr>
@@ -435,7 +445,7 @@
 	        </div> <!-- end contentWrapper -->
 	    </div> <!-- end contentWrapperInner -->
 
-</div>
+    </div>
 
 </body>
 </html>
