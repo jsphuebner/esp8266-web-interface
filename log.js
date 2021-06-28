@@ -79,10 +79,8 @@ var log = {
 		{
 			  log.stopLogging = false;
         log.getLogItems();
-        console.log("Starting logging for " + items);
 				log.textArea = document.getElementById("data-logger-text-area");
 				log.samples = document.getElementById("data-logger-samples").value;
-				console.log("Logger will fetch " + log.samples + " samples");
 				log.minmax = document.getElementById("data-logger-minmax").checked;
 				log.textArea.innerHTML = "Timestamp"
 				
@@ -134,8 +132,6 @@ var log = {
 
 		acquire: function(samples)
 		{
-			  console.log("Acquiring...");
-
 			  if ( log.stopLogging ){ return; }
 
 				if (!log.items.length) return;
