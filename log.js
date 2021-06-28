@@ -18,19 +18,13 @@
  *
  */
 
-var items = [];
-var textArea;
-var minmax = false;
-
-/*
-function onLoad()
-{
-	inverter.firmwareVersion = 4;
-	inverter.getParamList();
-}
-*/
-
 var log = {
+
+	  items: [],
+	  samples: 0,
+	  textArea: undefined,
+	  minmax: false,
+	  stopLogging: true,
 
     /* @brief add field to data logger */
 	  addLogItem: function()
@@ -69,61 +63,54 @@ var log = {
     /** @brief return a list of fields currently configured for logger */
 	  getLogItems: function()
 	  {
-			  var items = new Array();
+	  	  log.items = [];
 			  var formItems = document.forms["data-logger-configuration"].elements;
 			  for ( var i = 0; i < formItems.length; i++ )
 			  {
 			  	  if ( formItems[i].type === 'select-one' && formItems[i].classList.contains('logger-field-select') )
 			  	  {
-			  	  	 items.push(formItems[i].value);
+			  	  	 log.items.push(formItems[i].value);
 			  	  }
 			  }
-			  return items;
 	  },
 
     /* @brief start collecting log data */
 		start: function()
 		{
-        var items = log.getLogItems();
+			  log.stopLogging = false;
+        log.getLogItems();
         console.log("Starting logging for " + items);
-
-        /*
-				if (items.length)
+				log.textArea = document.getElementById("data-logger-text-area");
+				log.samples = document.getElementById("data-logger-samples").value;
+				console.log("Logger will fetch " + log.samples + " samples");
+				log.minmax = document.getElementById("data-logger-minmax").checked;
+				log.textArea.innerHTML = "Timestamp"
+				
+				if (log.minmax)
 				{
-						items = [];
-						return;
-				}
-				*/
-				
-				var textArea = document.getElementById("data-logger-text-area");
-				var samples = document.getElementById("data-logger-samples").value;
-				console.log("Logger will fetch " + samples + " samples");
-				var paramPart = document.location.href.split("items=");
-				//items = paramPart[1].split(",");
-				var minmax = document.getElementById("data-logger-minmax").checked;
-				
-				textArea.innerHTML = "Timestamp"
-				
-				if (minmax)
-				{
-						for (var i = 0; i < items.length; i++)
+						for (var i = 0; i < log.items.length; i++)
 						{
-								textArea.innerHTML += "," + items[i] + " (avg)," + items[i] + " (min)," + items[i] + " (max)";
+								log.textArea.innerHTML += "," + log.items[i] + " (avg)," + log.items[i] + " (min)," + log.items[i] + " (max)";
 						}
 				}
 				else
 				{
-						textArea.innerHTML += "," + paramPart[1];
+						//textArea.innerHTML += "," + paramPart[1];
+						log.textArea.innerHTML += "," + log.items;
 				}
 				
-				textArea.innerHTML += "\r\n";
-				
-				log.acquire(samples);
+				log.textArea.innerHTML += "\r\n";
+				log.acquire(log.samples);
+		},
+
+		stop: function()
+		{
+			  log.stopLogging = true;
 		},
 
 		save: function()
 		{
-			  var textToWrite = document.getElementById('textArea').innerHTML;
+			  var textToWrite = document.getElementById('data-logger-text-area').innerHTML;
 			  var textFileAsBlob = new Blob([ textToWrite ], { type: 'text/csv' });
 			  var fileNameToSaveAs = "log.csv";
 
@@ -147,32 +134,36 @@ var log = {
 
 		acquire: function(samples)
 		{
-				if (!items.length) return;
+			  console.log("Acquiring...");
 
-				inverter.getValues(items, samples,
-					function(values) 
-					{
-							var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
-							var localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);
-							var line = localISOTime;
-							for (var name in values)
-							{
-									var avg = values[name].reduce((acc, c) => acc + c, 0) / samples;
-									
-									if (minmax)
-									{
-											line += "," + avg.toFixed(2) + "," + Math.min(...values[name]) + "," + Math.max(...values[name]);
-									}
-									else
-									{
-											line += "," + avg.toFixed(2);
-									}
-							}
-							line += "\r\n";
-							textArea.innerHTML += line;
-							textArea.scrollTop = textArea.scrollHeight;
-							acquire(samples);
-					});
+			  if ( log.stopLogging ){ return; }
+
+				if (!log.items.length) return;
+
+				inverter.getValues(log.items, log.samples,
+						function(values) 
+						{
+								var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
+								var localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);
+								var line = localISOTime;
+								for (var name in values)
+								{
+										var avg = values[name].reduce((acc, c) => acc + c, 0) / log.samples;
+										
+										if (log.minmax)
+										{
+												line += "," + avg.toFixed(2) + "," + Math.min(...values[name]) + "," + Math.max(...values[name]);
+										}
+										else
+										{
+												line += "," + avg.toFixed(2);
+										}
+								}
+								line += "\r\n";
+								log.textArea.innerHTML += line;
+								log.textArea.scrollTop = log.textArea.scrollHeight;
+								log.acquire(samples);
+						});
 		},
 }
 

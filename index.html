@@ -383,11 +383,15 @@
                         <h3>Actions</h3>
 
                         <!-- Start logging -->
-						<button onclick="log.start()" id="startstop">
-							<img class="buttonimg" src="/icon-play.png">Start/Stop logging</button>
+						<button onclick="log.start();" id="startstop">
+							<img class="buttonimg" src="/icon-play.png">Start logging</button>
+
+						<!-- Stop logging -->
+						<button onclick="log.stop();">
+							<img class="buttonimg" src="/icon-square.png">Stop logging</button>
 
 						<!-- Save -->
-						<button onclick="log.save()">
+						<button onclick="log.save();">
 							<img class="buttonimg" src="/icon-save.png">Save As...</button>
 
 						<h3>Configure Logger</h3>

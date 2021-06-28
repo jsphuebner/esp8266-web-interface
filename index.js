@@ -418,10 +418,6 @@ function showLog()
 	window.open(req);
 }
 
-function fileSelected()
-{
-}
-
 /** @brief uploads file to web server, if bin-file uploaded, starts a firmware upgrade */
 function uploadFile() 
 {
