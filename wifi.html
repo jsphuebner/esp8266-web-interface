@@ -22,7 +22,7 @@
     Here you can specify SSID and password of the access point that is created by the inverter.
     <form id="wifiStationForm" enctype="multipart/form-data" action="wifi" method="POST">
         <p><label for="apSSID">AP SSID: </label><input id="apSSID" name="apSSID" type="text" value="%apSSID%"/></p>
-        <p><label for="apPW">AP WPA2 Password: </label><input id="apPW" name="apPW" type="text" title="Must be at leat 8 characters long" onkeyup="ui.wifiValidatePasswordLength(this.value);"/></p><br>
+        <p><label for="apPW">AP WPA2 Password: </label><input id="apPW" name="apPW" type="text" title="Must be at leat 8 characters long" onkeyup="wifi.wifiValidatePasswordLength(this.value);"/></p><br>
         <!-- <input id="apsubmit" type="submit" value="Modify" disabled/> -->
         <a href="#" onclick="ui.wifiStationForm('wifiStationForm');"><button>
             <img class="buttonimg" src="/icon-check-circle.png">Modify</button></a>
@@ -35,7 +35,7 @@
         <p><label for="staPW">WPA2 Password: </label><input id="staPW" name="staPW" type="text" /></p>
         Current IP Address: %staIP%
         <!-- <input type="submit" value="Modify" /> -->
-        <a href="#" onclick="ui.wifiStationForm('wifiClientForm');"><button>
+        <a href="#" onclick="wifi.wifiStationForm('wifiClientForm');"><button>
             <img class="buttonimg" src="/icon-check-circle.png">Modify</button></a>
     </form>
 </div>

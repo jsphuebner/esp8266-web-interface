@@ -42,7 +42,7 @@ function onLoad()
 	checkSubscribedParameterSet();
 	populateSpotValueDropDown();
 	populateExistingCanMappingTable();
-	ui.populateWiFiTab();
+	wifi.populateWiFiTab();
 	// run the poll function every 3 seconds
 	var autoRefresh = setInterval(refresh, 10000);
 }
@@ -1005,44 +1005,6 @@ var ui = {
 		xmlhttp.send(fd);
 	},
 
-	/** WiFi */
-
-	wifiValidatePasswordLength: function(pw)
-	{
-		document.getElementById("apsubmit").disabled = pw.length < 8;
-	},
-
-	populateWiFiTab: function()
-	{
-		console.log("updating wifi");
-		var wifiTab = document.getElementById("wifi");
-		var wifiFetchRequest = new XMLHttpRequest();
-		wifiFetchRequest.onload = function()
-		{
-			wifiTab.innerHTML = this.responseText;
-		}
-		wifiFetchRequest.open("GET", "/wifi");
-		wifiFetchRequest.send();
-	},
-
-	submitWiFiChange: function()
-	{
-		// get the form values
-		var apSSID = document.getElementById("apSSID").value;
-		var apPW = document.getElementById("apPW").value;
-		var staSSID = document.getElementById("staSSID").value;
-		var staPW = document.getElementById("staPW").value;
-		// submit the changes
-		var wifiTab = document.getElementById("wifi");
-		var wifiUpdateRequest = new XMLHttpRequest();
-		wifiUpdateRequest.onload = function()
-		{
-			wifiTab.innerHTML = this.responseText;
-		}
-		wifiUpdateRequest.open("POST", "/wifi")
-		wifiUpdateRequest.send()
-	},
-
 	/** Plot */
 
     /** @brief Add new field chooser to plot configuration form */
@@ -1100,7 +1062,7 @@ var ui = {
 		var items = {};
     	items.names = new Array();
 	    items.axes = new Array();
-		var plotItemsForm = document.getElementById("plotConfiguration");
+		//var plotItemsForm = document.getElementById("plotConfiguration");
 		var formItems = document.forms["plotConfiguration"].elements;
 		//for ( var i=0; i < formItems.length; i++ ) { console.log(formItems[i]); }
 		for ( var i = 0; i < formItems.length; i++ )
