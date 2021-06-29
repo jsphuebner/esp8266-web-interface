@@ -397,18 +397,6 @@ function sendCmd(cmd)
 	});
 }
 
-
-/** @brief open new page with gauges for selected spot values */
-/*
-function showGauges()
-{
-	var items = getPlotItems();
-	var req = "gauges.html?items=" + items.names.join(',')
-
-	window.open(req);
-}
-*/
-
 /** @brief open new page with gauges for selected spot values */
 function showLog()
 {
@@ -1103,6 +1091,36 @@ var ui = {
 				betaFeatures[i].style.display = 'none';
 			}
 		}
+	},
+
+
+	/* Params */
+	showSubscribeModal: function()
+	{
+		modal.emptyModal('large');
+    	modal.setModalHeader('large', "Subscribe to parameter set");
+    	var form = `
+    	  <p>The Parameter Database is a way for OpenInverter community members to share parameter settings with each other. 
+    	  Community members may upload their parameter settings, along with other key information (e.g., inverter and motor type), to the database.
+    	  This provides a single place to use as a reference when trying to determine the correct parameters to use for your hardware.</p>
+    	  <p>You can browse the Parameter Database <a href="https://openinverter.org/parameters/">here</a>.</p>
+    	  <p>You may choose to 'subscribe' to a parameter set. Your inverter will automatically synchronise its settings with those in the Parameter Database as they are adjusted and refined.
+    	  
+    	  Enter the subscription token for the parameter set you wish to subscribe to in the box below.</p>
+    	  <p>Note: your inverter needs internet access for this feature to work.</p>
+   
+   	      <form id="parameter-subscribe-form">
+   	          Subscription token : <input type="text">
+    	      <a onclick="ui.installFirmwareUpdate();"><button>
+    	          <img class="buttonimg" src="/icon-check-circle.png">Subscribe</button></a>
+    	  </form>
+
+    	  <div id="progress" class="graph" style="display:none;">
+		    <div id="bar" style="width: 0"></div>
+		  </div>
+    	`;
+    	modal.appendToModal('large', form);
+    	modal.showModal('large');
 	}
 
 }
