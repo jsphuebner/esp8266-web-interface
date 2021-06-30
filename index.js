@@ -903,18 +903,18 @@ var ui = {
     showOTAUpdateFirmwareModal: function() {
     	// empty the modal in case there's still something in there
     	modal.emptyModal('large');
+    	modal.setModalHeader('large', 'Over the air firmware update');
 
     	// Insert the form
     	var form = `
     	  <form id="ota-update-form">
-    	    <h2>Over the air firmware update</h2>
     	    <p>Choose a release to install</p>
     	    <select id="ota-release"></select>
     	    <a onclick="ui.installOTAFirmwareUpdate();"><button>
     	        <img class="buttonimg" src="/icon-check-circle.png">Install firmware</button></a>
     	  </form> 
-          <div id="ota-release-selected-div" style="display:hidden;"></div>
-    	  <div id="progress" class="graph" style="display:hidden;">
+          <div id="ota-release-selected-div" style="display:none;"></div>
+    	  <div id="progress" class="graph" style="display:none;">
 		    <div id="bar" style="width: 0"></div>
 		  </div>
     	`;
