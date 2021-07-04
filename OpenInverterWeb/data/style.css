@@ -473,10 +473,10 @@ tr:hover {background-color:#f5f5f5;}
 .small-modal-container {
     background-color: #fefefe;
     margin: 5% auto;
-    padding: 40px;
+    padding: 20px 40px 20px 40px;
     border: 1px solid #888;
-    width: 200px;
-    height: 100px;
+    border-radius: 10px;
+    width: 300px;
 }
 
 .can-mapping-modal-container {
