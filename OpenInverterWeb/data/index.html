@@ -25,6 +25,7 @@
 <link href="style.css" rel="stylesheet" type="text/css" />
 <script src="chart.min.js" type="text/javascript"></script>
 <script src="modal.js" type="text/javascript"></script>
+<script src="docstrings.js" type="text/javascript"></script>
 <script src="inverter.js" type="text/javascript"></script>
 <script src="index.js" type="text/javascript"></script>
 <script src="subscription.js" type="text/javascript"></script>
@@ -32,6 +33,7 @@
 <script src="wifi.js" type="text/javascript"></script>
 <script src="plot.js" type="text/javascript"></script>
 <script src="ui.js" type="text/javascript"></script>
+
 </head>
 
 <body onload="ui.onLoad()">
@@ -236,14 +238,18 @@
 
 					<div class="main-left">
 					    <h2 id="update">Update</h2>
-					    <p>On this page you can apply software updates to your OpenInverter board.</p>
+					    <p>On this page you can apply software updates to your OpenInverter system. There are several distinct pieces of software which go to make up an OpenInverter system and each has a separate update mechanism.</p>
 
-					    <h3>Firmware</h3>
-					    <p>To install a new firmware on your OpenInverter board click on the 'Install firmware from file' button on the right. Use the stm32_sine.bin file to install the sine firmware or use the stm32_foc.bin file to install the FOC firmware. You can find information about the latest available releases, including download links, on the OpenInverter forum <a href="https://openinverter.org/forum/viewforum.php?f=7&sid=cdb63cfa1d2f7ab493e7079fc13a8e65">here</a>. </p>
+					    <h3>OpenInverter Board Bootloader</h3>
+					    <p>You can find download links for the bootloader for your OpenInverter board in the forum <a href="https://openinverter.org/forum/viewforum.php?f=7">here</a>.
 
-					    <h3>Bootloader</h3>
+					    <h3>OpenInverter Board Firmware</h3>
+					    <p>To install a new firmware on your OpenInverter board click on the 'Install firmware from file' button on the right. Use the stm32_sine.bin file to install the sine firmware or use the stm32_foc.bin file to install the FOC firmware. You can find information about the latest available releases, including download links, on the OpenInverter forum <a href="https://openinverter.org/forum/viewforum.php?f=7&sid=cdb63cfa1d2f7ab493e7079fc13a8e65">here</a>.</p>
 
-					    <h3>Web Interface</h3>
+					    <h3>Web Interface Firmware</h3>
+					    <p>There is currently no way to program the WiFi module firmware from this interface. The firmware on these modules must be programmed using an FTDI.</p>
+
+					    <h3>Web Interface Application</h3>
 					    <p>You can apply updates to this web interface by uploading individual files. More information about updating the web interface can be found in its github repository <a href="https://github.com/jsphuebner/esp8266-web-interface">here</a>.</p>
 
 		                <!--

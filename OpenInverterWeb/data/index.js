@@ -152,6 +152,20 @@ function updateTables()
 		for (var name in values)
 		{
 			var param = values[name];
+
+			// Get docstring
+			var docstring = docstrings.get(name);
+			console.log("Looking up docstring " + name + " : " + docstrings.get(name));
+			if ( ! docstring == "" )
+			{
+				console.log("Found docstring" + docstring);
+				var nameWithTooltip = "<div class=\"tooltip\">" + name + "<span class=\"tooltiptext\">" + docstring + "</span></div>";
+			}
+			else
+			{
+				nameWithTooltip = name;
+			}
+
 			if (param.isparam)
 			{
 				var valInput;
@@ -202,7 +216,7 @@ function updateTables()
 				if (param.i !== undefined)
 				    index = param.i;
 				
-				addRow(tableParam, [ index, name, valInput, unit, param.minimum, param.maximum, param.default ]);
+				addRow(tableParam, [ index, nameWithTooltip, valInput, unit, param.minimum, param.maximum, param.default ]);
 			}
 			else
 			{
@@ -233,7 +247,7 @@ function updateTables()
 					display = param.value;
 				}
 
-				addRow(tableSpot, [ name, display, unit ]);
+				addRow(tableSpot, [ nameWithTooltip, display, unit ]);
 			}
 		}
 		document.getElementById("paramDownload").href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(params, null, 2));
@@ -329,7 +343,6 @@ function showLog()
 	window.open(req);
 }
 */
-
 /** @brief uploads file to web server, if bin-file uploaded, starts a firmware upgrade */
 function uploadFile() 
 {
