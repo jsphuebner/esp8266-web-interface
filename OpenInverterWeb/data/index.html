@@ -247,7 +247,7 @@
 					    <p>To install a new firmware on your OpenInverter board click on the 'Install firmware from file' button on the right. Use the stm32_sine.bin file to install the sine firmware or use the stm32_foc.bin file to install the FOC firmware. You can find information about the latest available releases, including download links, on the OpenInverter forum <a href="https://openinverter.org/forum/viewforum.php?f=7&sid=cdb63cfa1d2f7ab493e7079fc13a8e65">here</a>.</p>
 
 					    <h3>Web Interface Firmware</h3>
-					    <p>There is currently no way to program the WiFi module firmware from this interface. The firmware on these modules must be programmed using an FTDI.</p>
+					    <p>There is currently no way to program the WiFi module firmware from this interface. The firmware on these modules must be programmed using an FTDI. See <a href="https://openinverter.org/forum/viewtopic.php?f=5&t=8">here</a> for more details.</p>
 
 					    <h3>Web Interface Application</h3>
 					    <p>You can apply updates to this web interface by uploading individual files. More information about updating the web interface can be found in its github repository <a href="https://github.com/jsphuebner/esp8266-web-interface">here</a>.</p>
@@ -311,7 +311,7 @@
 
 					    <!-- Subscribe to param set -->
 					    <button onclick="ui.showSubscribeModal();">
-					    	<img class="buttonimg" src="/icon-download-cloud.png">Subscribe to paramater set</button>
+					    	<img class="buttonimg" src="/icon-download-cloud.png">Subscribe to parameter set</button>
 
                         <h3 class="underline">Misc</h3>
 
@@ -494,8 +494,11 @@
 				<div id="files" class="tabdiv main-content">
 					<div class="main-right">
 						<h3 class="underline">Actions</h3>
-						<a href="/remote.html"><button>
-							<img class="buttonimg" src="/icon-tool.png">Start Remote Support Session</button></a>
+						<!-- upload file -->
+						<form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
+					        <input id="updatefile" name="updatefile" type="file" onchange="uploadFile();" hidden />
+					        <label class="butt" for="updatefile"><img class="buttonimg" src="/icon-upload.png">Upload file</label>
+					    </form>
 					</div>
 					<div class="main-left">
 					    <h2>Files</h2>
