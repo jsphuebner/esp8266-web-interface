@@ -86,7 +86,6 @@ var ui = {
 		var versionDiv = document.getElementById("version");
 		versionDiv.innerHTML = "";
 		var firmwareVersion = String(paramsCache.get('version'));
-		//console.log(firmwareVersion);
 		versionDiv.innerHTML += "firmware : " + firmwareVersion + "<br>";
 		versionDiv.innerHTML += "web : v1.99"
 	},
@@ -97,19 +96,16 @@ var ui = {
 	toggleBetaFeaturesVisibility: function()
 	{
 		var betaFeatures = document.getElementsByClassName('beta-feature');
-		console.log("There are " + betaFeatures.length + " beta features to show/hide");
         var betaFeaturesCheckbox = document.getElementById('beta-features-checkbox');
 
 		for ( var i = 0; i < betaFeatures.length; i++ )
 		{
 			if ( betaFeaturesCheckbox.checked )
 			{
-				console.log("setting display:block");
                 betaFeatures[i].style.display = 'block';
 			}
 			else
 			{
-				console.log("setting display:none");
 				betaFeatures[i].style.display = 'none';
 			}
 		}
@@ -127,7 +123,6 @@ var ui = {
 		var statusDiv = document.getElementById('top-left');
 
 		var status = paramsCache.get('status');
-		//console.log("status : " + status);
 
 		if ( status == null ){
 			return;
@@ -199,7 +194,6 @@ var ui = {
     {
     	// Get command entered
     	var commandinput = document.getElementById('commandinput').value;
-    	console.log("running dash command" + commandinput);
     	// Get output box
     	var commandoutput = document.getElementById('commandoutput');
     	inverter.sendCmd(commandinput, function(reply){
@@ -326,7 +320,6 @@ var ui = {
     	releaseRequest.responseType = "blob";
     	releaseRequest.onload = function()
     	{
-    		console.log("here");
     		var releaseBlob = releaseRequest.response;
     		console.log(releaseBlob);
     		// build form we will submit to /edit to upload the file blob
@@ -659,16 +652,34 @@ var ui = {
 		modal.emptyModal('small');
 		var msg = "<p>Are you sure you want to delete file '" + filename + "'?</p>";
 		msg += "<div style=\"display:flex\">";
-		msg += "<button><img class=\"buttonimg\" src=\"/icon-trash.png\">Delete file</button>";
+		msg += "<button onclick=\"ui.deleteFile('/" + filename + "');\"><img class=\"buttonimg\" src=\"/icon-trash.png\">Delete file</button>";
 		msg += "<button onclick=\"modal.hideModal('small');\"><img class=\"buttonimg\" src=\"/icon-x-square.png\">Cancel</button>";
 		msg += "</div>";
 		modal.appendToModal('small', msg);
 		modal.showModal('small');
 	},
 
-	deleteFile: function()
+	deleteFile: function(filename)
 	{
-		//
+		var deleteFileRequest = new XMLHttpRequest();
+		var params = {}
+		params.f = "/" + filename;
+		deleteFileRequest.onload = function()
+    	{
+    		// re-build file list
+    		ui.populateFileList();
+    		// hide modal
+    		modal.hideModal('small');
+    	};
+
+    	deleteFileRequest.onerror = function()
+		{
+			alert("error");
+		};
+
+		deleteFileRequest.open("DELETE", "/edit?f=" + filename, true);
+		deleteFileRequest.send();
+
 	},
 
 	/**
