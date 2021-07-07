@@ -155,10 +155,8 @@ function updateTables()
 
 			// Get docstring
 			var docstring = docstrings.get(name);
-			console.log("Looking up docstring " + name + " : " + docstrings.get(name));
 			if ( ! docstring == "" )
 			{
-				console.log("Found docstring" + docstring);
 				var nameWithTooltip = "<div class=\"tooltip\">" + name + "<span class=\"tooltiptext\">" + docstring + "</span></div>";
 			}
 			else
@@ -403,7 +401,6 @@ function uploadSWDFile()
 		xhr.onreadystatechange = function() {
 		  if(xhr.readyState == 3) {
 		    var data = xhr.response.substr(xhr.seenBytes);
-		    //console.log(data);
 
 		    if(data.indexOf("Error") != -1) {
 		    	document.getElementById("swdbar").style.width = "100%";
