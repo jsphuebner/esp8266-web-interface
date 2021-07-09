@@ -162,25 +162,23 @@
 		            <div class="main-left">
 						<h2>Dashboard</h2>
 
-						<div id="top-row">
-		                    <div id="top-left">
+						<div id="top-row" class="dash-row">
+		                    <div id="top-left" class="dash-box">
 		                    	<img src="ajax-loader.gif">
 		                    </div>
-		                    <div id="top-right">
+		                    <div id="top-right" class="dash-box">
 								<h3>Inverter messages</h3>
 								<pre><div id="message"></div></pre>
 							</div>
 						</div>
 
-						<div id="bottom-row">
-		                    <div id="bottom-left">
-		                    	bottom-left
-		                    </div>
-		                    <div id="bottom-right">
+						<div id="bottom-row" class="dash-row">
+		                    <div id="bottom-left" class="dash-box">
 		                    	<h3>Command</h2>
 		                    	<div id="commandoutput"></div>
 							    &raquo;&nbsp;<input type="text" id="commandinput"/>
-							</div>
+		                    </div>
+		                    <div id="bottom-right" class="dash-box"></div>
 						</div>
 						
 				    </div>
@@ -334,7 +332,7 @@
 
 					<div class="main-left">
 						<h2>Parameters</h2>
-					    <table id="params">
+					    <table id="params" class="fullheight">
 					    <thead>
 					        <tr>
 					            <th>I</th>
@@ -362,7 +360,7 @@
 		            <div class="main-left">
 					    <h2 id="spot">Spot Values</h2>
 					    <p><img src="ajax-loader.gif" style="visibility: hidden" id="loader2">
-					    <table id="spotValues">
+					    <table id="spotValues" class="fullheight">
 					        <thead>
 					            <tr>
 					                <th>Name</th>
@@ -502,7 +500,7 @@
 					</div>
 					<div class="main-left">
 					    <h2>Files</h2>
-					    <table id="filesTable" class="">
+					    <table id="filesTable" class="fullheight">
 							<tr>
 								<th>Filename</th>
 								<th>Delete</th>

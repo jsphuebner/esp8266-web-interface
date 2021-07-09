@@ -59,7 +59,7 @@ var ui = {
 		});
 
 		updateTables();
-		generateChart();
+		plot.generateChart();
 		checkSubscribedParameterSet();
 		ui.populateSpotValueDropDown();
 		ui.populateExistingCanMappingTable();
