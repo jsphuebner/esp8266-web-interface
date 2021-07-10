@@ -159,9 +159,9 @@
 					<div class="main-right">
 						<h3 class="underline">Actions</h3>
 						<button onclick="sendCmd('start 2');">
-				    	<img class="buttonimg" src="/icon-play.png">Start Inverter in manual Mode</button>
+				    	<img class="buttonimg" src="/icon-play.png">Start inverter in manual mode</button>
 				        <button onclick="sendCmd('stop');">
-				    	<img class="buttonimg" src="/icon-square.png">Stop Inverter</button>
+				    	<img class="buttonimg" src="/icon-square.png">Stop inverter</button>
 				        
 				    </div>
 		            
@@ -208,7 +208,7 @@
 		                	<img class="buttonimg" src="/icon-trash-2.png">Erase Flash</button></a>
 		                -->
 		                <a onclick="ui.showEraseFlashConfirmationDialog();"><button>
-		                	<img class="buttonimg" src="/icon-trash-2.png">Erase Flash</button></a>
+		                	<img class="buttonimg" src="/icon-trash-2.png">Erase flash</button></a>
 
 		                <!-- Hard reset -->
 		                <!--
@@ -216,11 +216,11 @@
 		                	<img class="buttonimg" src="/icon-rotate-ccw.png">Hard Reset</button></a>
 		                -->
 		                <a onclick="ui.showHardResetConfirmationDialog();"><button>
-		                	<img class="buttonimg" src="/icon-rotate-ccw.png">Hard Reset</button></a>
+		                	<img class="buttonimg" src="/icon-rotate-ccw.png">Hard reset</button></a>
 
 		                <!-- Download flash -->
 		                <a href="/swd/bin?flash"><button>
-		                	<img class="buttonimg" src="/icon-download.png">Download Flash</button></a>
+		                	<img class="buttonimg" src="/icon-download.png">Download flash</button></a>
 
 					    <!-- OTA firmware update -->
 					    <a href="#" class="beta-feature" onclick="ui.showOTAUpdateFirmwareModal();"><button>
@@ -262,7 +262,7 @@
 
 		                <!-- Download bootloader -->
 		                <a href="/swd/bin?bootloader"><button>
-		                	<img class="buttonimg" src="/icon-download.png">Download Bootloader</button></a>
+		                	<img class="buttonimg" src="/icon-download.png">Download bootloader</button></a>
 
 		                <h3 class="underline">Web Interface</h3>
 
@@ -305,20 +305,20 @@
 
 						<!-- Save params to flash -->
 						<button onclick="sendCmd('save');">
-							<img class="buttonimg" src="/icon-save.png">Save Parameters to Flash</button>
+							<img class="buttonimg" src="/icon-save.png">Save parameters to flash</button>
 
 						<!-- Restore params from flash -->
 					    <button onclick="sendCmd('load');">
-					    	<img class="buttonimg" src="/icon-rotate-ccw.png">Restore Parameters from Flash</button>					    
+					    	<img class="buttonimg" src="/icon-rotate-ccw.png">Restore parameters from flash</button>					    
 
 					    <!-- Download params file -->
 					    <a download="params.json" href="data:text/json,{ }" id="paramDownload"><button>
-					    	<img class="buttonimg" src="/icon-download.png">Download Parameter File</button></a>
+					    	<img class="buttonimg" src="/icon-download.png">Download parameters file</button></a>
 
 		                <!-- Load params from file -->
 					    <form id="paramform" enctype="multipart/form-data" action="edit" method="POST">
 					        <input id="paramfile" name="paramfile" type="file" onchange="ui.loadParametersFromFile();" hidden />
-					        <label class="butt" for="paramfile"><img class="buttonimg" src="/icon-file-text.png">Load Parameters from File</label>
+					        <label class="butt" for="paramfile"><img class="buttonimg" src="/icon-file-text.png">Load parameters from file</label>
 					    </form>
 
 					    <h3 class="underline">Parameter Database</h3>
@@ -327,7 +327,7 @@
 					    <form id="paramdb" action="https://openinverter.org/parameters/api.php" method="POST" enctype="multipart/form-data">
 					        <input type="text" style="display: none;" id="parameters_json" name="data"></input>
 					        <input type="hidden" id="parameters_token" name="token" />
-					        <button onclick="parameterSubmit();"><image class="buttonimg" src="/icon-upload-cloud.png"> Submit Parameters to OpenInverter</button>
+					        <button onclick="parameterSubmit();"><image class="buttonimg" src="/icon-upload-cloud.png"> Submit parameters to OpenInverter</button>
 					    </form>
 
 					    <!-- Subscribe to param set -->
@@ -337,11 +337,11 @@
                         <h3 class="underline">Misc</h3>
 
                         <button onclick="ui.toggleVisibility();">
-                        	<img class="buttonimg" src="/icon-eye.png">Toggle Category Visibility</button>
+                        	<img class="buttonimg" src="/icon-eye.png">Toggle category visibility</button>
 
                         <!-- Params reference -->
 					    <a href="https://openinverter.org/wiki/Parameters" target="_blank"><button>
-					    	<img class="buttonimg" src="/icon-help-circle.png">Parameter Reference</button></a>
+					    	<img class="buttonimg" src="/icon-help-circle.png">Parameter reference</button></a>
 
                         <!-- 
 					    <h3 class="underline">Subscribe to parameter set</h3>
@@ -405,19 +405,19 @@
 
 						<!-- start plot -->
 		                <button onclick="plot.startPlot()">
-		                	<img class="buttonimg" src="/icon-play.png">Start Plot</button>
+		                	<img class="buttonimg" src="/icon-play.png">Start plot</button>
 
 		                <!-- stop plot -->
 					    <button onclick="plot.stopPlot()">
-					    	<img class="buttonimg" src="/icon-square.png">Stop Plot</button>
+					    	<img class="buttonimg" src="/icon-square.png">Stop plot</button>
 
 					    <!-- pause plot -->
 					    <button onclick="plot.pauseResumePlot()" disabled id="pauseButton">
-					    	<img class="buttonimg" src="/icon-pause.png">Pause Plot</button>
+					    	<img class="buttonimg" src="/icon-pause.png">Pause plot</button>
 
 					    <!-- launch gauges -->
 					    <button onclick="plot.launchGauges()">
-					    	<img class="buttonimg" src="/icon-clock.png">Launch Gauges</button>
+					    	<img class="buttonimg" src="/icon-clock.png">Launch gauges</button>
 
 					    <h3 class="underline">Configure Plot</h3>
 					    Data points : <input type="number" id="maxValues" step="1" min="10" max="10000" value="1000" /><br>
@@ -455,7 +455,7 @@
 
 						<!-- Save -->
 						<button onclick="log.save();">
-							<img class="buttonimg" src="/icon-save.png">Save As...</button>
+							<img class="buttonimg" src="/icon-save.png">Save as...</button>
 
 						<h3 class="underline">Configure Logger</h3>
 						<label for="data-logger-samples">Samples per line: </label>
@@ -536,7 +536,7 @@
 					<div class="main-right">
 						<h3 class="underline">Actions</h3>
 						<a href="/remote.html"><button>
-							<img class="buttonimg" src="/icon-tool.png">Start Remote Support Session</button></a>
+							<img class="buttonimg" src="/icon-tool.png">Start remote support session</button></a>
 					</div>
 					<div class="main-left">
 					    <h2>Support</h2>
