@@ -16,11 +16,11 @@
 - [ ] Visual feedback that parameters have been saved
 - [ ] Auto updates for web interface
 - [x] Experimental features toggle
-- [ ] Hide the SWD form by default
-- [ ] Erase flash confirm dialog
-- [ ] Hard reset confirm dialog
-- [ ] Freeze params when selected
+- [x] Hide the SWD form by default
+- [x] Erase flash confirm dialog
+- [x] Hard reset confirm dialog
+- [x] Freeze params when selected
 - [ ] Save params confirm
 - [ ] Restore params from flash confirm
-- [ ] Submit params to openinver
+- [ ] Submit params to openinvter
 - [ ] Subscribe to parameter set finish
