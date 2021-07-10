@@ -133,6 +133,12 @@
 			<a class="tablink" onclick="ui.openPage('support', this, 'white')">
 				<img class="buttonimg" src="/icon-help-circle.png">SUPPORT</a>
 
+			<!-- spinner div -->
+			<div id="spinner-div">
+				<!-- <img src="ajax-loader.gif" style="visibility: hidden" id="loader"><p>refreshing...</p>-->
+				<img style="vertical-align:middle" src="ajax-loader.gif"><p> refreshing...</p>
+			</div>
+
             <!-- beta features toggle -->
             <div id="beta-features-toggle-div" onclick="ui.toggleBetaFeaturesVisibility();">
     			<label class="switch">
@@ -342,7 +348,6 @@
 					    <input id="token" type="text" onchange="checkToken(this.value, 'Requesting parameter set', true)" size="40">
 					    -->
 					    
-					    <p><img src="ajax-loader.gif" style="visibility: hidden" id="loader1">
 					    </p>
 					    <p>
 					</div>
@@ -376,7 +381,7 @@
 
 		            <div class="main-left">
 					    <h2 id="spot">Spot Values</h2>
-					    <p><img src="ajax-loader.gif" style="visibility: hidden" id="loader2">
+					    
 					    <table id="spotValues" class="fullheight">
 					        <thead>
 					            <tr>

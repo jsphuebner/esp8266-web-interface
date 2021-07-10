@@ -126,8 +126,7 @@ function updateTables()
 		}
 	}
 
-	document.getElementById("loader1").style.visibility = "visible";
-	document.getElementById("loader2").style.visibility = "visible";
+	document.getElementById("spinner-div").style.visibility = "visible";
 
 	inverter.getParamList(function(values) 
 	{
@@ -239,8 +238,7 @@ function updateTables()
 			}
 		}
 		document.getElementById("paramDownload").href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(params, null, 2));
-		document.getElementById("loader1").style.visibility = "hidden";
-		document.getElementById("loader2").style.visibility = "hidden";
+		document.getElementById("spinner-div").style.visibility = "hidden";
 	});
 }
 

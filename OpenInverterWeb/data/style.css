@@ -492,6 +492,28 @@ tr:hover {
     display: flex;
 }
 
+/* refresh spinner */
+
+#spinner-div {
+    position: absolute;
+    margin: 0px;
+    bottom: 90px;
+    padding: 0px 0px 0px 40px;
+    float: left;
+    width: 160px;
+    height: 16px;
+}
+
+#spinner-div p {
+    margin: 0px;
+    padding: 0px 0px 0px 5px;
+}
+
+#spinner-div img {
+    margin: 0px;
+    padding: 0px 5px 0px 0px;
+}
+
 /* Experimental features */
 
 .beta-feature {
@@ -500,7 +522,7 @@ tr:hover {
 
 #beta-features-toggle-div {
     position: absolute;
-    bottom: 50px;
+    bottom: 35px;
     padding: 0px;
     padding-top: 5px;
     padding-bottom: 5px;
