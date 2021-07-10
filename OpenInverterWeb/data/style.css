@@ -285,7 +285,6 @@ table {
 }
 
 tbody {
-    height: 90vh;
     overflow: auto;
 }
 
