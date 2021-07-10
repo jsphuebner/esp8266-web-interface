@@ -24,6 +24,7 @@ var stop;
 var imgid = 0;
 var subscription;
 
+
 function parameterSubmit()
 {
 	document.getElementById("loader0").style.visibility = "visible";
@@ -109,12 +110,28 @@ function checkToken(token, message, forceUpdate)
 /** @brief generates parameter and spotvalue tables */
 function updateTables()
 {
+	
+    // Don't run if updates are disabled (when we're doing a firmware update for example)
+	if ( ! ui.doAutoRefresh ) { return; }
+
+	var tableParam = document.getElementById("params");
+
+	// Don't run if any one of the param boxes are highlighted (i.e. don't clobber what the user is typing)
+	var paramFields = tableParam.querySelectorAll('input, select');
+	for ( var i = 0; i < paramFields.length; i++ )
+	{
+		if ( paramFields[i] === document.activeElement )
+		{
+			return;
+		}
+	}
+
 	document.getElementById("loader1").style.visibility = "visible";
 	document.getElementById("loader2").style.visibility = "visible";
 
 	inverter.getParamList(function(values) 
 	{
-		var tableParam = document.getElementById("params");
+
 		var tableSpot = document.getElementById("spotValues");
 		var lastCategory = "";
 		var params = {};
@@ -300,20 +317,6 @@ function uploadFile()
 
 	xmlhttp.open("POST", "/edit");
 	xmlhttp.send(fd);
-}
-
-/** @brief hard-reset SWD, different from soft-reset*/
-function resetSWD()
-{		
-	var xhr = new XMLHttpRequest();
-	xhr.onload = function()
-	{
-		document.getElementById("swdbar").style.width = "100%";
-		document.getElementById("swdbar").innerHTML = "<p>Hard-Reset</p>";
-		updateTables();
-	};
-	xhr.open('GET', '/swd/reset?hard', true);
-	xhr.send();
 }
 
 /** @brief uploads file to web server, Flash using Serial-Wire-Debug. Start address bootloader = 0x08000000, firmware = 0x08001000*/

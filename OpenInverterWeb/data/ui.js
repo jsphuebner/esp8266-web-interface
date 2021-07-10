@@ -23,6 +23,9 @@ var ui = {
     // The API endpoint to query to get firmware release available in Github
 	githubFirmwareReleaseURL: 'https://api.github.com/repos/jsphuebner/stm32-sine/releases',
 
+    // Turn automatic updates of page content on/off. e.g. parameters, spot values.
+	doAutoRefresh: true,
+
 	/** @brief switch to a different page tab */
 	openPage: function(pageName, elmnt, color)
 	{
@@ -72,12 +75,14 @@ var ui = {
 	/** @brief automatically update data on the UI */
 	refresh: function()
 	{
+		// Is automatic refreshing disabled?
+		if ( ! ui.doAutoRefresh ) { return; }
+
 		inverter.refreshParams();
 		updateTables();
 		ui.populateVersion();
 		ui.refreshStatusBox();
 		ui.refreshMessagesBox();
-		
 	},
 
 	/** @brief fill out version */
@@ -214,7 +219,73 @@ var ui = {
 
     /**
      * ~~~ UPDATE ~~~
-     * /
+     */
+
+    /** @brief show the 'Erase flash' confirmation dialog box */
+    showEraseFlashConfirmationDialog: function()
+    {
+        modal.emptyModal('small');
+        var msg = "<p>Are you sure you want to erase the flash?</p>";
+        msg += "<div style=\"display:flex\">";
+        msg += "<a href=\"/swd/zero\"><button><img src=\"/icon-trash-2.png\">Erase flash</button></a>";
+        msg += "<button onclick=\"modal.hideModal('small');\"><img src=\"/icon-x-square.png\">Cancel</button>";
+        msg += "</div>";
+        modal.appendToModal('small', msg);
+        modal.showModal('small');
+    },
+
+    /** @brief hard-reset SWD, different from soft-reset*/
+    /*
+	resetSWD: function()
+	{		
+		var xhr = new XMLHttpRequest();
+		xhr.onload = function()
+		{
+			document.getElementById("swdbar").style.width = "100%";
+			document.getElementById("swdbar").innerHTML = "<p>Hard-Reset</p>";
+			updateTables();
+		};
+		xhr.open('GET', '/swd/reset?hard', true);
+		xhr.send();
+	},
+	*/
+
+    /** @brief show the 'Hard resest' confirmation dialog box */
+	showHardResetConfirmationDialog: function()
+	{
+		modal.emptyModal('small');
+        var msg = "<p>Are you sure you want to perform a hard reset?</p>";
+        msg += "<div style=\"display:flex\">";
+        msg += "<button onclick=\"ui.performHardReset();\"><img src=\"/icon-rotate-ccw.png\">Hard reset</button>";
+        msg += "<button onclick=\"modal.hideModal('small');\"><img src=\"/icon-x-square.png\">Cancel</button>";
+        msg += "</div>";
+        modal.appendToModal('small', msg);
+        modal.showModal('small');
+	},
+
+	/** @brief actually perform a hard reset */
+	performHardReset: function()
+	{
+		// disable automatic refresh while we're resetting
+		autoRefresh = false;
+
+		var resetRequest = new XMLHttpRequest();
+		resetRequest.onload = function()
+		{
+			updateTables();
+			modal.hideModal('small');
+			var msg = "<p>Hard reset complete</p>";
+			msg += "<div style=\"display:flex\">";
+			msg += "<button onclick=\"modal.hideModal('small');\"><img src=\"/icon-x-square.png\">Close</button>";
+			msg += "</div>";
+			modal.appendToModal('small', msg);
+			modal.showModal('small');
+			// turn automatic refresh back on
+			autoRefresh = true;
+		};
+		resetRequest.open('GET', '/swd/reset?hard', true);
+		resetRequest.send();
+	},
 
 
     /** @brief Show the modal to update the firmware from a file */
@@ -340,6 +411,9 @@ var ui = {
     /** @brief uploads file to web server, if bin-file uploaded, starts a firmware upgrade */
     doOTAUpdate: function() 
 	{
+		// disable automatic refreshing while we update
+		autoRefresh = false;
+
 		var xmlhttp = new XMLHttpRequest();
 		var form = document.getElementById('uploadform');
 		
@@ -361,6 +435,13 @@ var ui = {
 
 		xmlhttp.open("POST", "/edit");
 		xmlhttp.send(fd);
+	},
+
+	/** bootloader */
+
+	swdUpdate: function()
+	{
+		//
 	},
 
 

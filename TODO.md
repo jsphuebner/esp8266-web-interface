@@ -5,7 +5,6 @@
 - [x] Separate 'can mapping' page
 - [x] Move spot value selection logic from spot values page to plot page
 - [ ] Documentation on how to use the development environment
-- [ ] Hide the SWD form by default
 - [x] WiFi Settings page
 - [x] Fix data logger page
 - [x] Make dashboard content active and automatically updated
@@ -17,3 +16,11 @@
 - [ ] Visual feedback that parameters have been saved
 - [ ] Auto updates for web interface
 - [x] Experimental features toggle
+- [ ] Hide the SWD form by default
+- [ ] Erase flash confirm dialog
+- [ ] Hard reset confirm dialog
+- [ ] Freeze params when selected
+- [ ] Save params confirm
+- [ ] Restore params from flash confirm
+- [ ] Submit params to openinver
+- [ ] Subscribe to parameter set finish
