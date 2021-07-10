@@ -277,6 +277,7 @@ input[type=number] {
 thead tr th {
   position: sticky;
   top: 0;
+  padding: 7px;
 }
 
 table {
