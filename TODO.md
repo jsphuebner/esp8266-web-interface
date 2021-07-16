@@ -20,7 +20,7 @@
 - [x] Erase flash confirm dialog
 - [x] Hard reset confirm dialog
 - [x] Freeze params when selected
-- [ ] Save params confirm
-- [ ] Restore params from flash confirm
+- [x] Save params confirm
+- [x] Restore params from flash confirm
 - [ ] Submit params to openinvter
 - [ ] Subscribe to parameter set finish

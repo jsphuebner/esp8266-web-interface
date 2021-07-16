@@ -24,15 +24,21 @@ var stop;
 var imgid = 0;
 var subscription;
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 
 function parameterSubmit()
 {
-	document.getElementById("loader0").style.visibility = "visible";
+	//document.getElementById("loader0").style.visibility = "visible";
 	inverter.getParamList(function(values)
 	{
-		document.getElementById("loader0").style.visibility = "hidden";
+		//document.getElementById("loader0").style.visibility = "hidden";
+		console.log("values : " + values);
+		//
 		document.getElementById("parameters_json").value = JSON.stringify(values);
-		document.getElementById("paramdb").submit();
+		//document.getElementById("paramdb").submit();
 	}, true);
 }
 

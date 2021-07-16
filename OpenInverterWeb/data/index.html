@@ -303,11 +303,11 @@
 						<h3 class="underline">Save & Load</h3>
 
 						<!-- Save params to flash -->
-						<button onclick="sendCmd('save');">
+						<button onclick="ui.showParamsSavedModal();">
 							<img class="buttonimg" src="/icon-save.png">Save parameters to flash</button>
 
 						<!-- Restore params from flash -->
-					    <button onclick="sendCmd('load');">
+					    <button onclick="ui.showRestoreParamsFromFlashConfirmationModal();">
 					    	<img class="buttonimg" src="/icon-rotate-ccw.png">Restore parameters from flash</button>					    
 
 					    <!-- Download params file -->

@@ -300,7 +300,7 @@ th {
     text-align: left;
     border-bottom: 1px solid #ddd;
     background-color:#e5e5e5;
-    z-index: 5;
+    z-index: 1;
 }
 
 tr:hover {
@@ -412,7 +412,7 @@ tr:hover {
     position: fixed;
     width: 100%;
     height: 100%;
-    z-index: 1;
+    z-index: 5;
     left: 0;
     top: 0;
     background-color: rgb(0,0,0);
@@ -619,13 +619,13 @@ input:checked + .slider:before {
   background-color: black;
   color: #fff;
   text-align: center;
-  padding: 5px 0;
+  padding: 10px;
   border-radius: 6px;
 
   position: absolute;
-  z-index: 5;
+  z-index: 10;
   top: -5px;
-  left: 110%;
+  left: 120%;
 }
 
 .tooltip:hover .tooltiptext {

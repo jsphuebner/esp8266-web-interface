@@ -447,7 +447,41 @@ var ui = {
 
     /**
      * ~~~ PARAMETERS ~~~
-     * /
+     */
+
+    /** @brief Show confirmation that params have been saved */
+    showParamsSavedModal: async function()
+    {
+    	sendCmd('save');
+    	modal.emptyModal('small');
+    	var msg = "<p style=\"padding:20px;text-align:center;\">Parameters saved</p>";
+    	modal.appendToModal('small', msg);
+    	modal.showModal('small');
+    	await sleep(2000);
+    	modal.hideModal('small');
+    },
+
+
+    /** @brief Show a modal box asking user to confirm if they wish to restore params to those saved in flash */
+	showRestoreParamsFromFlashConfirmationModal: function()
+	{
+		modal.emptyModal('small');
+		var msg = "<p>Are you sure you want to discard any unsaved parameter settings and revert to the last saved state?";
+		msg += "<div style=\"display:flex;\">";
+		msg += "<button onclick=\"ui.restoreParamsFromFlash();\"><img class=\"buttonimg\" src=\"/icon-rotate-ccw.png\">Restore</button>";
+		msg += "<button onclick=\"modal.hideModal('small');\"><img class=\"buttonimg\" src=\"/icon-x-square.png\">Cancel</button>";
+		msg += "</div>";
+		modal.appendToModal('small', msg);
+		modal.showModal('small');
+	},
+
+	/** @brief Roll back and changes made to params to last saved state */
+	restoreParamsFromFlash: function()
+	{
+		modal.hideModal('small');
+		sendCmd('load');
+		ui.refresh();
+	},
 
 
 	/** @brief toggles visibility of parameter category
@@ -518,7 +552,7 @@ var ui = {
     	  <p>Note: your inverter needs internet access for this feature to work.</p>
    
    	      <form id="parameter-subscribe-form">
-   	          Subscription token : <input type="text">
+   	          Subscription token : <input type="text" size="40">
     	      <a onclick="ui.installFirmwareUpdate();"><button>
     	          <img class="buttonimg" src="/icon-check-circle.png">Subscribe</button></a>
     	  </form>
@@ -531,6 +565,7 @@ var ui = {
     	modal.showModal('large');
 	},
 
+    
 
 	/**
 	 * ~~~ SPOT VALUES ~~~
@@ -766,6 +801,4 @@ var ui = {
 	/**
 	 * WIFI SETTINGS
 	 */
-
-
 }
