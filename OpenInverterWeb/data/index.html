@@ -43,10 +43,11 @@
         <!-- Large modal -->
 		<div id="large-modal-overlay" class="modal-overlay">
 			<div id="large-modal-container" class="large-modal-container">
-			    <h2 id="large-modal-header"></h2>
-				<span class="modal-close" onclick="modal.hideModal('large');">&times;</span>
+			    <div id="large-modal-header-div">
+			    	<h2 id="large-modal-header"></h2>
+				    <span class="modal-close" onclick="modal.hideModal('large');">&times;</span>
+				</div>
 		    	<div id="large-modal-content" class="modal-content"></div>
-		    	<!-- <button onclick="modal.hideModal('large');">Close</button> -->
 		    </div>
 		</div>
 
@@ -193,31 +194,8 @@
 				<div id="update" class="tabdiv main-content">
 
 					<div class="main-right">
-						<h3 class="underline">Firmware</h3>
 
-						<!-- Install firmware from file -->
-						<form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
-					        <input id="updatefile" name="updatefile" type="file" onchange="uploadFile();" hidden />
-					        <label class="butt" for="updatefile"><img class="buttonimg" src="/icon-upload.png">Install firmware from file</label>
-					    </form>
-
-					    <!-- Erase flash -->
-		                <a onclick="ui.showEraseFlashConfirmationDialog();"><button>
-		                	<img class="buttonimg" src="/icon-trash-2.png">Erase flash</button></a>
-
-		                <!-- Hard reset -->
-		                <a onclick="ui.showHardResetConfirmationDialog();"><button>
-		                	<img class="buttonimg" src="/icon-rotate-ccw.png">Hard reset</button></a>
-
-		                <!-- Download flash -->
-		                <a href="/swd/bin?flash"><button>
-		                	<img class="buttonimg" src="/icon-download.png">Download flash</button></a>
-
-					    <!-- OTA firmware update -->
-					    <a href="#" class="beta-feature" onclick="ui.showOTAUpdateFirmwareModal();"><button>
-					    	<img class="buttonimg" src="/icon-upload-cloud.png">Over the air firmware update</button></a>
-
-					    <h3 class="underline">Bootloader</h3>
+						<h3 class="underline">Bootloader</h3>
 
                         <!-- Install bootloader from file -->
                         <!--
@@ -255,6 +233,30 @@
 		                <a href="/swd/bin?bootloader"><button>
 		                	<img class="buttonimg" src="/icon-download.png">Download bootloader</button></a>
 
+						<h3 class="underline">Firmware</h3>
+
+						<!-- Install firmware from file -->
+						<form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
+					        <input id="updatefile" name="updatefile" type="file" onchange="uploadFile();" hidden />
+					        <label class="butt" for="updatefile"><img class="buttonimg" src="/icon-upload.png">Install firmware from file</label>
+					    </form>
+
+					    <!-- Erase flash -->
+		                <a onclick="ui.showEraseFlashConfirmationDialog();"><button>
+		                	<img class="buttonimg" src="/icon-trash-2.png">Erase flash</button></a>
+
+		                <!-- Hard reset -->
+		                <a onclick="ui.showHardResetConfirmationDialog();"><button>
+		                	<img class="buttonimg" src="/icon-rotate-ccw.png">Hard reset</button></a>
+
+		                <!-- Download flash -->
+		                <a href="/swd/bin?flash"><button>
+		                	<img class="buttonimg" src="/icon-download.png">Download flash</button></a>
+
+					    <!-- OTA firmware update -->
+					    <a href="#" class="beta-feature" onclick="ui.showOTAUpdateFirmwareModal();"><button>
+					    	<img class="buttonimg" src="/icon-upload-cloud.png">Over the air firmware update</button></a>					    
+
 		                <h3 class="underline">Web Interface</h3>
 
 		                <!-- upload file -->
@@ -262,8 +264,6 @@
 					        <input id="updatefile" name="updatefile" type="file" onchange="uploadFile();" hidden />
 					        <label class="butt" for="updatefile"><img class="buttonimg" src="/icon-upload.png">Upload file</label>
 					    </form>
-
-		                
 
 					</div>
 

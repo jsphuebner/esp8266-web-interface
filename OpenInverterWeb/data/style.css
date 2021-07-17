@@ -434,6 +434,10 @@ tr:hover {
     display: inline;
 }
 
+#large-modal-header-div {
+    padding: 0 0 1em 0;
+}
+
 .modal-content {
     //border: 1px solid #DDD;
     height: 90%;

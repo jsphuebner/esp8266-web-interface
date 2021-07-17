@@ -13,14 +13,16 @@
 - [ ] Make it all work on a small screen (menu could collapse to just icons and/or popout on mouseover)
 - [x] Show version string at bottom of menu
 - [ ] Visual feedback that changes have been accepted when modifying params
-- [ ] Visual feedback that parameters have been saved
+- [x] Visual feedback that parameters have been saved
 - [ ] Auto updates for web interface
 - [x] Experimental features toggle
 - [x] Hide the SWD form by default
 - [x] Erase flash confirm dialog
 - [x] Hard reset confirm dialog
 - [x] Freeze params when selected
-- [x] Save params confirm
 - [x] Restore params from flash confirm
-- [ ] Submit params to openinvter
+- [ ] Submit params to openinverter
 - [ ] Subscribe to parameter set finish
+
+- [ ] Download flash - doesn't work, even on old UI
+- [ ] Download bootloader - doesn't work, even on old UI
