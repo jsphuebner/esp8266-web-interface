@@ -18,14 +18,20 @@
  *
  */
 
- var paramsCache = {
- 	data: undefined,
 
- 	get: function(name)
- 	{
- 		if ( paramsCache.data !== undefined )
- 		{
- 			if ( name in paramsCache.data ) {
+/** @brief this is a little cache to store the current params/spot values. This
+ * is here so that different functions can do look-ups without making a full
+ * HTTP call to the inverter each time. */
+
+var paramsCache = {
+
+    data: undefined,
+
+    get: function(name)
+	{
+		if ( paramsCache.data !== undefined )
+		{
+			if ( name in paramsCache.data ) {
 	 			if ( paramsCache.data[name].enums ) {
 	 		        return paramsCache.data[name].enums[paramsCache.data[name].value];
 	 		    } else {
@@ -34,13 +40,14 @@
 	 		}
  		}
  		return null;
- 	}	
- }
+	}	
+}
 
 var inverter = {
+
 	firmwareVersion: 0,
-	//paramsCache: undefined,
 	
+	/** @brief send a command to the inverter */
 	sendCmd: function(cmd, replyFunc, repeat)
 	{
 		var xmlhttp=new XMLHttpRequest();
@@ -58,6 +65,7 @@ var inverter = {
 		xmlhttp.send();
 	},
 	
+	/** @brief get the params from the inverter */
 	getParamList: function(replyFunc, includeHidden)
 	{
 		var cmd = includeHidden ? "json hidden" : "json";
@@ -76,9 +84,7 @@ var inverter = {
 						inverter.firmwareVersion = parseFloat(param.value);
 				}
 			} catch(ex) {}
-			//this.paramsCache = params;
 			paramsCache.data = params;
-			//console.log(params);
 			if (replyFunc) replyFunc(params);
 		});
 	},
@@ -135,18 +141,17 @@ var inverter = {
 		return false;
 	},
 
+    /** @brief get params/spotvalues from inverter and store them in the cache. */
 	refreshParams: function()
 	{
-		//console.log("Refresshing params");
 		inverter.getParamList(function(params){
-			//inverter.paramsCache = params;
 			paramsCache.data = params;
 		});
 	},
 
+    /** @brief get a single param from the cache */
 	getParam: function(paramName, replyFunc)
 	{
-		//console.log("Getting param : " + paramName);
 		if ( inverter.paramsCache !== undefined ){
 			if ( paramName in inverter.paramsCache ){
 			    replyFunc(inverter.paramsCache[paramName]);	
