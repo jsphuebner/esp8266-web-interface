@@ -461,7 +461,6 @@ var ui = {
     	modal.hideModal('small');
     },
 
-
     /** @brief Show a modal box asking user to confirm if they wish to restore params to those saved in flash */
 	showRestoreParamsFromFlashConfirmationModal: function()
 	{
@@ -475,7 +474,7 @@ var ui = {
 		modal.showModal('small');
 	},
 
-	/** @brief Roll back and changes made to params to last saved state */
+	/** @brief Roll back any changes made to params to last saved state */
 	restoreParamsFromFlash: function()
 	{
 		modal.hideModal('small');
@@ -627,17 +626,15 @@ var ui = {
 		selectDiv.appendChild(deleteButton);
 	},
 
+    /** @brief get the current configuration of the plot. I.e., what values should it show. */
 	getPlotItems: function()
 	{
 		var items = {};
     	items.names = new Array();
 	    items.axes = new Array();
-		//var plotItemsForm = document.getElementById("plotConfiguration");
 		var formItems = document.forms["plotConfiguration"].elements;
-		//for ( var i=0; i < formItems.length; i++ ) { console.log(formItems[i]); }
 		for ( var i = 0; i < formItems.length; i++ )
 		{
-
             // Gather up field selections			
 			if ( formItems[i].type === 'select-one' && formItems[i].classList.contains('plotFieldSelect') )
 			{
@@ -649,11 +646,9 @@ var ui = {
 			{
 				items.axes.push(formItems[i].value);
 			}
-
 		}
         return items;
 	},
-
 
 	/**
 	 * DATA LOGGER
