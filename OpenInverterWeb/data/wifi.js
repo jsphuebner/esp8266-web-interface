@@ -18,24 +18,4 @@ var wifi = {
 		wifiFetchRequest.send();
 	},
 
-	/*
-	submitWiFiChange: function()
-	{
-		// get the form values
-		var apSSID = document.getElementById("apSSID").value;
-		var apPW = document.getElementById("apPW").value;
-		var staSSID = document.getElementById("staSSID").value;
-		var staPW = document.getElementById("staPW").value;
-		// submit the changes
-		var wifiTab = document.getElementById("wifi");
-		var wifiUpdateRequest = new XMLHttpRequest();
-		wifiUpdateRequest.onload = function()
-		{
-			wifiTab.innerHTML = this.responseText;
-		}
-		wifiUpdateRequest.open("POST", "/wifi")
-		wifiUpdateRequest.send()
-	},
-	*/
-
 }
