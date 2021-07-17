@@ -20,146 +20,144 @@
 
 var log = {
 
-	  items: [],
-	  samples: 0,
-	  textArea: undefined,
-	  minmax: false,
-	  stopLogging: true,
+	items: [],
+	samples: 0,
+	textArea: undefined,
+	minmax: false,
+	stopLogging: true,
 
     /* @brief add field to data logger */
-	  addLogItem: function()
-	  {
-	  	  var dataLoggerConfiguration = document.getElementById('data-logger-configuration');
+	addLogItem: function()
+	{
+	  	var dataLoggerConfiguration = document.getElementById('data-logger-configuration');
 
-	  	  // container for the drop down and the delete button
-				var selectDiv = document.createElement("div");
-				selectDiv.classList.add('logger-field');
-				dataLoggerConfiguration.appendChild(selectDiv);
+	  	// container for the drop down and the delete button
+		var selectDiv = document.createElement("div");
+		selectDiv.classList.add('logger-field');
+		dataLoggerConfiguration.appendChild(selectDiv);
 
-				// Create a drop down and populate it with the possible spot values
-				var selectSpotValue = document.createElement("select");
-				selectSpotValue.classList.add('logger-field-select');
-				for ( var key in paramsCache.data )
-				{
-						if ( ! paramsCache.data[key].isparam )
-						{
-								var option = document.createElement("option");
-								option.value = key;
-								option.text = key;
-								selectSpotValue.appendChild(option);
-						}
-				}
-				selectDiv.appendChild(selectSpotValue);
+		// Create a drop down and populate it with the possible spot values
+		var selectSpotValue = document.createElement("select");
+		selectSpotValue.classList.add('logger-field-select');
+		for ( var key in paramsCache.data )
+		{
+			if ( ! paramsCache.data[key].isparam )
+			{
+				var option = document.createElement("option");
+				option.value = key;
+				option.text = key;
+				selectSpotValue.appendChild(option);
+			}
+		}
+		selectDiv.appendChild(selectSpotValue);
 
-				// Add the delete button
-				var deleteButton = document.createElement("button");
-				var deleteButtonImg = document.createElement('img');
-				deleteButtonImg.src = '/icon-trash.png';
-				deleteButton.appendChild(deleteButtonImg);
-				deleteButton.onclick = function() { this.parentNode.remove(); };
-				selectDiv.appendChild(deleteButton);
-	  },
+		// Add the delete button
+		var deleteButton = document.createElement("button");
+		var deleteButtonImg = document.createElement('img');
+		deleteButtonImg.src = '/icon-trash.png';
+		deleteButton.appendChild(deleteButtonImg);
+		deleteButton.onclick = function() { this.parentNode.remove(); };
+		selectDiv.appendChild(deleteButton);
+	},
 
     /** @brief return a list of fields currently configured for logger */
-	  getLogItems: function()
-	  {
-	  	  log.items = [];
-			  var formItems = document.forms["data-logger-configuration"].elements;
-			  for ( var i = 0; i < formItems.length; i++ )
-			  {
-			  	  if ( formItems[i].type === 'select-one' && formItems[i].classList.contains('logger-field-select') )
-			  	  {
-			  	  	 log.items.push(formItems[i].value);
-			  	  }
-			  }
-	  },
+	getLogItems: function()
+	{
+	  	log.items = [];
+		var formItems = document.forms["data-logger-configuration"].elements;
+		for ( var i = 0; i < formItems.length; i++ )
+		{
+			if ( formItems[i].type === 'select-one' && formItems[i].classList.contains('logger-field-select') )
+			{
+			  	log.items.push(formItems[i].value);
+			}
+		}
+	},
 
     /* @brief start collecting log data */
-		start: function()
-		{
-			  log.stopLogging = false;
+	start: function()
+	{
+	    log.stopLogging = false;
         log.getLogItems();
-				log.textArea = document.getElementById("data-logger-text-area");
-				log.samples = document.getElementById("data-logger-samples").value;
-				log.minmax = document.getElementById("data-logger-minmax").checked;
-				log.textArea.innerHTML = "Timestamp"
+		log.textArea = document.getElementById("data-logger-text-area");
+		log.samples = document.getElementById("data-logger-samples").value;
+		log.minmax = document.getElementById("data-logger-minmax").checked;
+		log.textArea.innerHTML = "Timestamp"
 				
-				if (log.minmax)
-				{
-						for (var i = 0; i < log.items.length; i++)
-						{
-								log.textArea.innerHTML += "," + log.items[i] + " (avg)," + log.items[i] + " (min)," + log.items[i] + " (max)";
-						}
-				}
-				else
-				{
-						//textArea.innerHTML += "," + paramPart[1];
-						log.textArea.innerHTML += "," + log.items;
-				}
+		if (log.minmax)
+		{
+			for (var i = 0; i < log.items.length; i++)
+			{
+				log.textArea.innerHTML += "," + log.items[i] + " (avg)," + log.items[i] + " (min)," + log.items[i] + " (max)";
+			}
+		}
+		else
+		{
+			log.textArea.innerHTML += "," + log.items;
+	    }
 				
-				log.textArea.innerHTML += "\r\n";
-				log.acquire(log.samples);
-		},
+		log.textArea.innerHTML += "\r\n";
+		log.acquire(log.samples);
+	},
 
-		stop: function()
+	stop: function()
+	{
+		log.stopLogging = true;
+	},
+
+	save: function()
+	{
+		var textToWrite = document.getElementById('data-logger-text-area').innerHTML;
+		var textFileAsBlob = new Blob([ textToWrite ], { type: 'text/csv' });
+		var fileNameToSaveAs = "log.csv";
+
+		var downloadLink = document.createElement("a");
+		downloadLink.download = fileNameToSaveAs;
+	    downloadLink.innerHTML = "Download File";
+		if (window.webkitURL != null)
 		{
-			  log.stopLogging = true;
-		},
+			// Chrome allows the link to be clicked without actually adding it to the DOM.
+			downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+		} else {
+			// Firefox requires the link to be added to the DOM before it can be clicked.
+			downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+			downloadLink.onclick = function(event) {document.body.removeChild(event.target)};
+			downloadLink.style.display = "none";
+			document.body.appendChild(downloadLink);
+		}
 
-		save: function()
-		{
-			  var textToWrite = document.getElementById('data-logger-text-area').innerHTML;
-			  var textFileAsBlob = new Blob([ textToWrite ], { type: 'text/csv' });
-			  var fileNameToSaveAs = "log.csv";
+		downloadLink.click();
+	},
 
-			  var downloadLink = document.createElement("a");
-			  downloadLink.download = fileNameToSaveAs;
-			  downloadLink.innerHTML = "Download File";
-			  if (window.webkitURL != null)
-			  {
-				    // Chrome allows the link to be clicked without actually adding it to the DOM.
-				    downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
-			  } else {
-				    // Firefox requires the link to be added to the DOM before it can be clicked.
-				    downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
-				    downloadLink.onclick = function(event) {document.body.removeChild(event.target)};
-				    downloadLink.style.display = "none";
-				    document.body.appendChild(downloadLink);
-			  }
+	acquire: function(samples)
+	{
+		if ( log.stopLogging ){ return; }
 
-			  downloadLink.click();
-		},
+		if (!log.items.length) return;
 
-		acquire: function(samples)
-		{
-			  if ( log.stopLogging ){ return; }
-
-				if (!log.items.length) return;
-
-				inverter.getValues(log.items, log.samples,
-						function(values) 
-						{
-								var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
-								var localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);
-								var line = localISOTime;
-								for (var name in values)
-								{
-										var avg = values[name].reduce((acc, c) => acc + c, 0) / log.samples;
+		inverter.getValues(log.items, log.samples,
+			function(values) 
+			{
+				var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
+				var localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);
+				var line = localISOTime;
+				for (var name in values)
+				{
+					var avg = values[name].reduce((acc, c) => acc + c, 0) / log.samples;
 										
-										if (log.minmax)
-										{
-												line += "," + avg.toFixed(2) + "," + Math.min(...values[name]) + "," + Math.max(...values[name]);
-										}
-										else
-										{
-												line += "," + avg.toFixed(2);
-										}
-								}
-								line += "\r\n";
-								log.textArea.innerHTML += line;
-								log.textArea.scrollTop = log.textArea.scrollHeight;
-								log.acquire(samples);
-						});
-		},
+					if (log.minmax)
+					{
+						line += "," + avg.toFixed(2) + "," + Math.min(...values[name]) + "," + Math.max(...values[name]);
+					}
+					else
+					{
+						line += "," + avg.toFixed(2);
+					}
+				}
+				line += "\r\n";
+				log.textArea.innerHTML += line;
+			    log.textArea.scrollTop = log.textArea.scrollHeight;
+				log.acquire(samples);
+			});
+	},
 }
-
