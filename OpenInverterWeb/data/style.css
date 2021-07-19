@@ -92,22 +92,7 @@ html, body {
     border: 1px solid red;
 }
 
-/* Logo */
 
-#logo {
-    padding: 10px;
-    height: 120px;
-    margin: auto;
-}
-
-#logo img {
-    width: 100px;
-    height: 100px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 25px;
-    padding-right: 25px;
-}
 
 /* Navbar */
 
@@ -131,6 +116,25 @@ html, body {
     padding-left: 10px;
     padding-top: 8px;
     vertical-align: middle
+}
+
+
+/* Logo */
+
+#logo {
+    padding: 10px;
+    height: 120px;
+    margin: auto;
+}
+
+#logo img {
+    width: 100px;
+    height: 100px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 25px;
+    padding-right: 25px;
+    float: none;
 }
 
 
