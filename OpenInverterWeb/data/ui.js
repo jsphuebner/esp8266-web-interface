@@ -61,13 +61,16 @@ var ui = {
 			}
 		});
 
-		updateTables();
+		ui.updateTables();
 		plot.generateChart();
 		checkSubscribedParameterSet();
 		ui.populateSpotValueDropDown();
 		ui.populateExistingCanMappingTable();
 		wifi.populateWiFiTab();
 		ui.populateFileList();
+		ui.populateVersion();
+		ui.refreshStatusBox();
+		ui.refreshMessagesBox();
 		// run the poll function every 3 seconds
 		var autoRefresh = setInterval(ui.refresh, 10000);
 	},
@@ -79,7 +82,7 @@ var ui = {
 		if ( ! ui.doAutoRefresh ) { return; }
 
 		inverter.refreshParams();
-		updateTables();
+		ui.updateTables();
 		ui.populateVersion();
 		ui.refreshStatusBox();
 		ui.refreshMessagesBox();
@@ -140,7 +143,7 @@ var ui = {
 
 					if (param.category != lastCategory)
 					{
-						addRow(tableParam, [ '<BUTTON onclick="toggleVisibility(\'' + 
+						ui.addRow(tableParam, [ '<BUTTON onclick="toggleVisibility(\'' + 
 							param.category + '\');" style="background: none; border: none; font-weight: bold;">- ' + 
 							param.category + '</BUTTON>' ]);
 						lastCategory = param.category;
@@ -181,7 +184,7 @@ var ui = {
 					if (param.i !== undefined)
 					    index = param.i;
 					
-					addRow(tableParam, [ index, nameWithTooltip, valInput, unit, param.minimum, param.maximum, param.default ]);
+					ui.addRow(tableParam, [ index, nameWithTooltip, valInput, unit, param.minimum, param.maximum, param.default ]);
 				}
 				else
 				{
@@ -673,7 +676,7 @@ var ui = {
 			reader.onload = function(e)
 			{
 				var params = JSON.parse(e.target.result);
-				setParam(params, 0);
+				inverter.setParam(params, 0);
 			};
 
 			reader.readAsBinaryString(file.files[0]);
@@ -807,7 +810,7 @@ var ui = {
 	{
 		// fetch values from form
 		var direction = document.getElementById('txrx').value;
-		var name = document.getElementById('addCanMappingSpotValueDropDown').value;
+		var name = document.getElementById('add-can-mapping-spot-value-drop-down').value;
 		var canid = document.getElementById('canid').value;
 	    var canpos = document.getElementById('canpos').value;
 	    var canbits = document.getElementById('canbits').value;
@@ -861,7 +864,7 @@ var ui = {
 	/** @brief Populate the 'spot value' drop-down on the 'Add new CAN mapping' form */
 	populateSpotValueDropDown: function()
 	{
-		var select = document.getElementById("addCanMappingSpotValueDropDown");
+		var select = document.getElementById("add-can-mapping-spot-value-drop-down");
 		inverter.getParamList(function(values) {
 			for (var name in values) {
 				var param = values[name];

@@ -159,6 +159,26 @@ var inverter = {
 		}
 	},
 
+	/** @brief helper function, from a list of parameters send parameter with given index to inverter
+	 * @param params map of parameters (name -> value)
+	 * @param index numerical index which parameter to set */
+	setParam: function(params, index)
+	{
+		var keys = Object.keys(params); 
+		
+		if (index < keys.length)
+		{
+			var key = keys[index];
+			modal.appendToModal('large', "Setting " + key + " to " + params[key] + "<br>");
+			inverter.sendCmd("set " + key + " " + params[key], function(reply) {
+				modal.appendToModal('large', reply + "<br>");
+				// auto-scroll text in modal as it is added
+				modal.largeModalScrollToBottom();
+				inverter.setParam(params, index + 1);
+			});
+		}
+	},
+
     /** @brief Add/Delete a CAN mapping
      * @param direction, tx, rx, or del
      * @param name, spot value name
