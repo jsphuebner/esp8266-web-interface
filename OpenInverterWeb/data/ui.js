@@ -85,6 +85,159 @@ var ui = {
 		ui.refreshMessagesBox();
 	},
 
+	/** @brief generates parameter and spotvalue tables */
+	updateTables: function()
+	{
+	
+    	// Don't run if updates are disabled (when we're doing a firmware update for example)
+		if ( ! ui.doAutoRefresh ) { return; }
+
+		var tableParam = document.getElementById("params");
+
+		// Don't run if any one of the param boxes are highlighted (i.e. don't clobber what the user is typing)
+		var paramFields = tableParam.querySelectorAll('input, select');
+		for ( var i = 0; i < paramFields.length; i++ )
+		{
+			if ( paramFields[i] === document.activeElement )
+			{
+				return;
+			}
+		}
+
+		document.getElementById("spinner-div").style.visibility = "visible";
+
+		inverter.getParamList(function(values) 
+		{
+
+			var tableSpot = document.getElementById("spotValues");
+			var lastCategory = "";
+			var params = {};
+
+			while (tableParam.rows.length > 1) tableParam.deleteRow(1);
+			while (tableSpot.rows.length > 1) tableSpot.deleteRow(1);
+
+			for (var name in values)
+			{
+				var param = values[name];
+
+				// Get docstring
+				var docstring = docstrings.get(name);
+				if ( ! docstring == "" )
+				{
+					var nameWithTooltip = "<div class=\"tooltip\">" + name + "<span class=\"tooltiptext\">" + docstring + "</span></div>";
+				}
+				else
+				{
+					nameWithTooltip = name;
+				}
+
+				if (param.isparam)
+				{
+					var valInput;
+					var unit = param.unit;
+					var index = "-";
+					params[name] = param.value;
+
+					if (param.category != lastCategory)
+					{
+						addRow(tableParam, [ '<BUTTON onclick="toggleVisibility(\'' + 
+							param.category + '\');" style="background: none; border: none; font-weight: bold;">- ' + 
+							param.category + '</BUTTON>' ]);
+						lastCategory = param.category;
+					}
+					
+					if (param.enums)
+					{
+						if (param.enums[param.value])
+						{
+						    valInput = '<SELECT onchange="sendCmd(\'set ' + name + ' \' + this.value)">';
+
+						    for (var idx in param.enums)
+						    {
+	     						valInput += '<OPTION value="' + idx + '"';
+							    if (idx == param.value)
+								    valInput += " selected";
+							    valInput += '>' + param.enums[idx] + '</OPTION>';
+						    }
+						}
+						else
+						{
+	 						valInput = "<ul>";
+	 						for (var key in param.enums)
+	 						{
+	 							if (param.value & key)
+	 								valInput += "<li>" + param.enums[key];
+	 						}
+	 						valInput += "</ul>";
+						}
+						unit = "";
+					}
+					else
+					{
+						valInput = '<INPUT type="number" min="' + param.minimum + '" max="' + param.maximum + 
+							'" step="0.05" value="' + param.value + '" onchange="sendCmd(\'set ' + name + ' \' + this.value)"/>';
+					}
+					
+					if (param.i !== undefined)
+					    index = param.i;
+					
+					addRow(tableParam, [ index, nameWithTooltip, valInput, unit, param.minimum, param.maximum, param.default ]);
+				}
+				else
+				{
+					var checkHtml = '<INPUT type="checkbox" data-name="' + name + '" data-axis="left" /> l';
+					checkHtml += ' <INPUT type="checkbox" data-name="' + name + '" data-axis="right" /> r';
+					var unit = param.unit;
+
+					if (param.enums)
+					{
+						if (param.enums[param.value])
+	 					{
+	 						display = param.enums[param.value];
+	 					}
+	 					else
+	 					{
+	 						var active = [];
+	 						for (var key in param.enums)
+	 						{
+	 							if (param.value & key)
+	 								active.push(param.enums[key]);
+	 						}
+	 						display = active.join('|');
+	 					}
+						unit = "";
+					}
+					else
+					{
+						display = param.value;
+					}
+
+					ui.addRow(tableSpot, [ nameWithTooltip, display, unit ]);
+				}
+			}
+			document.getElementById("paramDownload").href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(params, null, 2));
+			document.getElementById("spinner-div").style.visibility = "hidden";
+		});
+	},
+
+	/** @brief Adds row to a table
+	 * If table has multiple columns and only one cell value is
+	 * provided, the cell is spanned across entire table
+	 * @param table DOM object of table
+	 * @param content Array of strings with contents for each cell */
+	addRow: function(table, content)
+	{
+		var tr = table.insertRow(-1); //add row to end
+		var colSpan = table.rows[0].cells.length - content.length + 1;
+
+		for (var i = 0; i < content.length; i++)
+		{
+			var cell = tr.insertCell(-1);
+			cell.colSpan = colSpan;
+			cell.innerHTML = content[i];
+		}
+	},
+
 	/** @brief fill out version */
 	populateVersion: function() 
 	{
@@ -94,8 +247,6 @@ var ui = {
 		versionDiv.innerHTML += "firmware : " + firmwareVersion + "<br>";
 		versionDiv.innerHTML += "web : v1.99"
 	},
-
-
 
 	/** @brief If beta features are visible, hide them. If hidden, show them. */
 	toggleBetaFeaturesVisibility: function()
@@ -233,22 +384,6 @@ var ui = {
         modal.appendToModal('small', msg);
         modal.showModal('small');
     },
-
-    /** @brief hard-reset SWD, different from soft-reset*/
-    /*
-	resetSWD: function()
-	{		
-		var xhr = new XMLHttpRequest();
-		xhr.onload = function()
-		{
-			document.getElementById("swdbar").style.width = "100%";
-			document.getElementById("swdbar").innerHTML = "<p>Hard-Reset</p>";
-			updateTables();
-		};
-		xhr.open('GET', '/swd/reset?hard', true);
-		xhr.send();
-	},
-	*/
 
     /** @brief show the 'Hard resest' confirmation dialog box */
 	showHardResetConfirmationDialog: function()
