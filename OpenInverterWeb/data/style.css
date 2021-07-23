@@ -167,9 +167,9 @@ html, body {
     margin-bottom: auto;
 }
 
-/* contentWrapper */
+/* content-wrapper */
 
-#contentWrapper {
+#content-wrapper {
     display: block;
     width: calc(100% - 180px);
     flex: 1;
@@ -182,7 +182,7 @@ html, body {
     left: 180px;
 }
 
-#contentWrapperInner {
+#content-wrapper-inner {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
