@@ -29,19 +29,6 @@ function sleep(ms) {
 }
 
 
-function parameterSubmit()
-{
-	//document.getElementById("loader0").style.visibility = "visible";
-	inverter.getParamList(function(values)
-	{
-		//document.getElementById("loader0").style.visibility = "hidden";
-		console.log("values : " + values);
-		//
-		document.getElementById("parameters_json").value = JSON.stringify(values);
-		//document.getElementById("paramdb").submit();
-	}, true);
-}
-
 function checkSubscribedParameterSet()
 {
 	if (subscription)

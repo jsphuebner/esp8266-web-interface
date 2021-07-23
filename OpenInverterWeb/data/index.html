@@ -318,7 +318,8 @@
 					    <form id="paramdb" action="https://openinverter.org/parameters/api.php" method="POST" enctype="multipart/form-data">
 					        <input type="text" style="display: none;" id="parameters_json" name="data"></input>
 					        <input type="hidden" id="parameters_token" name="token" />
-					        <button onclick="parameterSubmit();"><image class="buttonimg" src="/icon-upload-cloud.png"> Submit parameters to OpenInverter</button>
+					        <button type="button" onclick="ui.parameterSubmit();">
+								<image class="buttonimg" src="/icon-upload-cloud.png">Submit parameters to OpenInverter</button>
 					    </form>
 
 					    <!-- Subscribe to param set -->

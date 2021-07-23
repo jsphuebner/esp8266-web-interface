@@ -482,6 +482,15 @@ var ui = {
 		ui.refresh();
 	},
 
+    /** @brief Send params to the online Parameter Database */
+	parameterSubmit: function()
+	{
+		inverter.getParamList(function(values)
+		{
+			document.getElementById("parameters_json").value = JSON.stringify(paramsCache.data);
+			document.getElementById("paramdb").submit();
+		}, true);
+	},
 
 	/** @brief toggles visibility of parameter category
 	 * @param name name of category to show/hide */
