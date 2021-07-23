@@ -7,7 +7,6 @@ var wifi = {
 
 	populateWiFiTab: function()
 	{
-		console.log("updating wifi");
 		var wifiTab = document.getElementById("wifi");
 		var wifiFetchRequest = new XMLHttpRequest();
 		wifiFetchRequest.onload = function()
