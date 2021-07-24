@@ -63,7 +63,7 @@ var ui = {
 
 		ui.updateTables();
 		plot.generateChart();
-		checkSubscribedParameterSet();
+		ui.checkSubscribedParameterSet();
 		ui.populateSpotValueDropDown();
 		ui.populateExistingCanMappingTable();
 		wifi.populateWiFiTab();
@@ -86,6 +86,16 @@ var ui = {
 		ui.populateVersion();
 		ui.refreshStatusBox();
 		ui.refreshMessagesBox();
+	},
+
+	/** @brief send arbitrary command to inverter and print result
+	 * @param cmd command string to be sent */
+	sendCmd: function(cmd)
+	{
+		inverter.sendCmd(cmd, function(reply)
+		{
+			document.getElementById("message").innerHTML = reply;
+		});
 	},
 
 	/** @brief generates parameter and spotvalue tables */
@@ -153,7 +163,7 @@ var ui = {
 					{
 						if (param.enums[param.value])
 						{
-						    valInput = '<SELECT onchange="sendCmd(\'set ' + name + ' \' + this.value)">';
+						    valInput = '<SELECT onchange="ui.sendCmd(\'set ' + name + ' \' + this.value)">';
 
 						    for (var idx in param.enums)
 						    {
@@ -178,7 +188,7 @@ var ui = {
 					else
 					{
 						valInput = '<INPUT type="number" min="' + param.minimum + '" max="' + param.maximum + 
-							'" step="0.05" value="' + param.value + '" onchange="sendCmd(\'set ' + name + ' \' + this.value)"/>';
+							'" step="0.05" value="' + param.value + '" onchange="ui.sendCmd(\'set ' + name + ' \' + this.value)"/>';
 					}
 					
 					if (param.i !== undefined)
@@ -590,7 +600,7 @@ var ui = {
     /** @brief Show confirmation that params have been saved */
     showParamsSavedModal: async function()
     {
-    	sendCmd('save');
+    	ui.sendCmd('save');
     	modal.emptyModal('small');
     	var msg = "<p style=\"padding:20px;text-align:center;\">Parameters saved</p>";
     	modal.appendToModal('small', msg);
@@ -616,7 +626,7 @@ var ui = {
 	restoreParamsFromFlash: function()
 	{
 		modal.hideModal('small');
-		sendCmd('load');
+		ui.sendCmd('load');
 		ui.refresh();
 	},
 
@@ -699,7 +709,7 @@ var ui = {
    
    	      <form id="parameter-subscribe-form">
    	          Subscription token : <input type="text" size="40">
-    	      <a onclick="ui.installFirmwareUpdate();"><button>
+    	      <a onclick="checkToken(this.value, 'Requesting parameter set', true);"><button>
     	          <img class="buttonimg" src="/icon-check-circle.png">Subscribe</button></a>
     	  </form>
 
@@ -711,7 +721,76 @@ var ui = {
     	modal.showModal('large');
 	},
 
-    
+	checkSubscribedParameterSet: function()
+	{
+		if (subscription)
+		{
+			ui.checkToken(subscription.token, 'Checking your parameter subscription ' + subscription.token, false);
+		}
+	},
+
+	/* If a valid token is entered, the belonging dataset is downloaded
+	 * and applied to the inverter. Token and timestamp are saved to ESP filesystem
+	 * Token example 5f4d8fa6-b6a4-4f87-9a28-4363bdac5dc9 */
+	checkToken: function(token, message, forceUpdate)
+	{
+		var expr = /^[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}$/i;
+		
+		if (expr.test(token))
+		{
+			var xmlhttp = new XMLHttpRequest();
+			var req = "https://openinverter.org/parameters/api.php?token=" + token;
+
+			document.getElementById("parameters_token").value = token;
+
+			xmlhttp.onload = function() 
+			{
+				var params = JSON.parse(this.responseText);
+				var timestamp = params.timestamp;
+				
+				delete params['timestamp'];			
+				document.getElementById("token").value = token;
+				
+				if (subscription && subscription.timestamp == timestamp && !forceUpdate)
+				{
+					document.getElementById("message").innerHTML += "Parameters up to date\r\n";
+				}
+				else if (forceUpdate || confirm("Parameter set updated, apply?"))
+				{
+					document.getElementById("message").innerHTML += "Applying new parameter set from " + timestamp + "\r\n";
+
+					inverter.setParam(params, 0);
+					
+					var uploadRequest = new XMLHttpRequest();
+					var formData = new FormData();
+					var subs = "subscription = { 'timestamp': '" + timestamp + "', 'token': '" + token + "' };";
+					var blob = new Blob([subs], { type: "text/javascript"});
+					formData.append("file", blob, "subscription.js");
+					uploadRequest.open("POST", "/edit");
+					uploadRequest.send(formData);
+				}
+			};
+			
+			xmlhttp.onerror = function()
+			{
+				alert("error");
+			};
+
+			xmlhttp.open("GET", req, true);
+			xmlhttp.send();
+		}
+		else
+		{
+			var uploadRequest = new XMLHttpRequest();
+			var formData = new FormData();
+			var subs = "subscription = false;";
+			var blob = new Blob([subs], { type: "text/javascript"});
+			formData.append("file", blob, "subscription.js");
+			uploadRequest.open("POST", "/edit");
+			uploadRequest.send(formData);
+		}
+	},
+
 
 	/**
 	 * ~~~ SPOT VALUES ~~~
