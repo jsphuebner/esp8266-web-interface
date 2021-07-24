@@ -89,7 +89,6 @@ var plot = {
     stopPlot: function()
     {
         plot.stop = true;
-        document.getElementById("pauseButton").innerHTML = "Pause Plot";
         document.getElementById("pauseButton").disabled = false;
     },
 
@@ -100,12 +99,10 @@ var plot = {
         {
             plot.stop = false;
             plot.acquire();
-            document.getElementById("pauseButton").innerHTML = "Pause Plot";
         }
         else
         {
             plot.stop = true;
-            document.getElementById("pauseButton").innerHTML = "Resume Plot";
         }
     },
 
