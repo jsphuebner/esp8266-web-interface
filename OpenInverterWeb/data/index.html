@@ -235,9 +235,9 @@
 						<h3 class="underline">Firmware</h3>
 
 						<!-- Install firmware from file -->
-						<form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
-					        <input id="updatefile" name="updatefile" type="file" onchange="uploadFile();" hidden />
-					        <label class="butt" for="updatefile">
+						<form id="upload-firmware-form" enctype="multipart/form-data" action="edit" method="POST">
+					        <input id="update-firmware-file" name="update-firmware-file" type="file" onchange="ui.uploadFirmwareFile();" hidden />
+					        <label class="butt" for="update-firmware-file">
 					        	<img class="buttonimg" src="/icon-upload.png">Install firmware from file</label>
 					    </form>
 
@@ -261,7 +261,7 @@
 
 		                <!-- upload file -->
 						<form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
-					        <input id="updatefile" name="updatefile" type="file" onchange="uploadFile();" hidden />
+					        <input id="updatefile" name="updatefile" type="file" onchange="ui.uploadFile();" hidden />
 					        <label class="butt" for="updatefile"><img class="buttonimg" src="/icon-upload.png">Upload file</label>
 					    </form>
 

@@ -56,7 +56,7 @@ html, body {
 }
 
 .graph {
-    width: 500px; /* width and height are arbitrary, just make sure the #bar styles are changed accordingly */
+    width: 298px; /* width and height are arbitrary, just make sure the #bar styles are changed accordingly */
     height: 30px;
     border: 1px solid #888; 
     background: rgb(168,168,168);
@@ -70,9 +70,9 @@ html, body {
     position: relative;
 }
 
-#bar {
+#upload-firmware-bar {
     height: 29px; /* Not 30px because the 1px top-border brings it up to 30px to match #graph */
-    background: rgb(255,197,120); 
+    background: rgb(255,197,120);
     background: -moz-linear-gradient(top, rgba(255,197,120,1) 0%, rgba(244,128,38,1) 100%); 
     background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,197,120,1)), color-stop(100%,rgba(244,128,38,1))); 
     background: -webkit-linear-gradient(top, rgba(255,197,120,1) 0%,rgba(244,128,38,1) 100%); 
@@ -82,7 +82,14 @@ html, body {
     border-top: 1px solid #fceabb;
 }
 
-#bar p { position: absolute; text-align: center; width: 100%; margin: 0; line-height: 30px; }
+#upload-firmware-bar p {
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    margin: 0;
+    line-height: 30px;
+}
+
 .error {
     /* These styles are arbitrary */
     background-color: #fceabb;

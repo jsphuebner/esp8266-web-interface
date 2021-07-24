@@ -79,7 +79,7 @@ var ui = {
 	refresh: function()
 	{
 		// Is automatic refreshing disabled?
-		if ( ! ui.doAutoRefresh ) { return; }
+		if ( ui.doAutoRefresh === false ) { console.log("auto-refresh disabled, skipping"); return; }
 
 		inverter.refreshParams();
 		ui.updateTables();
@@ -251,14 +251,14 @@ var ui = {
 		}
 	},
 
-	/** @brief fill out version */
+	/** @brief fill out version box in the bottom left corner of the screen */
 	populateVersion: function() 
 	{
 		var versionDiv = document.getElementById("version");
 		versionDiv.innerHTML = "";
 		var firmwareVersion = String(paramsCache.get('version'));
 		versionDiv.innerHTML += "firmware : " + firmwareVersion + "<br>";
-		versionDiv.innerHTML += "web : v1.99"
+		versionDiv.innerHTML += "web : v2.0"
 	},
 
 	/** @brief If beta features are visible, hide them. If hidden, show them. */
@@ -285,7 +285,7 @@ var ui = {
 	 * ~~~ DASHBOARD ~~~
 	 */
 
-
+    /** @brief refresh the data in the status box (top left corner of dashboard page) */
 	refreshStatusBox: function()
 	{
 
@@ -372,7 +372,7 @@ var ui = {
     	});
     },
 
-    /** @brief get error messages from inverter and put them in the messages box on the dash */
+    /** @brief get error messages from inverter and put them in the messages box on the dashboard page */
     refreshMessagesBox: function(){
     	var messageBox = document.getElementById('message');
     	inverter.sendCmd('errors', function(reply){
@@ -384,6 +384,105 @@ var ui = {
     /**
      * ~~~ UPDATE ~~~
      */
+
+    /** @brief uploads file to web server, if bin-file uploaded, starts a firmware upgrade */
+	uploadFirmwareFile: function() 
+	{
+		// disable auto updates so as to not interrupt the update process
+		ui.doAutoRefresh = false;
+
+		modal.emptyModal('small');
+		modal.showModal('small');
+
+		var uploadFirmwareFileRequest = new XMLHttpRequest();
+		var form = document.getElementById('upload-firmware-form');
+		
+		if (form.getFormData)
+			var fd = form.getFormData();
+		else
+			var fd = new FormData(form);
+		var file = document.getElementById('update-firmware-file').files[0].name;
+
+		uploadFirmwareFileRequest.onload = function() 
+		{
+			modal.appendToModal('small', '<p>Installing firmware...</p>');
+			modal.appendToModal('small', '<div id="progress" class="graph"><div id="upload-firmware-bar" style="width: 0"></div></div>');
+
+			if (file.endsWith(".bin"))
+			{
+				ui.runUpdateStep(-1, "/" + file);
+			}
+			else {
+				modal.hideModal('small');
+				alert('Error, wrong file type. You must use the "stm32_foc.bin" or "stm32_sine.bin" file to update the firmware');
+			}
+			document.getElementById("upload-firmware-bar").innerHTML = "<p>Upload complete</p>";
+			document.getElementById("upload-firmware-bar").style.width = "100%";
+			ui.refresh();
+			
+		}
+
+		uploadFirmwareFileRequest.open("POST", "/edit");
+		uploadFirmwareFileRequest.send(fd);
+	},
+
+	/** @brief Runs a step of a firmware upgrade
+	 * Step -1 is resetting controller
+	 * Steps i=0..n send page i
+	 * @param step step to execute
+	 * @param file file path of upgrade image on server */
+	runUpdateStep: function(step, file)
+	{
+		var runUpdateRequest = new XMLHttpRequest();
+		runUpdateRequest.onload = function() 
+		{
+			step++;
+			var uploadFirmwareBar = document.getElementById("upload-firmware-bar");
+			var result = JSON.parse(this.responseText);
+			var totalPages = result.pages;
+			var progress = Math.round(100 * step / totalPages);
+			uploadFirmwareBar.style.width = progress + "%";
+			uploadFirmwareBar.innerHTML = "<p>" +  progress + "%</p>";
+			if (step < totalPages)
+				ui.runUpdateStep(step, file);
+			else
+			{
+				uploadFirmwareBar.innerHTML = "<p>Update Done!</p>";
+				setTimeout(function() { modal.hideModal('small') }, 3000);
+				ui.doAutoRefresh = true;
+			}
+		}
+		runUpdateRequest.open("GET", "/fwupdate?step=" + step + "&file=" + file);
+		runUpdateRequest.send();
+	},
+
+
+	/** @brief uploads file to web server, if bin-file uploaded, starts a firmware upgrade */
+	uploadFile: function() 
+	{
+		var xmlhttp = new XMLHttpRequest();
+		var form = document.getElementById('uploadform');
+		
+		if (form.getFormData)
+			var fd = form.getFormData();
+		else
+			var fd = new FormData(form);
+		var file = document.getElementById('updatefile').files[0].name;
+
+		xmlhttp.onload = function() 
+		{
+			// Show popup reporting upload completion
+			modal.emptyModal('small');
+			modal.appendToModal('small', 'File upload complete');
+			modal.showModal('small');
+			// Refresh the list of files on the 'files' page
+			ui.populateFileList();
+			setTimeout(function() { modal.hideModal('small') }, 2000);
+		}
+
+		xmlhttp.open("POST", "/edit");
+		xmlhttp.send(fd);
+	},
 
     /** @brief show the 'Erase flash' confirmation dialog box */
     showEraseFlashConfirmationDialog: function()
