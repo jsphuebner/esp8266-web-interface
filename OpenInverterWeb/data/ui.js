@@ -26,6 +26,9 @@ var ui = {
     // Turn automatic updates of page content on/off. e.g. parameters, spot values.
 	doAutoRefresh: true,
 
+	// temp variable to store updates from Parameter Database
+	paramUpdates: "",
+
 	/** @brief switch to a different page tab */
 	openPage: function(pageName, elmnt, color)
 	{
@@ -63,7 +66,7 @@ var ui = {
 
 		ui.updateTables();
 		plot.generateChart();
-		ui.checkSubscribedParameterSet();
+		ui.parameterDatabaseCheckForUpdates();
 		ui.populateSpotValueDropDown();
 		ui.populateExistingCanMappingTable();
 		wifi.populateWiFiTab();
@@ -792,6 +795,28 @@ var ui = {
 		}
 	},
 
+	/** @brief fetch a parameter set from the Parameter database */
+	parameterDatabaseFetchParameterSet: function(token, replyFunc)
+	{
+		var fetchTokenRequest = new XMLHttpRequest();
+		var req = "https://openinverter.org/parameters/api.php?token=" + token;
+
+		fetchTokenRequest.onload = function()
+		{
+			var params =  JSON.parse(this.responseText);
+			replyFunc(params);
+		}
+
+		fetchTokenRequest.onerror = function()
+		{
+			alert("error");
+		}
+
+		fetchTokenRequest.open("GET", req, true);
+		fetchTokenRequest.send();
+	},
+
+	/** @brief show the dialog allowing the user to subscribe to a parameter set from the Parameter Database */
 	showSubscribeModal: function()
 	{
 		modal.emptyModal('large');
@@ -807,8 +832,8 @@ var ui = {
     	  <p>Note: your inverter needs internet access for this feature to work.</p>
    
    	      <form id="parameter-subscribe-form">
-   	          Subscription token : <input type="text" size="40">
-    	      <a onclick="checkToken(this.value, 'Requesting parameter set', true);"><button>
+   	          Subscription token : <input id="subscription-token" type="text" size="40">
+    	      <a onclick="ui.parameterDatabaseSubscribe();"><button>
     	          <img class="buttonimg" src="/icon-check-circle.png">Subscribe</button></a>
     	  </form>
 
@@ -820,6 +845,113 @@ var ui = {
     	modal.showModal('large');
 	},
 
+
+	/** @brief create subscription.js file with token and timestamp */
+	parameterDatabaseSaveSubscription: function(token, timestamp)
+	{
+		var saveSubscriptionRequest = new XMLHttpRequest();
+		var formData = new FormData();
+		var subs = "subscription = { 'timestamp': '" + timestamp + "', 'token': '" + token + "' };";
+		var blob = new Blob([subs], { type: "text/javascript"});
+		formData.append("file", blob, "subscription.js");
+		saveSubscriptionRequest.open("POST", "/edit");
+		saveSubscriptionRequest.send(formData);
+		//FIXME handle error
+	},
+
+	/** @brief subscribe to a parameter set from the Parameter Database.
+	 * 
+	 * This function creates a file called subscription.js on the spiffs
+	 * filesystem, with contents that look like this:
+	 *     subscription = { 'timestamp': <timestamp>, 'token': <token> }
+	 * 
+	 * token : token identifying a parameter set in the Parameter Database
+	 * timestamp : timestamp the above parameter set was last updated.
+	 */
+	parameterDatabaseSubscribe: function()
+	{
+		// Get the token entered by the user
+		var subscriptionToken = document.getElementById('subscription-token').value;
+
+		modal.emptyModal('large');
+		modal.appendToModal('large', "<p>Applying parameter set " + subscriptionToken);
+
+		// Fetch the parameter set from the Parameter Database
+		ui.parameterDatabaseFetchParameterSet(subscriptionToken,
+			function(params)
+			{
+				// Save subscription.js file to spiffs
+				ui.parameterDatabaseSaveSubscription(subscriptionToken, params.timestamp);
+
+				// Apply the params to the inverter
+				inverter.setParam(params, 0);
+			});
+	},
+
+	/** @brief pop up modal asking user to confirm that they wish to cancel
+	 * their subscription to parameter set.
+	 */
+	parameterDatabaseShowUnsubscribeDialog: function()
+	{
+		modal.emptyModal('small');
+		var msg = "<p>Are you sure you want to unsubscribe from the Parameter Database parameter set?</p>";
+        msg += "<div style=\"display:flex\">";
+        msg += "<button onclick=\"ui.parameterDatabaseCancelSubscription();\"><img src=\"/icon-trash-2.png\">Unsubscribe</button>";
+        msg += "<button onclick=\"modal.hideModal('small');\"><img src=\"/icon-x-square.png\">Cancel</button>";
+        msg += "</div>";
+        modal.appendToModal('small', msg);
+        modal.showModal('small');
+	},
+
+	parameterDatabaseCancelSubscription: function()
+	{
+		ui.deleteFile('/subscription.js');
+		modal.hideModal('small');
+	},
+
+	/** @brief Pull down the parameter set from the Parameter Database. If there are updates,
+	 * ask the user if they want to apply them.
+	 */
+	parameterDatabaseCheckForUpdates: function()
+	{
+		console.log("Checking for parameter database updates");
+		if (subscription)
+		{
+			// Fetch the latest param set from the db
+			ui.parameterDatabaseFetchParameterSet(subscription.token,
+				function(params)
+				{
+					if ( subscription.timestamp != params.timestamp )
+					{
+						console.log("Found updates in the parameter database");
+						// Show modal asking if params should be updated
+						modal.emptyModal('small');
+						msg = "<p>A new version of the parameter set you are subscribed to in the Parameter Database is available. ";
+						msg += "Would you like to apply this update to the inverter?</p>";
+						msg += "<div style=\"display:flex\">";
+						msg += "<button onclick=\"ui.parameterDatabaseApplyUpdates();\"><img src=\"/icon-check-circle.png\">Apply</button>";
+						msg += "<button onclick=\"modal.hideModal('small');\"><img src=\"/icon-x-square.png\">Cancel</button>";
+						modal.appendToModal('small', msg);
+						modal.showModal('small');
+
+						// Save new params for later use
+						ui.paramUpdates = params;
+					}
+				});
+		}
+	},
+
+	parameterDatabaseApplyUpdates: function()
+	{
+		modal.hideModal('small');
+		modal.emptyModal('large');
+		modal.setModalHeader('large', 'Applying updates from Parameter Database');
+		modal.showModal('large');
+		inverter.setParam(ui.paramUpdates, 0);
+		ui.parameterDatabaseSaveSubscription(subscription.token, ui.paramUpdates.timestamp);
+	},
+
+/*
 	checkSubscribedParameterSet: function()
 	{
 		if (subscription)
@@ -827,10 +959,12 @@ var ui = {
 			ui.checkToken(subscription.token, 'Checking your parameter subscription ' + subscription.token, false);
 		}
 	},
+*/
 
 	/* If a valid token is entered, the belonging dataset is downloaded
 	 * and applied to the inverter. Token and timestamp are saved to ESP filesystem
 	 * Token example 5f4d8fa6-b6a4-4f87-9a28-4363bdac5dc9 */
+/*
 	checkToken: function(token, message, forceUpdate)
 	{
 		var expr = /^[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}$/i;
@@ -889,7 +1023,7 @@ var ui = {
 			uploadRequest.send(formData);
 		}
 	},
-
+*/
 
 	/**
 	 * ~~~ SPOT VALUES ~~~
