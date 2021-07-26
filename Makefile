@@ -1,15 +1,8 @@
-.PHONY: docker
 
 cwd := $(shell pwd)
 DISTFILES := $(shell cat OpenInverterWeb/data/distribution.files.lst)
 
-all: docker
-
-docker:
-	docker build -t openinverter-ui-test .
-
-run:
-	docker run -p5000:5000 -v $(cwd):/home/openinverter/www openinverter-ui-test
+all: install
 
 install:	
 	@for distfile in $(shell cat OpenInverterWeb/data/distribution.files.lst); do \
