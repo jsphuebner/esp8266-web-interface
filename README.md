@@ -12,9 +12,9 @@ end user web application.
 
 ## Connecting an esp8266 to your laptop/desktop for programming
 
-You can use an FTDI board to connect your esp8266 module to you laptop/desktop.
-Only four cables are required between the FTDI and the esp8266 - 3.3V, GND, RX,
-and TX.
+You can use an FTDI board to connect your esp8266 module to your laptop/desktop
+in order to program it. Only four cables are required between the FTDI and the
+esp8266 - 3.3V, GND, RX,and TX.
 
 TX on the esp8266 connects to RX on the FTDI and vice versa.
 
@@ -94,5 +94,5 @@ make install
 
 
 ## Related links
-https://github.com/esp8266/Arduino
-https://arduino-esp8266.readthedocs.io/en/latest/index.html
+* https://github.com/esp8266/Arduino
+* https://arduino-esp8266.readthedocs.io/en/latest/index.html
