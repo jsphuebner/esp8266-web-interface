@@ -16,7 +16,7 @@ You can use an FTDI board to connect your esp8266 module to you laptop/desktop.
 Only four cables are required between the FTDI and the esp8266 - 3.3V, GND, RX,
 and TX.
 
-TX on the esp8266 connects to RS on the FTDI and vice versa.
+TX on the esp8266 connects to RX on the FTDI and vice versa.
 
 Connect the USB port of the FTDI to your laptop/desktop.
 
@@ -25,7 +25,6 @@ You can find the pinout of the Olimex esp8266 module here: https://github.com/OL
 Warning: be sure your FTDI board is set to 3.3v and not 5v mode. If it is in 5v
 mode, it may damage your esp8266 module.
 
---------------------------------------------------------------------------------
 
 ## Setting up your laptop/desktop to program an esp8266 board
 
@@ -60,28 +59,40 @@ git clone https://github.com/jsphuebner/esp8266-web-interface.git
   - Tools > Debug Port > Disabled
   - Tools > Port > Whatever serial port your esp8266 appears on
 
+4. Install the firmware.
+
+Sketch > upload.
+
 4. Install the HTML/CSS/js files on the esp8266 which make up the web interface.
 
 Tools > ESP8266 Sketch Data Upload
 
 
+## Makefile-based installation
+
+If you already have a copy of the firmware/web interface installed and just want
+to update the web interface to the latest version, you can use the makefile
+included here. This can be useful when developing against the esp8266 for
+iterating changes quickly.
+
+1. Install the 'make' tool on your PC. E.g. sudo apt-get install build-essential
+Debian/Ubuntu. 
+
+2. Set the INVERTER_IP environment variable to the IP of your esp8266. If you
+are connecting your PC directly to the esp8266, the IP will be 192.168.4.1
+usually.
+
+```
+export INVERTER_IP=192.168.4.1
+```
+
+3. Upload the web interface files
+
+```
+make install
+```
+
+
 ## Related links
-
-https://arduino-esp8266.readthedocs.io/en/latest/index.html
-
-
-inkscape -w 1024 -h 1024 input.svg -o output.png
-
-https://css-tricks.com/snippets/css/a-guide-to-flexbox/
-
 https://github.com/esp8266/Arduino
 https://arduino-esp8266.readthedocs.io/en/latest/index.html
-https://stackoverflow.com/questions/51161837/cors-issue-in-nodemcu-esp8266
-https://developer.mozilla.org/en-US/docs/Web/API/FormData/append
-https://stackoverflow.com/questions/13333378/how-can-javascript-upload-a-blob
-https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Sending_and_Receiving_Binary_Data
-https://stackoverflow.com/questions/64247232/post-multipart-form-data-with-file-data-from-url-using-javascript
-https://stackoverflow.com/questions/26337344/download-file-url-using-javascript
-https://stackoverflow.com/questions/44070437/how-to-get-a-file-or-blob-from-an-url-in-javascript
-https://stackoverflow.com/questions/30714871/check-if-an-input-field-has-focus-in-vanilla-javascript
-
