@@ -1180,12 +1180,10 @@ var ui = {
 		inverter.getParamList(function(values) {
 			for (var name in values) {
 				var param = values[name];
-				if (!param.isparam) {
-					var el = document.createElement("option");
-					el.textContent = name;
-					el.value = name;
-					select.appendChild(el);
-				}
+				var el = document.createElement("option");
+				el.textContent = name;
+				el.value = name;
+				select.appendChild(el);
 			}
 		});
 	},
