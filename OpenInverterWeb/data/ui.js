@@ -175,7 +175,8 @@ var ui = {
 					{
 						if (param.enums[param.value])
 						{
-						    valInput = '<SELECT onchange="ui.sendCmd(\'set ' + name + ' \' + this.value)">';
+
+						    valInput = '<SELECT onchange="ui.showParamUpdateModal(\'' + name + '\', this.value)">';
 
 						    for (var idx in param.enums)
 						    {
@@ -200,7 +201,7 @@ var ui = {
 					else
 					{
 						valInput = '<INPUT type="number" min="' + param.minimum + '" max="' + param.maximum + 
-							'" step="0.05" value="' + param.value + '" onchange="ui.sendCmd(\'set ' + name + ' \' + this.value)"/>';
+							'" step="0.05" value="' + param.value + '" onchange="ui.showParamUpdateModal(\'' + name + '\', this.value)"/>';
 					}
 					
 					if (param.i !== undefined)
@@ -708,6 +709,22 @@ var ui = {
     /**
      * ~~~ PARAMETERS ~~~
      */
+
+    /** @brief Show modal box with the result of parameter update */
+    showParamUpdateModal: async function(param, value)
+    {
+    	var c = 'set ' + param + ' ' + value;
+    	modal.emptyModal('small');
+    	modal.showModal('small');
+    	modal.appendToModal('small', 'Setting ' + param + ' to ' + value + "<br>");
+    	inverter.sendCmd(c, function(reply)
+		{
+			modal.appendToModal('small', reply);
+		}
+		});
+		await sleep(2000);
+		modal.hideModal('small');
+    },
 
     /** @brief Show confirmation that params have been saved */
     showParamsSavedModal: async function()
