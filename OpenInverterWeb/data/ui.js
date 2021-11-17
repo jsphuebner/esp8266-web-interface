@@ -720,7 +720,6 @@ var ui = {
     	inverter.sendCmd(c, function(reply)
 		{
 			modal.appendToModal('small', reply);
-		}
 		});
 		await sleep(2000);
 		modal.hideModal('small');
