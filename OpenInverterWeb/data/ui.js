@@ -29,6 +29,9 @@ var ui = {
 	// temp variable to store updates from Parameter Database
 	paramUpdates: "",
 
+	// Status of visibility of parameter categories. E.g. Motor, Inverter. true = visible, false = not visible.
+	categoryVisible: {},
+
 	/** @brief switch to a different page tab */
 	openPage: function(pageName, elmnt, color)
 	{
@@ -154,11 +157,17 @@ var ui = {
 					var index = "-";
 					params[name] = param.value;
 
+					// Initialise categoryVisible toggles if needed (on first load for example). Make visible by default.
+					if ( !(param.category in ui.categoryVisible) )
+						ui.categoryVisible[param.category] = true;
+
+                    // If we're starting a new category, insert the category header row.
 					if (param.category != lastCategory)
 					{
-						ui.addRow(tableParam, [ '<BUTTON onclick="toggleVisibility(\'' + 
-							param.category + '\');" style="background: none; border: none; font-weight: bold;">- ' + 
-							param.category + '</BUTTON>' ]);
+						var icon = ui.categoryVisible[param.category] ? '-' : '+';
+						ui.addRow(tableParam, [ '<BUTTON onclick="ui.toggleVisibility(\'' + 
+							param.category + '\');" style="background: none; border: none; font-weight: bold;">' + icon + ' ' + 
+							param.category + '</BUTTON>' ], true);
 						lastCategory = param.category;
 					}
 					
@@ -197,7 +206,7 @@ var ui = {
 					if (param.i !== undefined)
 					    index = param.i;
 					
-					ui.addRow(tableParam, [ index, nameWithTooltip, valInput, unit, param.minimum, param.maximum, param.default ]);
+					ui.addRow(tableParam, [ index, nameWithTooltip, valInput, unit, param.minimum, param.maximum, param.default ], ui.categoryVisible[param.category]);
 				}
 				else
 				{
@@ -228,7 +237,7 @@ var ui = {
 						display = param.value;
 					}
 
-					ui.addRow(tableSpot, [ nameWithTooltip, display, unit ]);
+					ui.addRow(tableSpot, [ nameWithTooltip, display, unit ], true);
 				}
 			}
 			document.getElementById("paramDownload").href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(params, null, 2));
@@ -241,9 +250,10 @@ var ui = {
 	 * provided, the cell is spanned across entire table
 	 * @param table DOM object of table
 	 * @param content Array of strings with contents for each cell */
-	addRow: function(table, content)
+	addRow: function(table, content, visible)
 	{
 		var tr = table.insertRow(-1); //add row to end
+		tr.style.display = visible ? "" : "none";
 		var colSpan = table.rows[0].cells.length - content.length + 1;
 
 		for (var i = 0; i < content.length; i++)
@@ -748,6 +758,7 @@ var ui = {
 	{
 		var rows = document.getElementById("params").rows;
 		var found = false;
+		ui.categoryVisible[name] = false;
 		
 		for (var i = 0; i < rows.length; i++)
 		{
@@ -761,7 +772,7 @@ var ui = {
 
 			if (!found)
 			{
-				found = rows[i].cells.length == 1 && (rows[i].cells[0].innerText.endsWith(name) || !name);
+				found = rows[i].cells.length == 1 && (rows[i].cells[0].innerText.replace(/[\n\r]/g, '').endsWith(name) || !name);
 				
 				if (found)
 				{
