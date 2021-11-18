@@ -200,45 +200,45 @@
 							<label class="butt" for="swdupdatefile"><img class="buttonimg" src="/icon-download.png">Install bootloader</label>
 						</form>
 
-					<!--
-					<form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
-					<input id="updatefile" name="updatefile" type="file" onchange="fileSelected();" />
-					<input type="button" onclick="uploadFile();" value="Upload" />
-					</form>
-					<div id="progress" class="graph">
-					<div id="bar" style="width: 0"></div>
-					</div>
-					<h2 id="swdupdate">SWD Update</h2>
-					<p>Use binary files (stm32_loader.bin, stm32_sine/foc.bin) for updating inverter bootloader/firmware.</p>
-					<form id="swdform" enctype="multipart/form-data" action="edit" method="POST">
-					<input id="swdfile" name="swdfile" type="file" onchange="fileSelected();" accept=".bin" />
-					<input type="button" onclick="uploadSWDFile();" value="Upload" />
-					</form>
-					<div id="progress" class="graph">
-					<div id="swdbar" style="width: 0"></div>
-					</div>
-					-->
+						<!--
+						<form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
+						<input id="updatefile" name="updatefile" type="file" onchange="fileSelected();" />
+						<input type="button" onclick="uploadFile();" value="Upload" />
+						</form>
+						<div id="progress" class="graph">
+						<div id="bar" style="width: 0"></div>
+						</div>
+						<h2 id="swdupdate">SWD Update</h2>
+						<p>Use binary files (stm32_loader.bin, stm32_sine/foc.bin) for updating inverter bootloader/firmware.</p>
+						<form id="swdform" enctype="multipart/form-data" action="edit" method="POST">
+						<input id="swdfile" name="swdfile" type="file" onchange="fileSelected();" accept=".bin" />
+						<input type="button" onclick="uploadSWDFile();" value="Upload" />
+						</form>
+						<div id="progress" class="graph">
+						<div id="swdbar" style="width: 0"></div>
+						</div>
+						-->
 
-							<!-- Download bootloader -->
-							<a href="/swd/bin?bootloader"><button>
-								<img class="buttonimg" src="/icon-download.png">Download bootloader</button></a>
+						<!-- Download bootloader -->
+						<a href="/swd/bin?bootloader"><button>
+							<img class="buttonimg" src="/icon-download.png">Download bootloader</button></a>
 
-							<h3 class="underline">Firmware</h3>
+						<h3 class="underline">Firmware</h3>
 
-							<!-- Install firmware from file -->
-							<form id="upload-firmware-form" enctype="multipart/form-data" action="edit" method="POST">
-								<input id="update-firmware-file" name="update-firmware-file" type="file" onchange="ui.uploadFirmwareFile();" hidden />
-								<label class="butt" for="update-firmware-file">
-								<img class="buttonimg" src="/icon-upload.png">Install firmware from file</label>
-							</form>
+						<!-- Install firmware from file -->
+						<form id="upload-firmware-form" enctype="multipart/form-data" action="edit" method="POST">
+							<input id="update-firmware-file" name="update-firmware-file" type="file" onchange="ui.uploadFirmwareFile();" hidden />
+							<label class="butt" for="update-firmware-file">
+							<img class="buttonimg" src="/icon-upload.png">Install firmware from file</label>
+						</form>
 
-							<!-- Erase flash -->
-							<a onclick="ui.showEraseFlashConfirmationDialog();"><button>
-							<img class="buttonimg" src="/icon-trash-2.png">Erase flash</button></a>
+						<!-- Erase flash -->
+						<a onclick="ui.showEraseFlashConfirmationDialog();"><button>
+						<img class="buttonimg" src="/icon-trash-2.png">Erase flash</button></a>
 
-							<!-- Hard reset -->
-							<a onclick="ui.showHardResetConfirmationDialog();"><button>
-								<img class="buttonimg" src="/icon-rotate-ccw.png">Hard reset</button></a>
+						<!-- Hard reset -->
+						<a onclick="ui.showHardResetConfirmationDialog();"><button>
+							<img class="buttonimg" src="/icon-rotate-ccw.png">Hard reset</button></a>
 
 						<!-- Download flash -->
 						<a href="/swd/bin?flash"><button>
