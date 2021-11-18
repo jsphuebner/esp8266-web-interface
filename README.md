@@ -63,7 +63,7 @@ git clone https://github.com/jsphuebner/esp8266-web-interface.git
 
 Sketch > upload.
 
-4. Install the HTML/CSS/js files on the esp8266 which make up the web interface.
+5. Install the HTML/CSS/js files on the esp8266 which make up the web interface.
 
 Tools > ESP8266 Sketch Data Upload
 
