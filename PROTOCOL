@@ -1,0 +1,30 @@
+# Huebner Web Interface Protocol
+
+This document describes the protocol used on the serial interface between this ESP8266 module, and
+an inverter or VCU.
+
+## General
+
+Commands are sent by the ESP8266. Each command consists of a single line consisting of a command word
+followed optionally by parameters and terminates with a newline character. Commands must be echoed back
+to the ESP8266.
+
+Following the echo, the esp8266 will receive an unlimited quantity of response data, terminated by a
+100ms timeout.
+
+## Commands
+
+save - save current parameters to nonvolatile memory
+load - load parameters from nonvolatile memory
+fastuart - increases the baud rate to 921600
+set [parameter] [value] - set the decimal value of a named parameter
+can - map can parameters
+can clear - clear can mappings
+start [opmode] - start the inverter in a specified mode - mode 2 is manual run
+stop - stop the inverter
+get [parameter] - get the value of a parameter
+stream
+json [hidden]
+errors
+reset - reboot the device
+defaults - restore all parameters to default values
