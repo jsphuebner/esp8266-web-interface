@@ -27,20 +27,22 @@ state of the inverter. These are useful for monitoring and debugging.
 
 ## Commands
 
-`save` - save current parameters to nonvolatile memory
-`load` - load parameters from nonvolatile memory
-`fastuart` - increases the baud rate to 921600 - Response must begin "OK" in success case
-`set [parameter] [value]` - set the decimal value of a named parameter
-`can [direction] [name] [canid] [offset] [length] [gain]` - map values to CAN messages
-`can clear` - clear all can mappings
-`start [opmode]` - start the inverter in a specified mode - mode 2 is manual run
-`stop` - stop the inverter
-`get [parameter]` - get the value of a parameter
-`stream [repetitions] [val1,val2,val3]` repeatedly read and return one or more values
-`json [hidden]` return an JSON encoded mapping of all parameters and values - see JSON format below
-`errors` - print information about all currently active error states, or indicate that everything is okay
-`reset` - reboot the device
-`defaults` - restore all parameters to default values
+| Command | Description|
+|---------|------------|
+|`save`|save current parameters to nonvolatile memory|
+|`load`|load parameters from nonvolatile memory|
+|`fastuart`|increases the baud rate to 921600Response must begin "OK" in success case|
+|`set [parameter] [value]`|set the decimal value of a named parameter|
+|`can [direction] [name] [canid] [offset] [length] [gain]`|map values to CAN messages|
+|`can clear`|clear all can mappings|
+|`start [opmode]`|start the inverter in a specified modemode 2 is manual run|
+|`stop`|stop the inverter|
+|`get [parameter]`|get the value of a parameter|
+|`stream [repetitions] [val1,val2,val3]`| repeatedly read and return one or more values|
+|`json [hidden]`| return an JSON encoded mapping of all parameters and values - see JSON format below|
+|`errors`|print information about all currently active error states, or indicate that everything is okay|
+|`reset`|reboot the device|
+|`defaults`|restore all parameters to default values|
 
 Note: This is not an exhaustive list of commands supported by openinverter devices, but does include
 all commands currently used by the openinverter web intrface.
@@ -54,7 +56,7 @@ displayed to the user.
 The following example shows a non-parameter value, a parameter value, and a value that has been
 mapped to CAN.
 
-```
+```json
 {
   "udc":   {"unit":"V",   "value": 400.0,  "isparam": false},
   "fweak": {"unit":"Hz",  "value": 67.0,   "isparam": true, "minimum": 0.0, "maximum": 400.0, "default": 67.0, "category": "Motor (sine)", "i": 8},
