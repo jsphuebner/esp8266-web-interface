@@ -127,6 +127,16 @@ function checkToken(token, message, forceUpdate)
 		xmlhttp.open("GET", req, true);
 		xmlhttp.send();
 	}
+	else
+	{
+		var uploadRequest = new XMLHttpRequest();
+		var formData = new FormData();
+		var subs = "subscription = false;";
+		var blob = new Blob([subs], { type: "text/javascript"});
+		formData.append("file", blob, "subscription.js");
+		uploadRequest.open("POST", "/edit");
+		uploadRequest.send(formData);
+	}
 }
 
 /** @brief generates parameter and spotvalue tables */
