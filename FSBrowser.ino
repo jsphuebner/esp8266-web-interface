@@ -413,6 +413,9 @@ void setup(void){
   SPIFFS.begin();
 
   //WIFI INIT
+  #ifdef WIFI_IS_OFF_AT_BOOT
+    enableWiFiAtBootTime();
+  #endif
   WiFi.mode(WIFI_AP_STA);
   WiFi.setPhyMode(WIFI_PHY_MODE_11B);
   WiFi.setOutputPower(25); //dbm
@@ -574,8 +577,6 @@ void setup(void){
 
         server.sendContent("\n");
 
-        yield(); //Prevent Reset by Watch-Dog
-
         addrIndex++;
       } while (addrNext <= addrEnd);
 
@@ -619,8 +620,6 @@ void setup(void){
         swd.hexDump(addrNext, addrCount, data);
         server.sendContent(data.readString());
 
-        yield(); //Prevent Reset by Watch-Dog
-
         addrNext += (addrCount * 4); //step = count * 4 bytes in int32 word
       } while (addrNext <= addrEnd);
 
@@ -644,6 +643,7 @@ void setup(void){
         addr = 0x08001000;
         addrEnd = 0x0801ffff;
       }
+      
       server.sendHeader("Content-Disposition", "attachment; filename = \"" + filename + "\"");
       server.setContentLength(addrEnd - addr + 1); //CONTENT_LENGTH_UNKNOWN
       server.send(200, "application/octet-stream", "");
@@ -653,11 +653,13 @@ void setup(void){
 
         //Serial.printf("------ %08x ------\n", addrNext);
 
-        uint8_t* buff;
-        swd.binDump(addrNext, buff);
-        server.sendContent(String((char *)buff));
-
-        yield(); //Prevent Reset by Watch-Dog
+        //uint8_t* buff;
+        //swd.binDump(addrNext, buff);
+        //server.sendContent(String((char *)buff));
+        
+        uint8_t byte;
+        swd.memLoadByte(addrNext, byte);
+        server.sendContent(String(byte));
 
         addrNext++;
       } while (addrNext <= addrEnd);
@@ -735,8 +737,6 @@ void setup(void){
                 addrBuffer += 4;
               }
               server.sendContent("\n");
-
-              yield(); //Prevent Reset by Watch-Dog
             }
             swd.flashloaderRUN(addrIndex, addrBuffer);
             delay(2400); //Must wait for flashloader to finish
@@ -765,7 +765,10 @@ void setup(void){
   //use it to load content from SPIFFS
   server.onNotFound([](){
     if(!handleFileRead(server.uri()))
+    {
+      server.sendHeader("Refresh", "6; url=/update");
       server.send(404, "text/plain", "FileNotFound");
+    }
   });
 
   server.begin();
