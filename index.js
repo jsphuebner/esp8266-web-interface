@@ -41,18 +41,17 @@ function generateChart()
 				duration: 0
 			},
 			scales: {
-				yAxes: [{
+				'y-axis-0': {
 					type: "linear",
 					display: true,
-					position: "left",
-					id: "left"
-				}, {
+					position: "left"
+				},
+				'y-axis-1': {
 					type: "linear",
 					display: true,
 					position: "right",
-					id: "right",
 					gridLines: { drawOnChartArea: false }
-				}]
+				}
 			}
 		} });
 }
@@ -213,8 +212,8 @@ function updateTables()
 			else
 			{
 				var can = param.canid != undefined;
-				var checkHtml = '<INPUT type="checkbox" data-name="' + name + '" data-axis="left" /> l';
-				checkHtml += ' <INPUT type="checkbox" data-name="' + name + '" data-axis="right" /> r';
+				var checkHtml = '<INPUT type="checkbox" data-name="' + name + '" data-axis="y-axis-0" /> l';
+				checkHtml += ' <INPUT type="checkbox" data-name="' + name + '" data-axis="y-axis-1" /> r';
 				var canIdHtml = '<INPUT type="number" step="1" min="0" max="2047" id="canid' + name + '" value="' + (can ? param.canid : "") + '"/>';
 				var canPosHtml = '<INPUT type="number" step="1" min="0" max="63" id="canpos' + name + '" value="' + (can ? param.canoffset : "") + '"/>';
 				var canBitsHtml = '<INPUT type="number" step="1" min="1" max="32" id="canbits' + name + '" value="' + (can ? param.canlength : "") + '"/>';
@@ -528,6 +527,7 @@ function startPlot()
 
 	for (var signalIdx = 0; signalIdx < items.names.length; signalIdx++)
 	{
+		console.log(items.axes[signalIdx]);
 		var newDataset = {
 		        label: items.names[signalIdx],
 		        data: [],

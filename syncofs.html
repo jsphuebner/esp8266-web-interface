@@ -80,8 +80,7 @@
                 enabled: false,
             },
             scales: {
-                xAxes: [{
-                    id: 'x-axis-0',
+                'x-axis-0':{
                     position: 'bottom',
                     scaleLabel: {
                         display: true,
@@ -96,9 +95,8 @@
                     gridLines: {
                         color: ctxFontColor
                     }
-                }],
-                yAxes: [{
-                    id: 'y-axis-0',
+                },
+                'y-axis-0': {
                     position: 'right',
                     ticks: {
                         display: false,
@@ -108,8 +106,8 @@
                     gridLines: {
                         drawOnChartArea: false,
                     }
-                },{
-                    id: 'y-axis-1',
+                },
+                'y-axis-1': {
                     position: 'left',
                     scaleLabel: {
                         display: true,
@@ -129,23 +127,25 @@
                         drawOnChartArea: false,
                         color: ctxFontColor
                     }
-                }]
+                }
             },
-            annotation: {
-                annotations: [{
-                    type: 'line',
-                    id: 'a-line-0',
-                    mode: 'vertical',
-                    scaleID: 'x-axis-0',
-                    value: knobValue_syncofs,
-                    borderColor: 'rgb(0, 0, 0)',
-                    borderWidth: 2,
-                    label: {
-                      content: "syncofs=" + knobValue_syncofs,
-                      enabled: true,
-                      position: 'left'
-                    }
-                }]
+            plugins: {
+                annotation: {
+                    annotations: [{
+                        type: 'line',
+                        id: 'a-line-0',
+                        mode: 'vertical',
+                        scaleID: 'x-axis-0',
+                        value: knobValue_syncofs,
+                        borderColor: 'rgb(0, 0, 0)',
+                        borderWidth: 2,
+                        label: {
+                          content: "syncofs=" + knobValue_syncofs,
+                          enabled: true,
+                          position: 'left'
+                        }
+                    }]
+                }
             }
         };
 
