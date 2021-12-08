@@ -62,7 +62,11 @@ ESP8266HTTPUpdateServer updater;
 File fsUploadFile;
 Ticker sta_tick;
 
-//swd over esp8266
+//SWD over ESP8266
+/* 
+ *  IMPORTANT: Arduino ESP8266 CORE v3.x breaks SWD over ESP8266 (compile with v2.7.4)
+ *  http://arduino.esp8266.com/stable/package_esp8266com_index.json
+*/
 /*
   https://github.com/scanlime/esp8266-arm-swd
 */
@@ -157,7 +161,7 @@ void handleFileCreate(){
   if(server.args() == 0)
     return server.send(500, "text/plain", "BAD ARGS");
   String path = server.arg(0);
-  DBG_OUTPUT_PORT.println("handleFileCreate: " + path);
+  //DBG_OUTPUT_PORT.println("handleFileCreate: " + path);
   if(path == "/")
     return server.send(500, "text/plain", "BAD PATH");
   if(SPIFFS.exists(path))
@@ -690,7 +694,7 @@ void setup(void){
         File fs = SPIFFS.open("/" + filename, "r");
         if (fs)
         {
-          server.setContentLength(addrEnd - addr * 5); //CONTENT_LENGTH_UNKNOWN
+          server.setContentLength(CONTENT_LENGTH_UNKNOWN);
           server.send(200, "text/plain", "");
 
           swd.debugHalt();
@@ -728,7 +732,7 @@ void setup(void){
 
                 char sramBuffer[4];
                 fs.readBytes(sramBuffer, 4);
-                swd.writeBufferSRAM(addrBuffer, (uint8_t*)sramBuffer, sizeof(sramBuffer));
+                swd.writeBufferSRAM(addrBuffer, (uint8_t*)sramBuffer, sizeof(sramBuffer)); //append to SRAM after flashloader
 
                 snprintf(output, sizeof output, " | %02x %02x %02x %02x", sramBuffer[0], sramBuffer[1], sramBuffer[2], sramBuffer[3]);
                 server.sendContent(output);
@@ -747,7 +751,7 @@ void setup(void){
           fs.close();
           SPIFFS.remove("/" + filename);
 
-          swd.debugHaltOnReset(0);
+          swd.debugHaltOnReset(0); //no reset halt lock
           swd.reset(); //hard-reset
 
           server.sendContent(""); //end stream
