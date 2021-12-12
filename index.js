@@ -527,6 +527,7 @@ function startPlot()
 
 	for (var signalIdx = 0; signalIdx < items.names.length; signalIdx++)
 	{
+		console.log(items.axes[signalIdx]);
 		var newDataset = {
 		        label: items.names[signalIdx],
 		        data: [],
