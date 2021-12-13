@@ -39,11 +39,11 @@ write:
 	ldr		r4, STM32_FLASH_BASE
 write_half_word:
 	movs	r3, #0x01
-	str		r3, [r4, #STM32_FLASH_CR_OFFSET]	/* PG (bit0) == 1 => flash programming enabled */
+	str		r3, [r4, #0x10]						/* PG (bit0) == 1 => flash programming enabled */
 	ldrh 	r3, [r0], #0x02						/* read one half-word from src, increment ptr */
 	strh 	r3, [r1], #0x02						/* write one half-word from src, increment ptr */
 busy:
-	ldr 	r3, [r4, #STM32_FLASH_SR_OFFSET]
+	ldr 	r3, [r4, #0x0c]
 	tst 	r3, #0x01							/* BSY (bit0) == 1 => operation in progress */
 	beq 	busy								/* wait more... */
 	tst		r3, #0x14							/* PGERR (bit2) == 1 or WRPRTERR (bit4) == 1 => error */

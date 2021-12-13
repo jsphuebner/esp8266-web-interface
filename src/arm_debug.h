@@ -71,10 +71,10 @@ public:
     bool debugRun();
 
     // Progaramming SRAM with flashloader
-    bool flashloaderSRAM();
+    void flashloaderSRAM();
     bool flashFinalize(uint32_t addr);
-    bool flashloaderRUN(uint32_t addr, unsigned count);
-    bool writeBufferSRAM(uint32_t addr, const uint8_t *data, unsigned count);
+    void flashloaderRUN(uint32_t addr, unsigned count);
+    void writeBufferSRAM(uint32_t addr, const uint8_t *data, unsigned count);
 
     // Locking the Flash memory
     bool lockFlash();
