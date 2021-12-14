@@ -32,7 +32,7 @@
     background: linear-gradient(top, rgba(168,168,168,1) 0%,rgba(204,204,204,1) 23%);
     position: relative;
 }
-#bar {
+.bar {
     height: 29px; /* Not 30px because the 1px top-border brings it up to 30px to match #graph */
     background: rgb(255,197,120); 
     background: -moz-linear-gradient(top, rgba(255,197,120,1) 0%, rgba(244,128,38,1) 100%); 
@@ -43,7 +43,7 @@
     background: linear-gradient(top, rgba(255,197,120,1) 0%,rgba(244,128,38,1) 100%); 
     border-top: 1px solid #fceabb;
 }
-#bar p { position: absolute; text-align: center; width: 100%; margin: 0; line-height: 30px; }
+.bar p { position: absolute; text-align: center; width: 100%; margin: 0; line-height: 30px; }
 .error {
     /* These styles are arbitrary */
     background-color: #fceabb;

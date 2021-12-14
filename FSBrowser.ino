@@ -62,7 +62,7 @@ ESP8266HTTPUpdateServer updater;
 File fsUploadFile;
 Ticker sta_tick;
 
-//swd over esp8266
+//SWD over ESP8266
 /*
   https://github.com/scanlime/esp8266-arm-swd
 */
@@ -157,7 +157,7 @@ void handleFileCreate(){
   if(server.args() == 0)
     return server.send(500, "text/plain", "BAD ARGS");
   String path = server.arg(0);
-  DBG_OUTPUT_PORT.println("handleFileCreate: " + path);
+  //DBG_OUTPUT_PORT.println("handleFileCreate: " + path);
   if(path == "/")
     return server.send(500, "text/plain", "BAD PATH");
   if(SPIFFS.exists(path))
@@ -413,8 +413,12 @@ void setup(void){
   SPIFFS.begin();
 
   //WIFI INIT
+  #ifdef WIFI_IS_OFF_AT_BOOT
+    enableWiFiAtBootTime();
+  #endif
   WiFi.mode(WIFI_AP_STA);
   WiFi.setPhyMode(WIFI_PHY_MODE_11B);
+  WiFi.setSleepMode(WIFI_NONE_SLEEP);
   WiFi.setOutputPower(25); //dbm
   WiFi.begin();
   sta_tick.attach(10, staCheck);
@@ -506,7 +510,7 @@ void setup(void){
       bool debugHalt = swd.debugHalt();
       bool debugReset = false;
       if (server.hasArg("hard")) {
-        swd.memStore(0xE000ED0C, 0x05FA0004);
+        swd.reset();
         debugReset = true;
       } else {
         debugReset = swd.debugReset();
@@ -524,13 +528,8 @@ void setup(void){
 
     if (swd.begin()) {
 
-      //Testing
-      addr = 0x08000000;
-      //addrEnd = 0x08000fff;
-      addrEnd = 0x0801ffff;
-
       uint32_t addrTotal = addrEnd - addr;
-      server.setContentLength(addrTotal * 5); //CONTENT_LENGTH_UNKNOWN
+      server.setContentLength(CONTENT_LENGTH_UNKNOWN);
       server.send(200, "text/plain", "");
 
       swd.debugHalt();
@@ -579,8 +578,6 @@ void setup(void){
 
         server.sendContent("\n");
 
-        yield(); //Prevent Reset by Watch-Dog
-
         addrIndex++;
       } while (addrNext <= addrEnd);
 
@@ -611,7 +608,7 @@ void setup(void){
         addr = 0x20000000;
         addrEnd = 0x200003ff; //Note: Read is limited to 0x200003ff but you can write to higher portion of RAM
       }
-      server.setContentLength(addrEnd - addr * 5); //CONTENT_LENGTH_UNKNOWN
+      server.setContentLength(CONTENT_LENGTH_UNKNOWN);
       server.send(200, "text/plain", "");
 
       uint32_t addrCount = 256;
@@ -623,8 +620,6 @@ void setup(void){
         StreamString data;
         swd.hexDump(addrNext, addrCount, data);
         server.sendContent(data.readString());
-
-        yield(); //Prevent Reset by Watch-Dog
 
         addrNext += (addrCount * 4); //step = count * 4 bytes in int32 word
       } while (addrNext <= addrEnd);
@@ -649,6 +644,7 @@ void setup(void){
         addr = 0x08001000;
         addrEnd = 0x0801ffff;
       }
+      
       server.sendHeader("Content-Disposition", "attachment; filename = \"" + filename + "\"");
       server.setContentLength(addrEnd - addr + 1); //CONTENT_LENGTH_UNKNOWN
       server.send(200, "application/octet-stream", "");
@@ -658,11 +654,13 @@ void setup(void){
 
         //Serial.printf("------ %08x ------\n", addrNext);
 
-        uint8_t* buff;
-        swd.binDump(addrNext, buff);
-        server.sendContent(String((char *)buff));
-
-        yield(); //Prevent Reset by Watch-Dog
+        //uint8_t* buff;
+        //swd.binDump(addrNext, buff);
+        //server.sendContent(String((char *)buff));
+        
+        uint8_t byte;
+        swd.memLoadByte(addrNext, byte);
+        server.sendContent(String(byte));
 
         addrNext++;
       } while (addrNext <= addrEnd);
@@ -693,35 +691,38 @@ void setup(void){
         File fs = SPIFFS.open("/" + filename, "r");
         if (fs)
         {
-          server.setContentLength(addrEnd - addr * 5); //CONTENT_LENGTH_UNKNOWN
+          server.setContentLength(CONTENT_LENGTH_UNKNOWN);
           server.send(200, "text/plain", "");
 
           swd.debugHalt();
-          swd.debugHaltOnReset(1);
+          swd.debugHaltOnReset(1); //reset lock into halt
           swd.reset();
           swd.unlockFlash();
 
-          const uint16_t PAGE_SIZE_BYTES = 1024;
+          pinMode(LED_BUILTIN, OUTPUT);
+
           uint32_t addrNext = addr;
           uint32_t addrIndex = addr;
-          do {
+          uint32_t addrBuffer = 0x00000000;
 
-            if (fs.available() == 0)
-              break;
-
+          while (addrNext < addrEnd && fs.available())
+          {
             swd.debugHalt();
-            swd.flashloaderSRAM();
-
-            uint32_t addrBuffer = 0x00000000;
-
-            //Serial.printf("------ %08x ------\n", addrIndex);
-
-            for (uint16_t p = 0; p < PAGE_SIZE_BYTES; p++)
+            if (addrBuffer == 0x00000000)
             {
+              swd.flashloaderSRAM(); //load flashloader to SRAM @ 0x20000000
+            }
+
+            digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+            
+            uint8_t PAGE_SIZE = 6; //webserver max chunks
+            for (uint8_t p = 0; p < PAGE_SIZE; p++)
+            {
+              //Serial.printf("------ %08x ------\n", addrIndex);
               if (fs.available() == 0)
                 break;
 
-              snprintf(output, sizeof output, "%08x:", addrNext);
+              snprintf(output, sizeof output, "%08x:", addrIndex);
               server.sendContent(output);
 
               for (int i = 0; i < 4; i++)
@@ -731,32 +732,31 @@ void setup(void){
 
                 char sramBuffer[4];
                 fs.readBytes(sramBuffer, 4);
-                swd.writeBufferSRAM(addrBuffer, (uint8_t*)sramBuffer, sizeof(sramBuffer));
+                swd.writeBufferSRAM(addrBuffer, (uint8_t*)sramBuffer, sizeof(sramBuffer)); //append to SRAM after flashloader
 
                 snprintf(output, sizeof output, " | %02x %02x %02x %02x", sramBuffer[0], sramBuffer[1], sramBuffer[2], sramBuffer[3]);
                 server.sendContent(output);
 
-                addrNext += 4;
+                addrIndex += 4;
                 addrBuffer += 4;
               }
               server.sendContent("\n");
-
-              yield(); //Prevent Reset by Watch-Dog
             }
-            swd.flashloaderRUN(addrIndex, addrBuffer);
-            delay(2000); //swd.memWait();
+            swd.flashloaderRUN(addrNext, addrBuffer);
+            delay(400); //Must wait for flashloader to finish
+ 
+            addrBuffer = 0x00000000;
+            addrNext = addrIndex;
+          }
 
-            addrIndex = addrNext;
-          } while (addrNext <= addrEnd);
+          swd.debugHaltOnReset(0); //no reset halt lock
+          swd.reset(); //hard-reset
 
           fs.close();
           SPIFFS.remove("/" + filename);
 
-          swd.flashFinalize(addr);
-          swd.debugHaltOnReset(0);
-          swd.reset(); //hard-reset
-          
           server.sendContent(""); //end stream
+          digitalWrite(LED_BUILTIN, HIGH); //OFF
         } else {
           server.send(200, "text/plain", "File Error");
         }
@@ -771,7 +771,10 @@ void setup(void){
   //use it to load content from SPIFFS
   server.onNotFound([](){
     if(!handleFileRead(server.uri()))
+    {
+      server.sendHeader("Refresh", "6; url=/update");
       server.send(404, "text/plain", "FileNotFound");
+    }
   });
 
   server.begin();

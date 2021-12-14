@@ -41,18 +41,17 @@ function generateChart()
 				duration: 0
 			},
 			scales: {
-				yAxes: [{
+				'y-axis-0': {
 					type: "linear",
 					display: true,
-					position: "left",
-					id: "left"
-				}, {
+					position: "left"
+				},
+				'y-axis-1': {
 					type: "linear",
 					display: true,
 					position: "right",
-					id: "right",
 					gridLines: { drawOnChartArea: false }
-				}]
+				}
 			}
 		} });
 }
@@ -213,8 +212,8 @@ function updateTables()
 			else
 			{
 				var can = param.canid != undefined;
-				var checkHtml = '<INPUT type="checkbox" data-name="' + name + '" data-axis="left" /> l';
-				checkHtml += ' <INPUT type="checkbox" data-name="' + name + '" data-axis="right" /> r';
+				var checkHtml = '<INPUT type="checkbox" data-name="' + name + '" data-axis="y-axis-0" /> l';
+				checkHtml += ' <INPUT type="checkbox" data-name="' + name + '" data-axis="y-axis-1" /> r';
 				var canIdHtml = '<INPUT type="number" step="1" min="0" max="2047" id="canid' + name + '" value="' + (can ? param.canid : "") + '"/>';
 				var canPosHtml = '<INPUT type="number" step="1" min="0" max="63" id="canpos' + name + '" value="' + (can ? param.canoffset : "") + '"/>';
 				var canBitsHtml = '<INPUT type="number" step="1" min="1" max="32" id="canbits' + name + '" value="' + (can ? param.canlength : "") + '"/>';
@@ -419,9 +418,11 @@ function uploadFile()
 	{
 		if (file.endsWith(".bin"))
 		{
+			document.getElementById("bar").innerHTML = "<p>Upload Complete</p>";
 			runUpdate(-1, "/" + file);
+		}else{
+			document.getElementById("bar").innerHTML = "<p>.bin File Only</p>";
 		}
-		document.getElementById("bar").innerHTML = "<p>Upload complete</p>";
 		setTimeout(function() { document.getElementById("bar").innerHTML = "" }, 5000);
 	}
 
@@ -435,7 +436,6 @@ function resetSWD()
 	var xhr = new XMLHttpRequest();
 	xhr.onload = function()
 	{
-		document.getElementById("swdbar").style.width = "100%";
 		document.getElementById("swdbar").innerHTML = "<p>Hard-Reset</p>";
 		updateTables();
 	};
@@ -457,16 +457,23 @@ function uploadSWDFile()
 
 	xmlhttp.onload = function()
 	{
+		if (file.name.endsWith(".bin"))
+		{
+			document.getElementById("swdbar").innerHTML = "<p>Upload Complete ...wait for ESP8266 LED to stop flasing</p>";
+		}else{
+			document.getElementById("swdbar").innerHTML = "<p>.bin File Only</p>";
+		}
+
 		var xhr = new XMLHttpRequest();
 		xhr.seenBytes = 0;
 		xhr.seenTotalPages = 0;
+		
 		xhr.onreadystatechange = function() {
 		  if(xhr.readyState == 3) {
 		    var data = xhr.response.substr(xhr.seenBytes);
 		    //console.log(data);
 
 		    if(data.indexOf("Error") != -1) {
-		    	document.getElementById("swdbar").style.width = "100%";
 				document.getElementById("swdbar").innerHTML = "<p>" + data + "</p>";
 		    }else{
 			    var s = data.split('\n');

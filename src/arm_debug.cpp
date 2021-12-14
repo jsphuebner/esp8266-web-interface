@@ -258,16 +258,18 @@ bool ARMDebug::debugRun()
     return false;
 }
 
-bool ARMDebug::flashloaderSRAM()
+void ARMDebug::flashloaderSRAM()
 {
     uint32_t i, size, addr = MEMAP_SRAM_START;
 
     size = sizeof(flashloader_raw);
-    for (i = 0; i < size; i++)
+    for (i = 0; i < size; i++){
         memStoreByte(addr + i, flashloader_raw[i]);
+        memWait();
+    }
 }
 
-bool ARMDebug::flashloaderRUN(uint32_t addr, unsigned count)
+void ARMDebug::flashloaderRUN(uint32_t addr, unsigned count)
 {
     uint32_t buf_addr = MEMAP_SRAM_START + sizeof(flashloader_raw); //flashloader end address
 
@@ -306,16 +308,29 @@ bool ARMDebug::flashloaderRUN(uint32_t addr, unsigned count)
     regWrite(2, count / 2);   // Count(16 bits half words)
     //regWrite(3, 0);         // Result
     /*
+    //OpenOCD stm32f1x.h
+    uint32_t buf_end = buf_addr + addr; //SRAM workarea without flashloader
+    regWrite(0, REG_FPEC_FLASH_ACR); // Flash Base
+    regWrite(1, count / 2);   // Count(16 bits half words)
+    regWrite(2, buf_addr);    // Workarea start
+    regWrite(3, buf_end);     // Workarea end
+    regWrite(4, addr);        // Target
+    */
+    /*
     //ST-Link stm32f0.h
     regWrite(0, buf_addr);    // Source
     regWrite(1, addr);        // Target
     regWrite(2, count / 2);   // Count(16 bits half words)
-    regWrite(3, 0);           // Flash Base 0
-    //if (addr >= MEMAP_FLASH_BANK2_START)
-    //    regWrite(3, REG_FPEC_FLASH_BANK2_OFS); // Flash Base 0 with Offset
+    if (addr >= REG_FPEC_FLASH_BANK2_START)
+        regWrite(3, REG_FPEC_FLASH_BANK2_OFS); // Flash register offset
+    else
+        regWrite(3, 0);
     */
     regWrite(15, MEMAP_SRAM_START);
 
+    apWrite(0x40003000, 0xAAAA); //Reset IWDG F0
+    //apWrite(0x58004800, 0xAAAA); //Reset IWDG H7
+    /*
     //Debug
     uint32_t r0, r1, r2, r3, r15;
     regRead(0, r0);
@@ -324,7 +339,7 @@ bool ARMDebug::flashloaderRUN(uint32_t addr, unsigned count)
     regRead(3, r3);
     regRead(15, r15);
     log(LOG_NORMAL, "R0:%08x R1:%08x R2:%08x R3:%08x R15:%08x \n", r0, r1, r2, r3, r15);
-
+    */
     //unlockFlash();
 
     //Run code
@@ -349,7 +364,7 @@ bool ARMDebug::flashFinalize(uint32_t addr)
     return true;
 }
 
-bool ARMDebug::writeBufferSRAM(uint32_t addr, const uint8_t *data, unsigned count)
+void ARMDebug::writeBufferSRAM(uint32_t addr, const uint8_t *data, unsigned count)
 {
     // Write the buffer right after the loader
     uint32_t i, buf_addr = MEMAP_SRAM_START + sizeof(flashloader_raw) + addr; //flashloader end address

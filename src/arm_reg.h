@@ -12,6 +12,7 @@
 #define MEMAP_SRAM_START			0x20000000			// RAM start
 
 // Flash program and erase controller (FPEC), PM0075 manual STM32F10xxx Flash memory
+#define REG_FPEC_FLASH_BANK2_START  0x08080000          //VL/F1_XL F0 flash with dual bank
 #define REG_FPEC_FLASH_BANK2_OFS 	0x40 				//If SRAM > 1024 and target address is over 0x08080000, All FPEC Registers offset +0x40 e.g. 0x40022040
 #define REG_FPEC_FLASH_ACR			0x40022000			//Flash access control register
 #define REG_FPEC_FLASH_KEYR 		0x40022004 			//FPEC key register
