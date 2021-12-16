@@ -198,20 +198,25 @@ void handleFileList() {
 
 static void sendCommand(String cmd)
 {
-  Serial.print("\n");
-  delay(1);
-  while(Serial.available())
-    Serial.read(); //flush all previous output
   Serial.print(cmd);
   Serial.print("\n");
-  Serial.readStringUntil('\n'); //consume echo  
+
+  char c;
+  uint32_t timeout = millis();
+  do {
+    if(Serial.available() > 0)
+      c = Serial.read();
+  } while (millis() - timeout < 256 && c != '\n');
 }
 
 static void handleCommand() {
-  const int cmdBufSize = 128;
   if(!server.hasArg("cmd")) {server.send(500, "text/plain", "BAD ARGS"); return;}
 
-  String cmd = server.arg("cmd").substring(0, cmdBufSize);
+  //const int cmdBufSize = 128;
+  //String cmd = server.arg("cmd").substring(0, cmdBufSize);
+  
+  sendCommand(server.arg("cmd"));
+  
   int repeat = 0;
   char buffer[255];
   size_t len = 0;
@@ -219,22 +224,7 @@ static void handleCommand() {
 
   if (server.hasArg("repeat"))
     repeat = server.arg("repeat").toInt();
-
-  if (!fastUart && fastUartAvailable)
-  {
-    sendCommand("fastuart");
-    if (Serial.readString().startsWith("OK"))
-    {
-      Serial.begin(921600);
-      fastUart = true;
-    }
-    else
-    {
-      fastUartAvailable = false;
-    }
-  }
-
-  sendCommand(cmd);
+    
   do {
     memset(buffer,0,sizeof(buffer));
     len = Serial.readBytes(buffer, sizeof(buffer) - 1);
@@ -247,8 +237,8 @@ static void handleCommand() {
       Serial.readBytes(buffer, 1); //consume "!"
     }
   } while (len > 0);
-  server.sendHeader("Access-Control-Allow-Origin","*");
-  server.send(200, "text/json", output);
+  //server.sendHeader("Access-Control-Allow-Origin","*");
+  server.send(200, "text/plain", output);
 }
 
 static uint32_t crc32_word(uint32_t Crc, uint32_t Data)
@@ -291,7 +281,10 @@ static void handleUpdate()
   if (step == -1)
   {
     int c;
-    sendCommand("reset");
+    char b[128];
+
+    Serial.print("reset\n");
+    Serial.readBytesUntil('t', b, sizeof(b) - 1); //echo -> reset
 
     if (fastUart)
     {
@@ -299,6 +292,8 @@ static void handleUpdate()
       fastUart = false;
       fastUartAvailable = true; //retry after reboot
     }
+    Serial.setTimeout(1000); //default
+    
     do {
       c = Serial.read();
     } while (c != 'S' && c != '2');
@@ -394,6 +389,10 @@ static void handleWifi()
 
 static void handleBaud()
 {
+  if (server.hasArg("timeout")) {
+    Serial.setTimeout(server.arg("timeout").toInt());
+  }
+
   if (fastUart)
     server.send(200, "text/html", "fastUart on");
   else
@@ -411,6 +410,24 @@ void setup(void){
   Serial.begin(115200);
   Serial.setTimeout(100);
   SPIFFS.begin();
+
+  Serial.print("\n");
+  while(Serial.available())
+    Serial.read(); //flush all previous output
+  
+  if (!fastUart && fastUartAvailable)
+  {
+    sendCommand("fastuart");
+    if (Serial.readString().startsWith("OK"))
+    {
+      Serial.begin(921600);
+      fastUart = true;
+    }
+    else
+    {
+      fastUartAvailable = false;
+    }
+  }
 
   //WIFI INIT
   #ifdef WIFI_IS_OFF_AT_BOOT
@@ -587,8 +604,6 @@ void setup(void){
       swd.debugHaltOnReset(0);
       swd.debugReset();
 
-      server.sendContent(""); //end stream
-
     } else {
       server.send(200, "text/plain", "SWD Error");
     }
@@ -603,7 +618,6 @@ void setup(void){
       } else if (server.hasArg("flash")) {
         addr = 0x08001000;
         addrEnd = 0x0801ffff;
-        //addrEnd = 0x080011ff; //Quick Debug
       } else if (server.hasArg("ram")) {
         addr = 0x20000000;
         addrEnd = 0x200003ff; //Note: Read is limited to 0x200003ff but you can write to higher portion of RAM
@@ -623,8 +637,6 @@ void setup(void){
 
         addrNext += (addrCount * 4); //step = count * 4 bytes in int32 word
       } while (addrNext <= addrEnd);
-
-      server.sendContent(""); //end stream
 
     } else {
       server.send(200, "text/plain", "SWD Error");
@@ -664,8 +676,6 @@ void setup(void){
 
         addrNext++;
       } while (addrNext <= addrEnd);
-
-      server.sendContent(""); //end stream
 
     } else {
       server.send(200, "text/plain", "SWD Error");
@@ -755,7 +765,6 @@ void setup(void){
           fs.close();
           SPIFFS.remove("/" + filename);
 
-          server.sendContent(""); //end stream
           digitalWrite(LED_BUILTIN, HIGH); //OFF
         } else {
           server.send(200, "text/plain", "File Error");

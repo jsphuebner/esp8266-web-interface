@@ -21,7 +21,7 @@
  *
 -->
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Huebner Inverter Management Console</title>
+<title>Open Inverter Management Console</title>
 <link href="style.css" rel="stylesheet" type="text/css" />
 <script src="chart.min.js" type="text/javascript"></script>
 <script src="inverter.js" type="text/javascript"></script>
@@ -53,7 +53,7 @@
 <h2 id="update">UART Update</h2>
 <p>Use binary files (stm32_sine/foc.bin) for updating inverter firmware. Upload any other file for updating this web interface.</p>
 <form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
-    <input id="updatefile" name="updatefile" type="file" onchange="fileSelected();" />
+    <input id="updatefile" name="updatefile" type="file" />
     <input type="button" onclick="uploadFile();" value="Upload" />
 </form>
 <div id="progress" class="graph">
@@ -63,7 +63,7 @@
 <h2 id="swdupdate">SWD Update</h2>
 <p>Use binary files (stm32_loader.bin, stm32_sine/foc.bin) for updating inverter bootloader/firmware.</p>
 <form id="swdform" enctype="multipart/form-data" action="edit" method="POST">
-    <input id="swdfile" name="swdfile" type="file" onchange="fileSelected();" accept=".bin" />
+    <input id="swdfile" name="swdfile" type="file" accept=".bin" />
     <input type="button" onclick="uploadSWDFile();" value="Upload" />
 </form>
 <div id="progress" class="graph">
@@ -133,13 +133,24 @@ Subscribe to parameter set:
 </tbody>
 </table>
 <h2 id="plot">Plot</h2>
-<canvas id="canvas" width=100 height=40></canvas>
+<div class="chartWrapper">
+	<div class="chartAreaWrapper" id="chartAreaWrapper">
+		<div class="chartArea" id="chartArea">
+			<canvas id="canvas"></canvas>
+		</div>
+	</div>
+	<canvas id="chartAxis" height="640" width="0"></canvas>
+</div>
 <p>
 <button onclick="startPlot()">Start Plot</button>
 <button onclick="stopPlot()">Stop Plot</button>
 <button onclick="pauseResumePlot()" disabled id="pauseButton">Pause Plot</button>
+<button onclick="exportChartImage()" id="exportButton">Export Image</button>
+Scroll pages: <input type="number" id="maxPages" step="1" min="1" max="10" value="2" />
 Limit data points to: <input type="number" id="maxValues" step="1" min="10" max="10000" value="1000" />
 Burst length: <input type="number" id="burstLength" step="1" min="1" max="1000" value="10" />
+Chart delay (ms): <input type="number" id="chartDelay" step="1" min="0" max="1000" value="100" onchange="serialTimeout(this.value)" />
+Auto scroll: <input type="checkbox" id="autoScroll" checked />
 <p>Copyright 2018 Johannes Huebner dev@johanneshuebner.com</p>
 <p>Charting by <a href="http://chartjs.org/" target="_blank">chart.js</a></p>
 <p>Gauges by <a href="https://github.com/Mikhus/canvas-gauges" target="_blank">Mykhailo Stadnyk</a></p>
