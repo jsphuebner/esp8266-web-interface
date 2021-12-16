@@ -18,6 +18,7 @@
  *
  */
 var chart;
+var chartPages = 0;
 var items = {};
 var stop;
 var imgid = 0;
@@ -37,9 +38,9 @@ function generateChart()
 	chart = new Chart("canvas", {
 		type: "line",
 		options: {
-			animation: {
-				duration: 0
-			},
+			responsive: true,
+          	maintainAspectRatio: false,
+			animation: false,
 			scales: {
 				'y-axis-0': {
 					type: "linear",
@@ -50,7 +51,7 @@ function generateChart()
 					type: "linear",
 					display: true,
 					position: "right",
-					gridLines: { drawOnChartArea: false }
+					grid: { drawOnChartArea: false }
 				}
 			}
 		} });
@@ -64,7 +65,7 @@ function parameterSubmit()
 		document.getElementById("loader0").style.visibility = "hidden";
 		document.getElementById("parameters_json").value = JSON.stringify(values);
 		document.getElementById("paramdb").submit();
-	}, true);
+	}, true, 0);
 }
 
 function checkSubscribedParameterSet()
@@ -260,7 +261,7 @@ function updateTables()
 		
 		if (document.getElementById("autorefresh").checked)
  			updateTables();	
-	});
+	}, false, 0);
 }
 
 /** @brief Adds row to a table
@@ -398,8 +399,30 @@ function showLog()
 	window.open(req);
 }
 
-function fileSelected()
+/** @brief export chart as image */
+function exportChartImage()
 {
+	var render = chart.canvas.toDataURL('image/png', 1.0);
+	var d = new Date();
+
+   var data = atob(render.substring('data:image/png;base64,'.length)),
+        asArray = new Uint8Array(data.length);
+
+    for (var i = 0, len = data.length; i < len; ++i) {
+        asArray[i] = data.charCodeAt(i);
+    }
+    var blob = new Blob([asArray.buffer], { type: 'image/png' });
+
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'chart ' + d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear() + ' ' + (d.getHours() % 12 || 12) + '-' + d.getMinutes() + ' ' + (d.getHours() >= 12 ? 'pm' : 'am') + '.png';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }, 0);
 }
 
 /** @brief uploads file to web server, if bin-file uploaded, starts a firmware upgrade */
@@ -467,7 +490,6 @@ function uploadSWDFile()
 		var xhr = new XMLHttpRequest();
 		xhr.seenBytes = 0;
 		xhr.seenTotalPages = 0;
-		
 		xhr.onreadystatechange = function() {
 		  if(xhr.readyState == 3) {
 		    var data = xhr.response.substr(xhr.seenBytes);
@@ -508,11 +530,11 @@ function uploadSWDFile()
 function runUpdate(step,file)
 {
 	var xmlhttp=new XMLHttpRequest();
-	xmlhttp.onload = function() 
+	xmlhttp.responseType = "json";
+	xmlhttp.onload = function()
 	{
 		step++;
-		var result = JSON.parse(this.responseText);
-		var totalPages = result.pages;
+		var totalPages = this.response.pages;
 		var progress = Math.round(100 * step / totalPages);
 		document.getElementById("bar").style.width = progress + "%";
 		document.getElementById("bar").innerHTML = "<p>" +  progress + "%</p>";
@@ -531,27 +553,45 @@ function startPlot()
 	items = getPlotItems();
 	var colours = [ 'rgb(255, 99, 132)', 'rgb(54, 162, 235)', 'rgb(255, 159, 64)', 'rgb(153, 102, 255)', 'rgb(255, 205, 86)', 'rgb(75, 192, 192)' ];
 
+	chart.config.data.labels = new Array();
 	chart.config.data.datasets = new Array();
 
 	for (var signalIdx = 0; signalIdx < items.names.length; signalIdx++)
 	{
+		var yAxisKey = items.names[signalIdx];
 		var newDataset = {
 		        label: items.names[signalIdx],
 		        data: [],
 		        borderColor: colours[signalIdx % colours.length],
 		        backgroundColor: colours[signalIdx % colours.length],
-		        fill: false,
 		        pointRadius: 0,
-		        yAxisID: items.axes[signalIdx]
+		        yAxisID: items.axes[signalIdx],
+		        normalized: true
 		    };
 		chart.config.data.datasets.push(newDataset);
 	}
-	
-	time = 0;
+
 	chart.update();
 	stop = false;
 	document.getElementById("pauseButton").disabled = false;
-	acquire();
+
+	//Scroll Chart Reset
+	var chartArea = document.getElementById("chartArea");
+	var chartAreaWrapper = document.getElementById("chartAreaWrapper");
+	chartArea.style.width = chartAreaWrapper.clientWidth + "px";
+	
+	var chartDelay = document.getElementById('chartDelay').value;
+	serialTimeout(chartDelay);
+
+	if (items.names.length) acquire();
+}
+
+/** @brief changes Serial.setTimeout() in esp8266 */
+function serialTimeout(value)
+{
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.open("GET", "/baud?timeout=" + (value / 2), true);
+	xmlhttp.send();
 }
 
 /** @brief Stop plotting */
@@ -578,35 +618,59 @@ function pauseResumePlot()
 	}
 }
 
+/** @brief chart stream results, loop needs to be as efficient as possible */
 function acquire()
 {
 	if (stop) return;
-	if (!items.names.length) return;
-	var burstLength = document.getElementById('burstLength').value;
-	var maxValues = document.getElementById('maxValues').value;
+
+	burstLength = document.getElementById('burstLength').value;
+	maxPages = document.getElementById('maxPages').value;
+	maxValues = document.getElementById('maxValues').value;
+	autoScroll = document.getElementById('autoScroll').checked;
     
     inverter.getValues(items.names, burstLength,
-	function(values) 
+	function(values)
 	{
-		for (var i = 0; i < burstLength; i++)
+		var d = new Date();
+		chart.config.data.labels.push(d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds());
+		for (var i = 1; i < burstLength; i++)
 		{
-			chart.config.data.labels.push(time);
-			time++;
+			chart.config.data.labels.push("");
 		}
-		chart.config.data.labels.splice(0, Math.max(chart.config.data.labels.length - maxValues, 0));
 
+		var count = 0;
 		for (var name in values)
 		{
 			var data = chart.config.data.datasets.find(function(element) { return element.label == name }).data;
-			
+
 			for (var i = 0; i < values[name].length; i++)
 			{
-				data.push(values[name][i])
-				data.splice(0, Math.max(data.length - maxValues, 0));
+				data.push(values[name][i]);
 			}
+			count++;
 		}
 
 		chart.update();
+
+		//Scroll Chart
+        var dataPoints = String(chart.config.data.labels.length / maxValues)[0];
+        if(chartPages != dataPoints)
+        {
+        	chartPages = dataPoints;
+        	//console.log(chartPages);
+        	var chartArea = document.getElementById("chartArea");
+        	var chartAreaWrapper = document.getElementById("chartAreaWrapper");
+        	var chartAreaWidth = chartAreaWrapper.clientWidth + chart.width;
+			chartArea.style.width = chartAreaWidth  + "px";
+			if(autoScroll)
+				chartAreaWrapper.scrollLeft = chartAreaWidth;
+
+			if(chartPages >= maxPages) {
+				data.splice(0, maxValues);
+				chart.config.data.labels.splice(0, maxValues);
+				chartPages--;
+			}
+        }
 		acquire();
 	});
 }

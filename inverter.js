@@ -38,10 +38,11 @@ var inverter = {
 		xmlhttp.send();
 	},
 	
-	getParamList: function(replyFunc, includeHidden)
+	getParamList: function(replyFunc, includeHidden, loop)
 	{
 		var cmd = includeHidden ? "json hidden" : "json";
 		
+		if(loop < 3) { //at maximum speed json can get corrupted, try a few times
 		inverter.sendCmd(cmd, function(reply) {
 			var params = {};
 			try {
@@ -55,9 +56,10 @@ var inverter = {
 					if (name == "version")
 						inverter.firmwareVersion = parseFloat(param.value);
 				}
-			} catch(ex) {}
+			} catch(ex) { inverter.getParamList(replyFunc, includeHidden, loop+1) }
 			if (replyFunc) replyFunc(params);
 		});
+		}
 	},
 	
 	getValues: function(items, repeat, replyFunc)
