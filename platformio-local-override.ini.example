@@ -1,0 +1,6 @@
+[env]
+board_build.flash_mode = qout
+upload_port = /dev/cu.usbserial-DGAJb113318
+upload_speed = 921600
+monitor_port = /dev/cu.usbserial-DGAJb113318
+monitor_speed = 115200

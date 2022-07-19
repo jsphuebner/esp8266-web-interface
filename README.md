@@ -19,6 +19,7 @@ Web interface for Huebner inverter
 - [Documentations](#documentations)
 - [Development](#development)
     - [Arduino](#arduino)
+    - [PlatformIO](#platformio)
 
 <!-- /MarkdownTOC -->
 </details>
@@ -100,3 +101,9 @@ You can choose between the following tools:
 [Arduino IDE](https://www.arduino.cc/en/software) is an easy-to-use desktop IDE, which provides a quick and integrated way to develop and update your board.
 * [Initial setup](doc/ARDUINO_IDE_setup.md)
 * [Day to day usage](doc/ARDUINO_IDE_usage.md)
+
+## PlatformIO
+[PlatformIO](https://platformio.org/) is a set of tools, among which [PlatformIO Core (CLI)](https://docs.platformio.org/en/latest/core/index.html) is a command line interface that can be used to build many kind of projects. In particular Arduino-based projects like this one.
+(Note: even if PlatformIO provides an IDE, these instructions only target the CLI.)
+* [Initial setup](doc/PLATFORMIO_setup.md)
+* [Day to day usage](doc/PLATFORMIO_usage.md)
