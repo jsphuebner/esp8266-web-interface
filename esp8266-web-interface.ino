@@ -428,6 +428,7 @@ void setup(void){
   updater.setup(&server);
   
   //SERVER INIT
+  ArduinoOTA.setHostname(host);
   ArduinoOTA.begin();
   //list directory
   server.on("/list", HTTP_GET, handleFileList);
@@ -779,9 +780,12 @@ void setup(void){
 
   server.begin();
   server.client().setNoDelay(1);
+
+  MDNS.addService("http", "tcp", 80);
 }
  
 void loop(void){
   server.handleClient();
   ArduinoOTA.handle();
+  // note: ArduinoOTA.handle() calls MDNS.update();
 }
