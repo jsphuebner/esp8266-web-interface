@@ -24,7 +24,7 @@ If these aspects are useful to others, then you should consider doing a PR to sh
 However in some cases there are some changes that are specific to your working environment, for example the
 name of the serial port on which you communicate with the ESP8266 board, etc...
 
-To that end, you can create a local file named `platformio-local-override.ini` ; which is explicitely ignored
+To that end, you can create a local file named `platformio-local-override.ini` ; which is explicitly ignored
 by the git version control (cf `.gitignore`).
 In this file you'll be able to override the settings of the main `platformio.ini` file without having pending
 file modifications.
