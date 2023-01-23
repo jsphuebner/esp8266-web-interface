@@ -13,7 +13,7 @@ Following the echo, the esp8266 will receive an unlimited quantity of response d
 100ms timeout.
 
 Except where otherwise noted, the responses are free text and should generally contain a single human
-readable line indicating success or faulure of the operation.
+readable line indicating success or failure of the operation.
 
 ## Parameters and other data
 
@@ -35,7 +35,7 @@ state of the inverter. These are useful for monitoring and debugging.
 |`set [parameter] [value]`|set the decimal value of a named parameter|
 |`can [direction] [name] [canid] [offset] [length] [gain]`|map values to CAN messages|
 |`can clear`|clear all can mappings|
-|`start [opmode]`|start the inverter in a specified modemode 2 is manual run|
+|`start [opmode]`|start the inverter in a specified mode. Mode 2 is manual run|
 |`stop`|stop the inverter|
 |`get [parameter]`|get the value of a parameter|
 |`stream [repetitions] [val1,val2,val3]`| repeatedly read and return one or more values|
