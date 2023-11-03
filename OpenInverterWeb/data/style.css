@@ -44,9 +44,9 @@ h3 {
     border-bottom: solid 1px #CCC;
 }
 
-html, body { 
+html, body {
     font-family: sans-serif;
-    font-size: 12pt; 
+    font-size: 12pt;
     -webkit-text-size-adjust: none;
     -moz-text-size-adjust: none;
     -ms-text-size-adjust: none;
@@ -58,7 +58,7 @@ html, body {
 .graph {
     width: 298px; /* width and height are arbitrary, just make sure the #bar styles are changed accordingly */
     height: 30px;
-    border: 1px solid #888; 
+    border: 1px solid #888;
     background: rgb(168,168,168);
     background: -moz-linear-gradient(top, rgba(168,168,168,1) 0%, rgba(204,204,204,1) 23%);
     background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(168,168,168,1)), color-stop(23%,rgba(204,204,204,1)));
@@ -73,12 +73,12 @@ html, body {
 #upload-firmware-bar {
     height: 29px; /* Not 30px because the 1px top-border brings it up to 30px to match #graph */
     background: rgb(255,197,120);
-    background: -moz-linear-gradient(top, rgba(255,197,120,1) 0%, rgba(244,128,38,1) 100%); 
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,197,120,1)), color-stop(100%,rgba(244,128,38,1))); 
-    background: -webkit-linear-gradient(top, rgba(255,197,120,1) 0%,rgba(244,128,38,1) 100%); 
-    background: -o-linear-gradient(top, rgba(255,197,120,1) 0%,rgba(244,128,38,1) 100%); 
-    background: -ms-linear-gradient(top, rgba(255,197,120,1) 0%,rgba(244,128,38,1) 100%); 
-    background: linear-gradient(top, rgba(255,197,120,1) 0%,rgba(244,128,38,1) 100%); 
+    background: -moz-linear-gradient(top, rgba(255,197,120,1) 0%, rgba(244,128,38,1) 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,197,120,1)), color-stop(100%,rgba(244,128,38,1)));
+    background: -webkit-linear-gradient(top, rgba(255,197,120,1) 0%,rgba(244,128,38,1) 100%);
+    background: -o-linear-gradient(top, rgba(255,197,120,1) 0%,rgba(244,128,38,1) 100%);
+    background: -ms-linear-gradient(top, rgba(255,197,120,1) 0%,rgba(244,128,38,1) 100%);
+    background: linear-gradient(top, rgba(255,197,120,1) 0%,rgba(244,128,38,1) 100%);
     border-top: 1px solid #fceabb;
 }
 
@@ -103,7 +103,7 @@ html, body {
 
 /* Navbar */
 
-#navbar { 
+#navbar {
 	background-color: #4CAF50;
     min-height: 100vh;
     position: fixed;
@@ -207,7 +207,7 @@ textarea {
 
 input[type=number]{
     width: 6em;
-} 
+}
 
 form {
     margin:0px; padding:0px; display:inline;
@@ -235,7 +235,7 @@ form {
     color: black;
 }
 
-button { 
+button {
 	font-size: 100%;
 	padding: 5px;
     padding-right: 10px;
@@ -513,8 +513,8 @@ tr:hover {
 #spinner-div {
     position: absolute;
     margin: 0px;
-    bottom: 90px;
-    padding: 0px 0px 0px 40px;
+    bottom: 130px;
+    padding: 0px 0px 0px 10px;
     float: left;
     width: 160px;
     height: 16px;
@@ -545,13 +545,28 @@ tr:hover {
     margin: 0px;
     margin-left: 10px;
     margin-bottom: 10px;
-    text-align: center;
+    text-align: left;
     float: left;
     width: 160px;
     font-size: 10pt;
     height: 30px;
 }
 
+#auto-reload-toggle-div {
+    position: absolute;
+    bottom: 65px;
+    padding: 0px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin: 0px;
+    margin-left: 10px;
+    margin-bottom: 10px;
+    text-align: left;
+    float: left;
+    width: 160px;
+    font-size: 10pt;
+    height: 30px;
+}
 /* switch */
 
 /* The switch - the box around the slider */

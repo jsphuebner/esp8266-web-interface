@@ -27,59 +27,58 @@ var paramsCache = {
 
     data: undefined,
 
-    get: function(name)
-	{
-		if ( paramsCache.data !== undefined )
-		{
-			if ( name in paramsCache.data ) {
-	 			if ( paramsCache.data[name].enums ) {
-	 		        return paramsCache.data[name].enums[paramsCache.data[name].value];
-	 		    } else {
-	 		    	return paramsCache.data[name].value;
-	 		    }
-	 		}
- 		}
- 		return null;
-	}	
+    get: function(name) {
+      if ( paramsCache.data !== undefined )
+      {
+        if ( name in paramsCache.data ) {
+          if ( paramsCache.data[name].enums ) {
+                return paramsCache.data[name].enums[paramsCache.data[name].value];
+            } else {
+              return paramsCache.data[name].value;
+            }
+        }
+      }
+      return null;
+    }
 }
 
 var inverter = {
 
 	firmwareVersion: 0,
-	
+
 	/** @brief send a command to the inverter */
 	sendCmd: function(cmd, replyFunc, repeat)
 	{
 		var xmlhttp=new XMLHttpRequest();
 		var req = "/cmd?cmd=" + cmd;
-		
-		xmlhttp.onload = function() 
+
+		xmlhttp.onload = function()
 		{
 			if (replyFunc) replyFunc(this.responseText);
 		}
-		
+
 		if (repeat)
 			req += "&repeat=" + repeat;
-		
+
 		xmlhttp.open("GET", req, true);
 		xmlhttp.send();
 	},
-	
+
 	/** @brief get the params from the inverter */
 	getParamList: function(replyFunc, includeHidden)
 	{
 		var cmd = includeHidden ? "json hidden" : "json";
-		
+
 		inverter.sendCmd(cmd, function(reply) {
 			var params = {};
 			try {
 				params = JSON.parse(reply);
-				
+
 				for (var name in params)
 				{
 					var param = params[name];
 					param.enums = inverter.parseEnum(param.unit);
-					
+
 					if (name == "version")
 						inverter.firmwareVersion = parseFloat(param.value);
 				}
@@ -88,7 +87,7 @@ var inverter = {
 			if (replyFunc) replyFunc(params);
 		});
 	},
-	
+
 	getValues: function(items, repeat, replyFunc)
 	{
 		var process = function(reply)
@@ -100,7 +99,7 @@ var inverter = {
 			for (var res = expr.exec(reply); res; res = expr.exec(reply))
 			{
 				var val = parseFloat(res[1]);
-				
+
 				if (!values[items[signalIdx]])
 					values[items[signalIdx]] = new Array()
 				values[items[signalIdx]].push(val);
@@ -108,13 +107,13 @@ var inverter = {
 			}
 			replyFunc(values);
 		};
-		
+
 		if (inverter.firmwareVersion < 3.53 || items.length > 10)
 			inverter.sendCmd("get " + items.join(','), process, repeat);
 		else
 			inverter.sendCmd("stream " + repeat + " " + items.join(','), process);
 	},
-	
+
 
 	/** @brief given the 'unit' string provided by the inverter api, parse out
 	 * the key value pairs and return them in an array.
@@ -128,7 +127,7 @@ var inverter = {
 		var expr = /(\-{0,1}[0-9]+)=([a-zA-Z0-9_\-\.]+)[,\s]{0,2}|([a-zA-Z0-9_\-\.]+)[,\s]{1,2}/g;
 		var enums = new Array();
 		var res = expr.exec(unit);
-	
+
 		if (res)
 		{
 			do
@@ -141,31 +140,13 @@ var inverter = {
 		return false;
 	},
 
-    /** @brief get params/spotvalues from inverter and store them in the cache. */
-	refreshParams: function()
-	{
-		inverter.getParamList(function(params){
-			paramsCache.data = params;
-		});
-	},
-
-    /** @brief get a single param from the cache */
-	getParam: function(paramName, replyFunc)
-	{
-		if ( inverter.paramsCache !== undefined ){
-			if ( paramName in inverter.paramsCache ){
-			    replyFunc(inverter.paramsCache[paramName]);	
-			}
-		}
-	},
-
 	/** @brief helper function, from a list of parameters send parameter with given index to inverter
 	 * @param params map of parameters (name -> value)
 	 * @param index numerical index which parameter to set */
 	setParam: function(params, index)
 	{
-		var keys = Object.keys(params); 
-		
+		var keys = Object.keys(params);
+
 		if (index < keys.length)
 		{
 			var key = keys[index];

@@ -138,6 +138,12 @@
 				<img style="vertical-align:middle" src="ajax-loader.gif"><p> refreshing...</p>
 			</div>
 
+			<!-- auto reload toggle -->
+			<div id="auto-reload-toggle-div" >
+				<label class="switch">
+					<input id="auto-reload-checkbox" type="checkbox" onclick="ui.setAutoReload(this.checked);"><span class="slider round"></span>
+				</label><p style="display: inline-block;">Auto reload</p>
+			</div>
 			<!-- beta features toggle -->
 			<div id="beta-features-toggle-div" onclick="ui.toggleBetaFeaturesVisibility();">
 				<label class="switch">
@@ -193,34 +199,13 @@
 
 					<div class="main-right">
 
-						<h3 class="underline">Bootloader</h3>
 
+						<h3 class="underline beta-feature" hidden>Bootloader</h3>
 						<form class="beta-feature" id="swduploadform" enctype="multipart/form-data" action="edit" method="POST">
 							<input id="swdupdatefile" name="swdupdatefile" type="file" onchange="ui.swdUpdate();" hidden />
 							<label class="butt" for="swdupdatefile"><img class="buttonimg" src="/icon-download.png">Install bootloader</label>
 						</form>
-
-						<!--
-						<form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
-						<input id="updatefile" name="updatefile" type="file" onchange="fileSelected();" />
-						<input type="button" onclick="uploadFile();" value="Upload" />
-						</form>
-						<div id="progress" class="graph">
-						<div id="bar" style="width: 0"></div>
-						</div>
-						<h2 id="swdupdate">SWD Update</h2>
-						<p>Use binary files (stm32_loader.bin, stm32_sine/foc.bin) for updating inverter bootloader/firmware.</p>
-						<form id="swdform" enctype="multipart/form-data" action="edit" method="POST">
-						<input id="swdfile" name="swdfile" type="file" onchange="fileSelected();" accept=".bin" />
-						<input type="button" onclick="uploadSWDFile();" value="Upload" />
-						</form>
-						<div id="progress" class="graph">
-						<div id="swdbar" style="width: 0"></div>
-						</div>
-						-->
-
-						<!-- Download bootloader -->
-						<a href="/swd/bin?bootloader"><button>
+						<a class="beta-feature" href="/swd/bin?bootloader" hidden><button>
 							<img class="buttonimg" src="/icon-download.png">Download bootloader</button></a>
 
 						<h3 class="underline">Firmware</h3>
@@ -231,18 +216,6 @@
 							<label class="butt" for="update-firmware-file">
 							<img class="buttonimg" src="/icon-upload.png">Install firmware from file</label>
 						</form>
-
-						<!-- Erase flash -->
-						<a onclick="ui.showEraseFlashConfirmationDialog();"><button>
-						<img class="buttonimg" src="/icon-trash-2.png">Erase flash</button></a>
-
-						<!-- Hard reset -->
-						<a onclick="ui.showHardResetConfirmationDialog();"><button>
-							<img class="buttonimg" src="/icon-rotate-ccw.png">Hard reset</button></a>
-
-						<!-- Download flash -->
-						<a href="/swd/bin?flash"><button>
-							<img class="buttonimg" src="/icon-download.png">Download flash</button></a>
 
 						<!-- OTA firmware update -->
 						<a href="#" class="beta-feature" onclick="ui.showOTAUpdateFirmwareModal();"><button>

@@ -77,7 +77,8 @@ var plot = {
                 };
             chart.config.data.datasets.push(newDataset);
         }
-        
+
+        ui.setAutoReload(false);
         time = 0;
         chart.update();
         plot.stop = false;
@@ -90,6 +91,7 @@ var plot = {
     {
         plot.stop = true;
         document.getElementById("pauseButton").disabled = false;
+        ui.setAutoReload(true);
     },
 
     /** @brief pause or resume plotting */
@@ -112,9 +114,9 @@ var plot = {
         if (!items.names.length) return;
         var burstLength = document.getElementById('burstLength').value;
         var maxValues = document.getElementById('maxValues').value;
-        
+
         inverter.getValues(items.names, burstLength,
-        function(values) 
+        function(values)
         {
             for (var i = 0; i < burstLength; i++)
             {
@@ -126,7 +128,7 @@ var plot = {
             for (var name in values)
             {
                 var data = chart.config.data.datasets.find(function(element) { return element.label == name }).data;
-                
+
                 for (var i = 0; i < values[name].length; i++)
                 {
                     data.push(values[name][i])

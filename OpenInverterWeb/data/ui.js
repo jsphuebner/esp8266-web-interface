@@ -23,8 +23,8 @@ var ui = {
     // The API endpoint to query to get firmware release available in Github
 	githubFirmwareReleaseURL: 'https://api.github.com/repos/jsphuebner/stm32-sine/releases',
 
-    // Turn automatic updates of page content on/off. e.g. parameters, spot values.
-	doAutoRefresh: true,
+  //Handle for auto refresh interval
+  autoRefreshHandle: 0,
 
 	// temp variable to store updates from Parameter Database
 	paramUpdates: "",
@@ -74,22 +74,14 @@ var ui = {
 		ui.populateExistingCanMappingTable();
 		wifi.populateWiFiTab();
 		ui.populateFileList();
-		ui.populateVersion();
 		ui.refreshStatusBox();
 		ui.refreshMessagesBox();
-		// run the poll function every 3 seconds
-		var autoRefresh = setInterval(ui.refresh, 10000);
 	},
 
 	/** @brief automatically update data on the UI */
 	refresh: function()
 	{
-		// Is automatic refreshing disabled?
-		if ( ui.doAutoRefresh === false ) { console.log("auto-refresh disabled, skipping"); return; }
-
-		inverter.refreshParams();
 		ui.updateTables();
-		ui.populateVersion();
 		ui.refreshStatusBox();
 		ui.refreshMessagesBox();
 	},
@@ -107,10 +99,6 @@ var ui = {
 	/** @brief generates parameter and spotvalue tables */
 	updateTables: function()
 	{
-	
-    	// Don't run if updates are disabled (when we're doing a firmware update for example)
-		if ( ! ui.doAutoRefresh ) { return; }
-
 		var tableParam = document.getElementById("params");
 
 		// Don't run if any one of the param boxes are highlighted (i.e. don't clobber what the user is typing)
@@ -125,7 +113,7 @@ var ui = {
 
 		document.getElementById("spinner-div").style.visibility = "visible";
 
-		inverter.getParamList(function(values) 
+		inverter.getParamList(function(values)
 		{
 
 			var tableSpot = document.getElementById("spotValues");
@@ -165,12 +153,12 @@ var ui = {
 					if (param.category != lastCategory)
 					{
 						var icon = ui.categoryVisible[param.category] ? '-' : '+';
-						ui.addRow(tableParam, [ '<BUTTON onclick="ui.toggleVisibility(\'' + 
-							param.category + '\');" style="background: none; border: none; font-weight: bold;">' + icon + ' ' + 
+						ui.addRow(tableParam, [ '<BUTTON onclick="ui.toggleVisibility(\'' +
+							param.category + '\');" style="background: none; border: none; font-weight: bold;">' + icon + ' ' +
 							param.category + '</BUTTON>' ], true);
 						lastCategory = param.category;
 					}
-					
+
 					if (param.enums)
 					{
 						if (param.enums[param.value])
@@ -200,13 +188,13 @@ var ui = {
 					}
 					else
 					{
-						valInput = '<INPUT type="number" min="' + param.minimum + '" max="' + param.maximum + 
+						valInput = '<INPUT type="number" min="' + param.minimum + '" max="' + param.maximum +
 							'" step="0.05" value="' + param.value + '" onchange="ui.showParamUpdateModal(\'' + name + '\', this.value)"/>';
 					}
-					
+
 					if (param.i !== undefined)
 					    index = param.i;
-					
+
 					ui.addRow(tableParam, [ index, nameWithTooltip, valInput, unit, param.minimum, param.maximum, param.default ], ui.categoryVisible[param.category]);
 				}
 				else
@@ -241,6 +229,7 @@ var ui = {
 					ui.addRow(tableSpot, [ nameWithTooltip, display, unit ], true);
 				}
 			}
+      ui.populateVersion();
 			document.getElementById("paramDownload").href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(params, null, 2));
 			document.getElementById("spinner-div").style.visibility = "hidden";
 		});
@@ -266,7 +255,7 @@ var ui = {
 	},
 
 	/** @brief fill out version box in the bottom left corner of the screen */
-	populateVersion: function() 
+	populateVersion: function()
 	{
 		var versionDiv = document.getElementById("version");
 		versionDiv.innerHTML = "";
@@ -279,13 +268,13 @@ var ui = {
 	toggleBetaFeaturesVisibility: function()
 	{
 		var betaFeatures = document.getElementsByClassName('beta-feature');
-        var betaFeaturesCheckbox = document.getElementById('beta-features-checkbox');
+    var betaFeaturesCheckbox = document.getElementById('beta-features-checkbox');
 
 		for ( var i = 0; i < betaFeatures.length; i++ )
 		{
 			if ( betaFeaturesCheckbox.checked )
 			{
-                betaFeatures[i].style.display = 'block';
+        betaFeatures[i].style.display = 'block';
 			}
 			else
 			{
@@ -294,7 +283,21 @@ var ui = {
 		}
 	},
 
+	/** @brief If beta features are visible, hide them. If hidden, show them. */
+	setAutoReload: function(enable)
+	{
+    var autoReloadCheckbox = document.getElementById('auto-reload-checkbox');
 
+    // run the poll function every 2 seconds
+    if (enable) {
+      autoReloadCheckbox.checked = true;
+      autoRefreshHandle = setInterval(ui.refresh, 2000);
+    }
+    else {
+      autoReloadCheckbox.checked = false;
+      clearInterval(autoRefreshHandle);
+    }
+	},
 	/**
 	 * ~~~ DASHBOARD ~~~
 	 */
@@ -400,24 +403,24 @@ var ui = {
      */
 
     /** @brief uploads file to web server, if bin-file uploaded, starts a firmware upgrade */
-	uploadFirmwareFile: function() 
+	uploadFirmwareFile: function()
 	{
 		// disable auto updates so as to not interrupt the update process
-		ui.doAutoRefresh = false;
+		ui.setAutoReload(false);
 
 		modal.emptyModal('small');
 		modal.showModal('small');
 
 		var uploadFirmwareFileRequest = new XMLHttpRequest();
 		var form = document.getElementById('upload-firmware-form');
-		
+
 		if (form.getFormData)
 			var fd = form.getFormData();
 		else
 			var fd = new FormData(form);
 		var file = document.getElementById('update-firmware-file').files[0].name;
 
-		uploadFirmwareFileRequest.onload = function() 
+		uploadFirmwareFileRequest.onload = function()
 		{
 			modal.appendToModal('small', '<p>Installing firmware...</p>');
 			modal.appendToModal('small', '<div id="progress" class="graph"><div id="upload-firmware-bar" style="width: 0"></div></div>');
@@ -433,7 +436,7 @@ var ui = {
 			document.getElementById("upload-firmware-bar").innerHTML = "<p>Upload complete</p>";
 			document.getElementById("upload-firmware-bar").style.width = "100%";
 			ui.refresh();
-			
+
 		}
 
 		uploadFirmwareFileRequest.open("POST", "/edit");
@@ -448,7 +451,7 @@ var ui = {
 	runUpdateStep: function(step, file)
 	{
 		var runUpdateRequest = new XMLHttpRequest();
-		runUpdateRequest.onload = function() 
+		runUpdateRequest.onload = function()
 		{
 			step++;
 			var uploadFirmwareBar = document.getElementById("upload-firmware-bar");
@@ -463,7 +466,6 @@ var ui = {
 			{
 				uploadFirmwareBar.innerHTML = "<p>Update Done!</p>";
 				setTimeout(function() { modal.hideModal('small') }, 3000);
-				ui.doAutoRefresh = true;
 			}
 		}
 		runUpdateRequest.open("GET", "/fwupdate?step=" + step + "&file=" + file);
@@ -472,18 +474,18 @@ var ui = {
 
 
 	/** @brief uploads file to web server, if bin-file uploaded, starts a firmware upgrade */
-	uploadFile: function() 
+	uploadFile: function()
 	{
 		var xmlhttp = new XMLHttpRequest();
 		var form = document.getElementById('uploadform');
-		
+
 		if (form.getFormData)
 			var fd = form.getFormData();
 		else
 			var fd = new FormData(form);
 		var file = document.getElementById('updatefile').files[0].name;
 
-		xmlhttp.onload = function() 
+		xmlhttp.onload = function()
 		{
 			// Show popup reporting upload completion
 			modal.emptyModal('small');
@@ -558,7 +560,7 @@ var ui = {
    	      <form id="update-form">
     	    <a onclick="ui.installFirmwareUpdate();"><button>
     	        <img class="buttonimg" src="/icon-check-circle.png">Install firmware</button></a>
-    	  </form> 
+    	  </form>
     	  <div id="progress" class="graph" style="display:none;">
 		    <div id="bar" style="width: 0"></div>
 		  </div>
@@ -592,7 +594,7 @@ var ui = {
         				var selection = "<option value=\"" + rUrl + "\">" + rName + "</option>";
         				select.innerHTML += selection;
     				}
-    				
+
     			}
     		}
     	};
@@ -605,7 +607,7 @@ var ui = {
 		getReleasesRequest.open("GET", ui.githubFirmwareReleaseURL, true);
 		getReleasesRequest.send();
     },
-    
+
     /** @brief bring up the modal for installing a new firmware over-the-air */
     showOTAUpdateFirmwareModal: function() {
     	// empty the modal in case there's still something in there
@@ -619,7 +621,7 @@ var ui = {
     	    <select id="ota-release"></select>
     	    <a onclick="ui.installOTAFirmwareUpdate();"><button>
     	        <img class="buttonimg" src="/icon-check-circle.png">Install firmware</button></a>
-    	  </form> 
+    	  </form>
           <div id="ota-release-selected-div" style="display:none;"></div>
     	  <div id="progress" class="graph" style="display:none;">
 		    <div id="bar" style="width: 0"></div>
@@ -670,21 +672,21 @@ var ui = {
     },
 
     /** @brief uploads file to web server, if bin-file uploaded, starts a firmware upgrade */
-    doOTAUpdate: function() 
+    doOTAUpdate: function()
 	{
 		// disable automatic refreshing while we update
 		autoRefresh = false;
 
 		var xmlhttp = new XMLHttpRequest();
 		var form = document.getElementById('uploadform');
-		
+
 		if (form.getFormData)
 			var fd = form.getFormData();
 		else
 			var fd = new FormData(form);
 		var file = document.getElementById('updatefile').files[0].name;
 
-		xmlhttp.onload = function() 
+		xmlhttp.onload = function()
 		{
 			if (file.endsWith(".bin"))
 			{
@@ -775,7 +777,7 @@ var ui = {
 		var rows = document.getElementById("params").rows;
 		var found = false;
 		ui.categoryVisible[name] = false;
-		
+
 		for (var i = 0; i < rows.length; i++)
 		{
 			if (found)
@@ -789,7 +791,7 @@ var ui = {
 			if (!found)
 			{
 				found = rows[i].cells.length == 1 && (rows[i].cells[0].innerText.replace(/[\n\r]/g, '').endsWith(name) || !name);
-				
+
 				if (found)
 				{
 					var str = rows[i].cells[0].firstChild.firstChild.nodeValue;
@@ -807,7 +809,7 @@ var ui = {
 	    modal.showModal('large');
 
 		var file = document.getElementById('paramfile');
-		
+
 		if(file.files.length)
 		{
 			var reader = new FileReader();
@@ -849,15 +851,15 @@ var ui = {
 		modal.emptyModal('large');
     	modal.setModalHeader('large', "Subscribe to parameter set");
     	var form = `
-    	  <p>The Parameter Database is a way for OpenInverter community members to share parameter settings with each other. 
+    	  <p>The Parameter Database is a way for OpenInverter community members to share parameter settings with each other.
     	  Community members may upload their parameter settings, along with other key information (e.g., inverter and motor type), to the database.
     	  This provides a single place to use as a reference when trying to determine the correct parameters to use for your hardware.</p>
     	  <p>You can browse the Parameter Database <a href="https://openinverter.org/parameters/">here</a>.</p>
     	  <p>You may choose to 'subscribe' to a parameter set. Your inverter will automatically synchronise its settings with those in the Parameter Database as they are adjusted and refined.
-    	  
+
     	  Enter the subscription token for the parameter set you wish to subscribe to in the box below.</p>
     	  <p>Note: your inverter needs internet access for this feature to work.</p>
-   
+
    	      <form id="parameter-subscribe-form">
    	          Subscription token : <input id="subscription-token" type="text" size="40">
     	      <a onclick="ui.parameterDatabaseSubscribe();"><button>
@@ -887,11 +889,11 @@ var ui = {
 	},
 
 	/** @brief subscribe to a parameter set from the Parameter Database.
-	 * 
+	 *
 	 * This function creates a file called subscription.js on the spiffs
 	 * filesystem, with contents that look like this:
 	 *     subscription = { 'timestamp': <timestamp>, 'token': <token> }
-	 * 
+	 *
 	 * token : token identifying a parameter set in the Parameter Database
 	 * timestamp : timestamp the above parameter set was last updated.
 	 */
@@ -995,7 +997,7 @@ var ui = {
 	checkToken: function(token, message, forceUpdate)
 	{
 		var expr = /^[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}$/i;
-		
+
 		if (expr.test(token))
 		{
 			var xmlhttp = new XMLHttpRequest();
@@ -1003,14 +1005,14 @@ var ui = {
 
 			document.getElementById("parameters_token").value = token;
 
-			xmlhttp.onload = function() 
+			xmlhttp.onload = function()
 			{
 				var params = JSON.parse(this.responseText);
 				var timestamp = params.timestamp;
-				
-				delete params['timestamp'];			
+
+				delete params['timestamp'];
 				document.getElementById("token").value = token;
-				
+
 				if (subscription && subscription.timestamp == timestamp && !forceUpdate)
 				{
 					document.getElementById("message").innerHTML += "Parameters up to date\r\n";
@@ -1020,7 +1022,7 @@ var ui = {
 					document.getElementById("message").innerHTML += "Applying new parameter set from " + timestamp + "\r\n";
 
 					inverter.setParam(params, 0);
-					
+
 					var uploadRequest = new XMLHttpRequest();
 					var formData = new FormData();
 					var subs = "subscription = { 'timestamp': '" + timestamp + "', 'token': '" + token + "' };";
@@ -1030,7 +1032,7 @@ var ui = {
 					uploadRequest.send(formData);
 				}
 			};
-			
+
 			xmlhttp.onerror = function()
 			{
 				alert("error");
@@ -1121,7 +1123,7 @@ var ui = {
 		var formItems = document.forms["plotConfiguration"].elements;
 		for ( var i = 0; i < formItems.length; i++ )
 		{
-            // Gather up field selections			
+            // Gather up field selections
 			if ( formItems[i].type === 'select-one' && formItems[i].classList.contains('plotFieldSelect') )
 			{
 				items.names.push(formItems[i].value);
