@@ -39,9 +39,9 @@ var log = {
 		// Create a drop down and populate it with the possible spot values
 		var selectSpotValue = document.createElement("select");
 		selectSpotValue.classList.add('logger-field-select');
-		for ( var key in paramsCache.data )
+		for ( var key in paramsCache.getData() )
 		{
-			if ( ! paramsCache.data[key].isparam )
+			if ( ! paramsCache.getEntry(key).isparam )
 			{
 				var option = document.createElement("option");
 				option.value = key;
@@ -83,7 +83,7 @@ var log = {
 		log.samples = document.getElementById("data-logger-samples").value;
 		log.minmax = document.getElementById("data-logger-minmax").checked;
 		log.textArea.innerHTML = "Timestamp"
-				
+
 		if (log.minmax)
 		{
 			for (var i = 0; i < log.items.length; i++)
@@ -95,7 +95,7 @@ var log = {
 		{
 			log.textArea.innerHTML += "," + log.items;
 	    }
-				
+
 		log.textArea.innerHTML += "\r\n";
 		log.acquire(log.samples);
 	},
@@ -136,7 +136,7 @@ var log = {
 		if (!log.items.length) return;
 
 		inverter.getValues(log.items, log.samples,
-			function(values) 
+			function(values)
 			{
 				var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
 				var localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);
@@ -144,7 +144,7 @@ var log = {
 				for (var name in values)
 				{
 					var avg = values[name].reduce((acc, c) => acc + c, 0) / log.samples;
-										
+
 					if (log.minmax)
 					{
 						line += "," + avg.toFixed(2) + "," + Math.min(...values[name]) + "," + Math.max(...values[name]);

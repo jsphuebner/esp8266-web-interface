@@ -265,10 +265,9 @@ var ui = {
 	},
 
 	/** @brief If beta features are visible, hide them. If hidden, show them. */
-	toggleBetaFeaturesVisibility: function()
-	{
+	toggleBetaFeaturesVisibility: function() {
 		var betaFeatures = document.getElementsByClassName('beta-feature');
-    var betaFeaturesCheckbox = document.getElementById('beta-features-checkbox');
+        var betaFeaturesCheckbox = document.getElementById('beta-features-checkbox');
 
 		for ( var i = 0; i < betaFeatures.length; i++ )
 		{
@@ -284,19 +283,18 @@ var ui = {
 	},
 
 	/** @brief If beta features are visible, hide them. If hidden, show them. */
-	setAutoReload: function(enable)
-	{
-    var autoReloadCheckbox = document.getElementById('auto-reload-checkbox');
+	setAutoReload: function(enable)	{
+      var autoReloadCheckbox = document.getElementById('auto-reload-checkbox');
 
-    // run the poll function every 2 seconds
-    if (enable) {
-      autoReloadCheckbox.checked = true;
-      autoRefreshHandle = setInterval(ui.refresh, 2000);
-    }
-    else {
-      autoReloadCheckbox.checked = false;
-      clearInterval(autoRefreshHandle);
-    }
+      // run the poll function every 2 seconds
+      if (enable) {
+        autoReloadCheckbox.checked = true;
+        ui.autoRefreshHandle = setInterval(ui.refresh, 2000);
+      }
+      else {
+        autoReloadCheckbox.checked = false;
+        clearInterval(ui.autoRefreshHandle);
+      }
 	},
 	/**
 	 * ~~~ DASHBOARD ~~~
@@ -435,8 +433,6 @@ var ui = {
 			}
 			document.getElementById("upload-firmware-bar").innerHTML = "<p>Upload complete</p>";
 			document.getElementById("upload-firmware-bar").style.width = "100%";
-			ui.refresh();
-
 		}
 
 		uploadFirmwareFileRequest.open("POST", "/edit");
@@ -465,7 +461,7 @@ var ui = {
 			else
 			{
 				uploadFirmwareBar.innerHTML = "<p>Update Done!</p>";
-				setTimeout(function() { modal.hideModal('small') }, 3000);
+				setTimeout(function() { modal.hideModal('small'); ui.refresh(); }, 3000);
 			}
 		}
 		runUpdateRequest.open("GET", "/fwupdate?step=" + step + "&file=" + file);
@@ -765,7 +761,7 @@ var ui = {
 	{
 		inverter.getParamList(function(values)
 		{
-			document.getElementById("parameters_json").value = JSON.stringify(paramsCache.data);
+			document.getElementById("parameters_json").value = paramsCache.getJson();
 			document.getElementById("paramdb").submit();
 		}, true);
 	},
@@ -1078,9 +1074,9 @@ var ui = {
 		// Create a drop down and populate it with the possible spot values
 		var selectSpotValue = document.createElement("select");
 		selectSpotValue.classList.add('plotFieldSelect');
-		for ( var key in paramsCache.data )
+		for ( var key in paramsCache.getData() )
 		{
-			if ( ! paramsCache.data[key].isparam )
+			if ( ! paramsCache.getEntry(key).isparam )
 			{
 				var option = document.createElement("option");
 				option.value = key;

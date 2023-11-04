@@ -26,6 +26,7 @@
 var paramsCache = {
 
     data: undefined,
+    dataById: {},
 
     get: function(name) {
       if ( paramsCache.data !== undefined )
@@ -39,6 +40,27 @@ var paramsCache = {
         }
       }
       return null;
+    },
+
+    getEntry: function(name) {
+      return paramsCache.data[name];
+    },
+
+    getData: function() { return paramsCache.data; },
+
+    setData: function(data) {
+      paramsCache.data = data;
+
+      for (var key in data) {
+        paramsCache.dataById[data[key].id] = data[key];
+        paramsCache.dataById[data[key].id]['name'] = key;
+      }
+    },
+
+    getJson: function() { return JSON.stringify(paramsCache.data); },
+
+    getById: function(id) {
+      return paramsCache.dataById[id];
     }
 }
 
@@ -83,7 +105,7 @@ var inverter = {
 						inverter.firmwareVersion = parseFloat(param.value);
 				}
 			} catch(ex) {}
-			paramsCache.data = params;
+			paramsCache.setData(params);
 			if (replyFunc) replyFunc(params);
 		});
 	},
