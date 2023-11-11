@@ -18,6 +18,10 @@
  *
  */
 
+* {
+    transition: 0.5s;
+}
+
 a {
     text-decoration: none;
     color: #4CAF50;
@@ -129,19 +133,16 @@ html, body {
 /* Logo */
 
 #logo {
-    padding: 10px;
+    padding: 10px 0 10px 0;
     height: 120px;
-    margin: auto;
+    margin: 0;
 }
 
 #logo img {
-    width: 100px;
-    height: 100px;
+    width: 60%;
     margin-left: auto;
     margin-right: auto;
-    padding-left: 25px;
-    padding-right: 25px;
-    float: none;
+    display: block;
 }
 
 
@@ -376,7 +377,7 @@ tr:hover {
     height: 100%;
     padding-top: 10px;
     order: 3;
-    flex: 0 0 320px ;
+    flex: 0 0 320px;
 }
 
 /* dashboard */
@@ -661,4 +662,17 @@ input:checked + .slider:before {
 
 .tooltip:hover .tooltiptext {
   visibility: visible;
+}
+
+@media only screen and (max-width: 1000px) {
+    #navbar {
+        width: 45px;
+    }
+    #content-wrapper {
+        left: 45px;
+        width: calc(100% - 45px);
+    }
+    #logo {
+        width: 45px;
+    }
 }

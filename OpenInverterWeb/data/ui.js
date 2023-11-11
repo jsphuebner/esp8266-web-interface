@@ -32,6 +32,24 @@ var ui = {
 	// Status of visibility of parameter categories. E.g. Motor, Inverter. true = visible, false = not visible.
 	categoryVisible: {},
 
+	growNavbar: function() {
+		document.getElementById("navbar").style.width = "180px";
+		var cw = document.getElementById("content-wrapper").style;
+		cw.left = "180px";
+		cw.width = "calc(100% - 180px)";
+		var logo = document.getElementById("logo").style;
+		logo.width = "180px";
+	},
+
+	shrinkNavbar: function() {
+		document.getElementById("navbar").style.width = "45px";
+		var cw = document.getElementById("content-wrapper").style;
+		cw.left = "45px";
+		cw.width = "calc(100% - 45px)";
+		var logo = document.getElementById("logo").style;
+		logo.width = "45px";
+	},
+
 	/** @brief switch to a different page tab */
 	openPage: function(pageName, elmnt, color)
 	{
@@ -296,6 +314,7 @@ var ui = {
         clearInterval(ui.autoRefreshHandle);
       }
 	},
+
 	/**
 	 * ~~~ DASHBOARD ~~~
 	 */
