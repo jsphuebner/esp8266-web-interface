@@ -20,6 +20,12 @@
 
 * {
     transition: 0.5s;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+::-webkit-scrollbar {
+    display: none;
 }
 
 a {
@@ -58,6 +64,8 @@ html, body {
     padding:0;
     height: 100%;
 }
+
+
 
 .graph {
     width: 298px; /* width and height are arbitrary, just make sure the #bar styles are changed accordingly */
@@ -112,6 +120,9 @@ html, body {
     min-height: 100vh;
     position: fixed;
     width: 180px;
+    overflow-y: scroll;
+    height:100%;
+    overflow-x:hidden;
 }
 
 #navbar a {
@@ -119,30 +130,34 @@ html, body {
     display: block;
     margin:0;
     color: black;
+    float: left;
 }
 
 #navbar img {
     display: block;
     float: left;
-    padding-left: 10px;
-    padding-top: 8px;
-    vertical-align: middle
+    padding: 5px 10px 5px 10px;
 }
 
+#navbar p {
+    margin: 0;
+    vertical-align: middle;
+}
 
 /* Logo */
 
 #logo {
     padding: 10px 0 10px 0;
-    height: 120px;
+    height: 100px;
     margin: 0;
 }
 
 #logo img {
-    width: 60%;
+    width: 50%;
     margin-left: auto;
     margin-right: auto;
     display: block;
+    float: none;
 }
 
 
@@ -258,8 +273,7 @@ button:hover, input[type=file]:hover, input[type=button]:hover {
 }
 
 .buttonimg {
-    padding: 0;
-    padding-right: 10px;
+    padding: 0 10px 0 10px;
 }
 
 input[type=file], input[type=button] {
@@ -332,7 +346,8 @@ tr:hover {
     display: flex;
     justify-content: center;
     align-items: center;
-    line-height: 40px;
+    line-height: 30px;
+    padding: 0px;
 }
 
 .fullheight {
@@ -653,7 +668,6 @@ input:checked + .slider:before {
   text-align: center;
   padding: 10px;
   border-radius: 6px;
-
   position: absolute;
   z-index: 10;
   top: -5px;
@@ -666,13 +680,20 @@ input:checked + .slider:before {
 
 @media only screen and (max-width: 1000px) {
     #navbar {
-        width: 45px;
+        width: 80px;
     }
     #content-wrapper {
-        left: 45px;
-        width: calc(100% - 45px);
+        left: 80px;
+        width: calc(100% - 80px);
     }
     #logo {
-        width: 45px;
+        width: 80px;
+        height: 50px;
+    }
+    .buttonimg {
+        width: 60px;
+    }
+    .small-screen-hide {
+        display: none;
     }
 }
