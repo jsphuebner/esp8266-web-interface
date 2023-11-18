@@ -112,46 +112,48 @@
 				<img src="logo.png">
 			</div>
 
-			<a class="tablink" onclick="ui.openPage('dashboard', this, 'white')" style="background-color:white">
-				<img class="buttonimg" src="/icon-grid.png">DASHBOARD</a>
-			<a class="tablink" onclick="ui.openPage('update', this, 'white')">
-				<img class="buttonimg" src="/icon-cpu.png">UPDATE</a>
-			<a class="tablink" onclick="ui.openPage('parameters', this, 'white')">
-				<img class="buttonimg" src="/icon-sliders.png">PARAMETERS</a>
-			<a class="tablink" onclick="ui.openPage('spotvalues', this, 'white')">
-				<img class="buttonimg" src="/icon-target.png">SPOT VALUES</a>
-			<a class="tablink" onclick="ui.openPage('plot', this, 'white')">
-				<img class="buttonimg" src="/icon-activity.png">PLOT & GAUGE</a>
-			<a class="tablink" onclick="ui.openPage('logger', this, 'white')">
-				<img class="buttonimg" src="/icon-database.png">DATA LOGGER</a>
-			<a class="tablink" onclick="ui.openPage('canmapping', this, 'white')">
-				<img class="buttonimg" src="/icon-repeat.png">CAN MAPPING</a>
-			<a class="tablink" onclick="ui.openPage('wifi', this, 'white')">
-				<img class="buttonimg" src="/icon-wifi.png">WIFI SETTINGS</a>
-			<a class="tablink" onclick="ui.openPage('files', this, 'white')">
-				<img class="buttonimg" src="/icon-file-text.png">FILES</a>
-			<a class="tablink" onclick="ui.openPage('support', this, 'white')">
-				<img class="buttonimg" src="/icon-help-circle.png">SUPPORT</a>
+            <div>
+				<a class="tablink" onclick="ui.openPage('dashboard', this, 'white')" style="background-color:white">
+					<img class="buttonimg" src="/icon-grid.png"><p class="navbar-text">DASHBOARD</p></a>
+				<a class="tablink" onclick="ui.openPage('update', this, 'white')">
+					<img class="buttonimg" src="/icon-cpu.png"><p class="navbar-text">UPDATE</p></a>
+				<a class="tablink" onclick="ui.openPage('parameters', this, 'white')">
+					<img class="buttonimg" src="/icon-sliders.png"><p class="navbar-text">PARAMETERS</p></a>
+				<a class="tablink" onclick="ui.openPage('spotvalues', this, 'white')">
+					<img class="buttonimg" src="/icon-target.png"><p class="navbar-text">SPOT VALUES</p></a>
+				<a class="tablink" onclick="ui.openPage('plot', this, 'white')">
+					<img class="buttonimg" src="/icon-activity.png"><p class="navbar-text">PLOT & GAUGE</p></a>
+				<a class="tablink" onclick="ui.openPage('logger', this, 'white')">
+					<img class="buttonimg" src="/icon-database.png"><p class="navbar-text">DATA LOGGER</p></a>
+				<a class="tablink" onclick="ui.openPage('canmapping', this, 'white')">
+					<img class="buttonimg" src="/icon-repeat.png"><p class="navbar-text">CAN MAPPING</p></a>
+				<a class="tablink" onclick="ui.openPage('wifi', this, 'white')">
+					<img class="buttonimg" src="/icon-wifi.png"><p class="navbar-text">WIFI SETTINGS</p></a>
+				<a class="tablink" onclick="ui.openPage('files', this, 'white')">
+					<img class="buttonimg" src="/icon-file-text.png"><p class="navbar-text">FILES</p></a>
+				<a class="tablink" onclick="ui.openPage('support', this, 'white')">
+					<img class="buttonimg" src="/icon-help-circle.png"><p class="navbar-text">SUPPORT</p></a>
+			</div>
 
 			<!-- spinner div -->
-			<div id="spinner-div">
+			<div id="spinner-div" class="small-screen-hide">
 				<img style="vertical-align:middle" src="ajax-loader.gif"><p> refreshing...</p>
 			</div>
 
 			<!-- auto reload toggle -->
-			<div id="auto-reload-toggle-div" >
+			<div id="auto-reload-toggle-div" class="small-screen-hide">
 				<label class="switch">
 					<input id="auto-reload-checkbox" type="checkbox" onclick="ui.setAutoReload(this.checked);"><span class="slider round"></span>
 				</label><p style="display: inline-block;">Auto reload</p>
 			</div>
 			<!-- beta features toggle -->
-			<div id="beta-features-toggle-div" onclick="ui.toggleBetaFeaturesVisibility();">
+			<div id="beta-features-toggle-div" onclick="ui.toggleBetaFeaturesVisibility();" class="small-screen-hide">
 				<label class="switch">
 					<input id="beta-features-checkbox" type="checkbox"><span class="slider round"></span>
 				</label><p style="display: inline-block;">Beta features</p>
 			</div>
 
-			<div id="version"></div>
+			<div id="version" class="small-screen-hide"></div>
 
 		</aside>
 
