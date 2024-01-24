@@ -27,6 +27,7 @@ var paramsCache = {
 
     data: undefined,
     dataById: {},
+    failedFetchCount: 0,
 
     get: function(name) {
       if ( paramsCache.data !== undefined )
@@ -93,7 +94,8 @@ var inverter = {
 
 		inverter.sendCmd(cmd, function(reply) {
 			var params = {};
-			try {
+			try
+			{
 				params = JSON.parse(reply);
 
 				for (var name in params)
@@ -104,7 +106,19 @@ var inverter = {
 					if (name == "version")
 						inverter.firmwareVersion = parseFloat(param.value);
 				}
-			} catch(ex) {}
+				paramsCache.failedFetchCount = 0;
+			}
+			catch(ex)
+			{
+        paramsCache.failedFetchCount += 1;
+        if ( paramsCache.failedFetchCount >= 2 ){
+          ui.showCommunicationErrorBar();
+        }
+			}
+			if ( paramsCache.failedFetchCount < 2 )
+			{
+				ui.hideCommunicationErrorBar();
+			}
 			paramsCache.setData(params);
 			if (replyFunc) replyFunc(params);
 		});
