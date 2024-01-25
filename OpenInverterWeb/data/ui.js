@@ -351,6 +351,16 @@ var ui = {
       }
 	},
 
+	/** @brief Show notification bar */
+	showCommunicationErrorBar: function() {
+		document.getElementById('communication-error-bar').style.display = 'block';
+	},
+
+	/** @brief Hide notification bar */
+	hideCommunicationErrorBar: function() {
+		document.getElementById('communication-error-bar').style.display = 'none';
+	},
+
 	/**
 	 * ~~~ DASHBOARD ~~~
 	 */

@@ -65,7 +65,26 @@ html, body {
     height: 100%;
 }
 
+/* notification bar */
 
+.communication-error-bar {
+    display: none;
+    padding: 15px;
+    background-color: #f44336;
+    color: white;
+    z-index: 100;
+    margin: 0 auto;
+    position: relative;
+    width: 30%;
+    top: 0px;
+    clear: left;
+    height: 20px;
+    border-radius: 0px 0px 20px 20px;
+}
+
+.communication-error-bar p {
+    text-align: center;
+}
 
 .graph {
     width: 298px; /* width and height are arbitrary, just make sure the #bar styles are changed accordingly */
