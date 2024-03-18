@@ -417,9 +417,6 @@ void setup(void){
     enableWiFiAtBootTime();
   #endif
   WiFi.mode(WIFI_AP_STA);
-  WiFi.setPhyMode(WIFI_PHY_MODE_11B);
-  WiFi.setSleepMode(WIFI_NONE_SLEEP);
-  WiFi.setOutputPower(25); //dbm
   WiFi.begin();
   sta_tick.attach(10, staCheck);
   

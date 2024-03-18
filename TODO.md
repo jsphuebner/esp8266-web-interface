@@ -1,0 +1,28 @@
+# To Do List
+- [x] Context-specific help?
+- [x] Hitting enter when focus is on the command box should send the command (currently have to click the button)
+- [x] pin table header on spot values and parameters pages
+- [x] Separate 'can mapping' page
+- [x] Move spot value selection logic from spot values page to plot page
+- [ ] Documentation on how to use the development environment
+- [x] WiFi Settings page
+- [x] Fix data logger page
+- [x] Make dashboard content active and automatically updated
+- [ ] /wifi mocks?
+- [x] Support page
+- [ ] Make it all work on a small screen (menu could collapse to just icons and/or popout on mouseover)
+- [x] Show version string at bottom of menu
+- [ ] Visual feedback that changes have been accepted when modifying params
+- [x] Visual feedback that parameters have been saved
+- [ ] Auto updates for web interface
+- [x] Experimental features toggle
+- [x] Hide the SWD form by default
+- [x] Erase flash confirm dialog
+- [x] Hard reset confirm dialog
+- [x] Freeze params when selected
+- [x] Restore params from flash confirm
+- [ ] Submit params to openinverter
+- [ ] Subscribe to parameter set finish
+
+- [ ] Download flash - doesn't work, even on old UI
+- [ ] Download bootloader - doesn't work, even on old UI
