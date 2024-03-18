@@ -73,6 +73,16 @@ var ui = {
 			itemsToShowOnBigScreen[i].style.display = "block";
 		}
 	},
+	
+	toggleNavbar: function() {
+		if ( ui.navbarIsBig ) {
+			ui.shrinkNavbar();
+			ui.navbarIsBig = false;
+		} else {
+			ui.growNavbar();
+			ui.navbarIsBig = true;
+		}
+	},
 
 	/** @brief switch to a different page tab */
 	openPage: function(pageName, elmnt, color)
@@ -130,6 +140,7 @@ var ui = {
 		ui.populateFileList();
 		ui.refreshStatusBox();
 		ui.refreshMessagesBox();
+		ui.setAutoReload(true);
 	},
 
 	/** @brief automatically update data on the UI */

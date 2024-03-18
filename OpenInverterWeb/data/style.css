@@ -24,10 +24,6 @@
     scrollbar-width: none;
 }
 
-::-webkit-scrollbar {
-    display: none;
-}
-
 a {
     text-decoration: none;
     color: #4CAF50;
@@ -65,26 +61,7 @@ html, body {
     height: 100%;
 }
 
-/* notification bar */
 
-.communication-error-bar {
-    display: none;
-    padding: 15px;
-    background-color: #f44336;
-    color: white;
-    z-index: 100;
-    margin: 0 auto;
-    position: relative;
-    width: 30%;
-    top: 0px;
-    clear: left;
-    height: 20px;
-    border-radius: 0px 0px 20px 20px;
-}
-
-.communication-error-bar p {
-    text-align: center;
-}
 
 .graph {
     width: 298px; /* width and height are arbitrary, just make sure the #bar styles are changed accordingly */
@@ -180,35 +157,6 @@ html, body {
 }
 
 
-/* version */
-
-#version {
-    position: absolute;
-    bottom: 0px;
-    padding: 0px;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    margin: 0px;
-    margin-left: 10px;
-    margin-bottom: 10px;
-    text-align: center;
-    float: left;
-    width: 160px;
-    font-size: 10pt;
-    border: 1px solid black;
-    border-radius: 4px;
-    height: 30px;
-
-}
-
-#version p {
-    font-size: 12px;
-    padding: 0px;
-    margin: 0px;
-    color: #444;
-    margin-bottom: auto;
-}
-
 /* content-wrapper */
 
 #content-wrapper {
@@ -293,6 +241,7 @@ button:hover, input[type=file]:hover, input[type=button]:hover {
 
 .buttonimg {
     padding: 0 10px 0 10px;
+    width: 20px;
 }
 
 input[type=file], input[type=button] {
@@ -411,7 +360,7 @@ tr:hover {
     height: 100%;
     padding-top: 10px;
     order: 3;
-    flex: 0 0 320px;
+    flex: 0 0 15%;
 }
 
 /* dashboard */
@@ -543,64 +492,44 @@ tr:hover {
     display: flex;
 }
 
-/* refresh spinner */
-
-#spinner-div {
-    position: absolute;
-    margin: 0px;
-    bottom: 130px;
-    padding: 0px 0px 0px 10px;
-    float: left;
-    width: 160px;
-    height: 16px;
+/* controls below navbar */
+#nodeid-div input {
+    width: 3em;
 }
 
-#spinner-div p {
-    margin: 0px;
-    padding: 0px 0px 0px 5px;
+.control {
+  margin-left: 10px;
+  margin-top: 10px;
 }
-
-#spinner-div img {
-    margin: 0px;
-    padding: 0px 5px 0px 0px;
-}
-
-/* Experimental features */
 
 .beta-feature {
     display: none;
 }
+/* version */
 
-#beta-features-toggle-div {
-    position: absolute;
-    bottom: 35px;
+#version {
     padding: 0px;
     padding-top: 5px;
     padding-bottom: 5px;
     margin: 0px;
     margin-left: 10px;
     margin-bottom: 10px;
-    text-align: left;
+    text-align: center;
     float: left;
     width: 160px;
     font-size: 10pt;
+    border: 1px solid black;
+    border-radius: 4px;
     height: 30px;
+
 }
 
-#auto-reload-toggle-div {
-    position: absolute;
-    bottom: 65px;
+#version p {
+    font-size: 12px;
     padding: 0px;
-    padding-top: 5px;
-    padding-bottom: 5px;
     margin: 0px;
-    margin-left: 10px;
-    margin-bottom: 10px;
-    text-align: left;
-    float: left;
-    width: 160px;
-    font-size: 10pt;
-    height: 30px;
+    color: #444;
+    margin-bottom: auto;
 }
 /* switch */
 
@@ -698,13 +627,6 @@ input:checked + .slider:before {
 }
 
 @media only screen and (max-width: 1000px) {
-    #navbar {
-        width: 80px;
-    }
-    #content-wrapper {
-        left: 80px;
-        width: calc(100% - 80px);
-    }
     #logo {
         width: 80px;
         height: 50px;
@@ -712,7 +634,25 @@ input:checked + .slider:before {
     .buttonimg {
         width: 60px;
     }
-    .small-screen-hide {
-        display: none;
-    }
+}
+
+/* notification bar */
+
+.communication-error-bar {
+    display: none;
+    padding: 15px;
+    background-color: #f44336;
+    color: white;
+    z-index: 100;
+    margin: 0 auto;
+    position: relative;
+    width: 30%;
+    top: 0px;
+    clear: left;
+    height: 20px;
+    border-radius: 0px 0px 20px 20px;
+}
+
+.communication-error-bar p {
+    text-align: center;
 }

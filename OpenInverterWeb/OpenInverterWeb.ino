@@ -414,8 +414,6 @@ void setup(void){
 
   //WIFI INIT
   WiFi.mode(WIFI_AP_STA);
-  WiFi.setPhyMode(WIFI_PHY_MODE_11B);
-  WiFi.setOutputPower(25); //dbm
   WiFi.begin();
   sta_tick.attach(10, staCheck);
   

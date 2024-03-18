@@ -152,18 +152,18 @@
 			</div>
 
 			<!-- spinner div -->
-			<div id="spinner-div" class="small-screen-hide">
+			<div id="spinner-div" class="control">
 				<img style="vertical-align:middle" src="ajax-loader.gif"><p> refreshing...</p>
 			</div>
 
 			<!-- auto reload toggle -->
-			<div id="auto-reload-toggle-div" class="small-screen-hide">
+			<div id="auto-reload-toggle-div" class="control small-screen-hide">
 				<label class="switch">
 					<input id="auto-reload-checkbox" type="checkbox" onclick="ui.setAutoReload(this.checked);"><span class="slider round"></span>
 				</label><p style="display: inline-block;">Auto reload</p>
 			</div>
 			<!-- beta features toggle -->
-			<div id="beta-features-toggle-div" onclick="ui.toggleBetaFeaturesVisibility();" class="small-screen-hide">
+			<div id="beta-features-toggle-div" onclick="ui.toggleBetaFeaturesVisibility();" class="control small-screen-hide">
 				<label class="switch">
 					<input id="beta-features-checkbox" type="checkbox"><span class="slider round"></span>
 				</label><p style="display: inline-block;">Beta features</p>
@@ -267,7 +267,8 @@
 						<p>To install a new firmware on your OpenInverter board click on the 'Install firmware from file' button on the right. Use the stm32_sine.bin file to install the sine firmware or use the stm32_foc.bin file to install the FOC firmware. You can find information about the latest available releases, including download links, on the OpenInverter forum <a href="https://openinverter.org/forum/viewforum.php?f=7&sid=cdb63cfa1d2f7ab493e7079fc13a8e65">here</a>.</p>
 
 						<h3>Web Interface Firmware</h3>
-						<p>There is currently no way to program the WiFi module firmware from this interface. The firmware on these modules must be programmed using an FTDI. See <a href="https://openinverter.org/forum/viewtopic.php?f=5&t=8">here</a> for more details.</p>
+						<p>The ESP8266 firmware can be upgraded with platformio via OTA i.e. directly via wifi without programming cable, see <a href="https://openinverter.org/forum/viewtopic.php?p=60907#p60907">forum</a>.<br>
+You can also program with a cable, see <a href="https://openinverter.org/forum/viewtopic.php?f=5&t=8">here</a> for more details.</p>
 
 						<h3>Web Interface Application</h3>
 						<p>You can apply updates to this web interface by uploading individual files. More information about updating the web interface can be found in its github repository <a href="https://github.com/jsphuebner/esp8266-web-interface">here</a>.</p>
