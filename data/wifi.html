@@ -1,6 +1,3 @@
-<!doctype html>
-<html>
-<head>
 <!--
  * This file is part of the esp8266 web interface
  *
@@ -20,35 +17,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
 -->
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Modify Wifi settings</title>
-<link href="style.css" rel="stylesheet" type="text/css" />
-<script>
-function onAPPW(pw)
-{
-    document.getElementById("apsubmit").disabled = pw.length < 8;
-}
-</script>
-</head>
-<body>
-<h2>Access Point Settings</h2>
-Here you can specify SSID and password of the access point that
-is created by the inverter.
-<form id="apform" enctype="multipart/form-data" action="wifi" method="POST">
-    <p><label for="apSSID">AP SSID: </label><input id="apSSID" name="apSSID" type="text" value="%apSSID%"/>
-    <p><label for="apPW">AP WPA2 Password: </label><input id="apPW" name="apPW" type="text" title="Must be at leat 8 characters long" onkeyup="onAPPW(this.value)"/><br>
-    <p><input id="apsubmit" type="submit" value="Modify" disabled/>
-</form>
-<hr>
-<h2>Station Settings</h2>
-Here you can specify a Wifi network that the inverter joins.
-<form id="apform" enctype="multipart/form-data" action="wifi" method="POST">
-    <p><label for="staSSID">Network SSID: </label><input id="staSSID" name="staSSID" type="text" value="%staSSID%"/>
-    <p><label for="staPW">WPA2 Password: </label><input id="staPW" name="staPW" type="text" />
-    <p>Current IP Address: %staIP%
-    <p><input type="submit" value="Modify" />
-</form>
-</body>
-</html>
-
-
+<div id="wifiInner">
+    <h2>Access Point Settings</h2>
+    Here you can specify SSID and password of the access point that is created by the inverter.
+    <form id="wifiStationForm" enctype="multipart/form-data" action="wifi" method="POST">
+        <p><label for="apSSID">AP SSID: </label><input id="apSSID" name="apSSID" type="text" value="%apSSID%"/></p>
+        <p><label for="apPW">AP WPA2 Password: </label><input id="apPW" name="apPW" type="text" title="Must be at leat 8 characters long" onkeyup="wifi.wifiValidatePasswordLength(this.value);"/></p><br>
+        <!-- <input id="apsubmit" type="submit" value="Modify" disabled/> -->
+        <a href="#" onclick="ui.wifiStationForm('wifiStationForm');"><button>
+            <img class="buttonimg" src="/icon-check-circle.png">Modify</button></a>
+    </form>
+    <hr>
+    <h2>Station Settings</h2>
+    Here you can specify a Wifi network that the inverter joins.
+    <form id="wifiClientForm" enctype="multipart/form-data" action="wifi" method="POST">
+        <p><label for="staSSID">Network SSID: </label><input id="staSSID" name="staSSID" type="text" value="%staSSID%"/></p>
+        <p><label for="staPW">WPA2 Password: </label><input id="staPW" name="staPW" type="text" /></p>
+        Current IP Address: %staIP%
+        <!-- <input type="submit" value="Modify" /> -->
+        <a href="#" onclick="wifi.wifiStationForm('wifiClientForm');"><button>
+            <img class="buttonimg" src="/icon-check-circle.png">Modify</button></a>
+    </form>
+</div>

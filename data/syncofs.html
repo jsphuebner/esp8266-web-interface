@@ -80,9 +80,10 @@
                 enabled: false,
             },
             scales: {
-                'x-axis-0':{
+                xAxes: [{
+                    id: 'x-axis-0',
                     position: 'bottom',
-                    title: {
+                    scaleLabel: {
                         display: true,
                         fontColor: ctxFontColor,
                         fontSize: ctxFont,
@@ -95,8 +96,9 @@
                     gridLines: {
                         color: ctxFontColor
                     }
-                },
-                'y-axis-0': {
+                }],
+                yAxes: [{
+                    id: 'y-axis-0',
                     position: 'right',
                     ticks: {
                         display: false,
@@ -106,10 +108,10 @@
                     gridLines: {
                         drawOnChartArea: false,
                     }
-                },
-                'y-axis-1': {
+                },{
+                    id: 'y-axis-1',
                     position: 'left',
-                    title: {
+                    scaleLabel: {
                         display: true,
                         labelString: 'manualid (Amps)',
                         fontColor: ctxFontColor,
@@ -127,25 +129,23 @@
                         drawOnChartArea: false,
                         color: ctxFontColor
                     }
-                }
+                }]
             },
-            plugins: {
-                annotation: {
-                    annotations: [{
-                        type: 'line',
-                        id: 'a-line-0',
-                        mode: 'vertical',
-                        scaleID: 'x-axis-0',
-                        value: knobValue_syncofs,
-                        borderColor: 'rgb(0, 0, 0)',
-                        borderWidth: 2,
-                        label: {
-                          content: "syncofs=" + knobValue_syncofs,
-                          enabled: true,
-                          position: 'left'
-                        }
-                    }]
-                }
+            annotation: {
+                annotations: [{
+                    type: 'line',
+                    id: 'a-line-0',
+                    mode: 'vertical',
+                    scaleID: 'x-axis-0',
+                    value: knobValue_syncofs,
+                    borderColor: 'rgb(0, 0, 0)',
+                    borderWidth: 2,
+                    label: {
+                      content: "syncofs=" + knobValue_syncofs,
+                      enabled: true,
+                      position: 'left'
+                    }
+                }]
             }
         };
 

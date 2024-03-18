@@ -18,10 +18,55 @@
  *
  */
 
+* {
+    transition: 0.5s;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+a {
+    text-decoration: none;
+    color: #4CAF50;
+}
+
+a:visited {
+    color: #4CAF50;
+}
+
+p {
+    margin: 0em 0em 0.5em 0rem ;
+}
+
+h2 {
+    padding-top: 5px;
+}
+
+h3 {
+    padding: 20px 0px 10px 0px;
+    margin: 0px;
+}
+
+.underline {
+    border-bottom: solid 1px #CCC;
+}
+
+html, body {
+    font-family: sans-serif;
+    font-size: 12pt;
+    -webkit-text-size-adjust: none;
+    -moz-text-size-adjust: none;
+    -ms-text-size-adjust: none;
+    margin:0;
+    padding:0;
+    height: 100%;
+}
+
+
+
 .graph {
-    width: 500px; /* width and height are arbitrary, just make sure the #bar styles are changed accordingly */
+    width: 298px; /* width and height are arbitrary, just make sure the #bar styles are changed accordingly */
     height: 30px;
-    border: 1px solid #888; 
+    border: 1px solid #888;
     background: rgb(168,168,168);
     background: -moz-linear-gradient(top, rgba(168,168,168,1) 0%, rgba(204,204,204,1) 23%);
     background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(168,168,168,1)), color-stop(23%,rgba(204,204,204,1)));
@@ -32,18 +77,27 @@
     background: linear-gradient(top, rgba(168,168,168,1) 0%,rgba(204,204,204,1) 23%);
     position: relative;
 }
-.bar {
+
+#upload-firmware-bar {
     height: 29px; /* Not 30px because the 1px top-border brings it up to 30px to match #graph */
-    background: rgb(255,197,120); 
-    background: -moz-linear-gradient(top, rgba(255,197,120,1) 0%, rgba(244,128,38,1) 100%); 
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,197,120,1)), color-stop(100%,rgba(244,128,38,1))); 
-    background: -webkit-linear-gradient(top, rgba(255,197,120,1) 0%,rgba(244,128,38,1) 100%); 
-    background: -o-linear-gradient(top, rgba(255,197,120,1) 0%,rgba(244,128,38,1) 100%); 
-    background: -ms-linear-gradient(top, rgba(255,197,120,1) 0%,rgba(244,128,38,1) 100%); 
-    background: linear-gradient(top, rgba(255,197,120,1) 0%,rgba(244,128,38,1) 100%); 
+    background: rgb(255,197,120);
+    background: -moz-linear-gradient(top, rgba(255,197,120,1) 0%, rgba(244,128,38,1) 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,197,120,1)), color-stop(100%,rgba(244,128,38,1)));
+    background: -webkit-linear-gradient(top, rgba(255,197,120,1) 0%,rgba(244,128,38,1) 100%);
+    background: -o-linear-gradient(top, rgba(255,197,120,1) 0%,rgba(244,128,38,1) 100%);
+    background: -ms-linear-gradient(top, rgba(255,197,120,1) 0%,rgba(244,128,38,1) 100%);
+    background: linear-gradient(top, rgba(255,197,120,1) 0%,rgba(244,128,38,1) 100%);
     border-top: 1px solid #fceabb;
 }
-.bar p { position: absolute; text-align: center; width: 100%; margin: 0; line-height: 30px; }
+
+#upload-firmware-bar p {
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    margin: 0;
+    line-height: 30px;
+}
+
 .error {
     /* These styles are arbitrary */
     background-color: #fceabb;
@@ -52,57 +106,553 @@
     color: red;
     border: 1px solid red;
 }
-div.navbar { 
-	position: fixed;
-	background: #aaaaaa;
-	top: 0;
-	padding-top: 0.7em;
-	padding-bottom: 1em;
-	padding-right: 1em;
-	z-index: 100;
-	white-space: nowrap;
+
+
+
+/* Navbar */
+
+#navbar {
+	background-color: #4CAF50;
+    min-height: 100vh;
+    position: fixed;
+    width: 180px;
+    overflow-y: scroll;
+    height:100%;
+    overflow-x:hidden;
 }
-a.navbar { padding: 1em; border-left: 1px solid #ddd; vertical-align: center }
-h2 { padding-top: 2em; }
+
+#navbar a {
+    text-decoration: none;
+    display: block;
+    margin:0;
+    color: black;
+    float: left;
+}
+
+#navbar img {
+    display: block;
+    float: left;
+    padding: 5px 10px 5px 10px;
+}
+
+#navbar p {
+    margin: 0;
+    vertical-align: middle;
+}
+
+/* Logo */
+
+#logo {
+    padding: 10px 0 10px 0;
+    height: 100px;
+    margin: 0;
+}
+
+#logo img {
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    float: none;
+}
+
+
+/* content-wrapper */
+
+#content-wrapper {
+    display: block;
+    width: calc(100% - 180px);
+    flex: 1;
+    height: 100%;
+    min-height: 100vh;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 180px;
+}
+
+#content-wrapper-inner {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    width: 100%;
+    min-height: 100vh;
+    position: relative;
+    align-items: stretch;
+}
+
+/* Button & forms */
+
+textarea {
+    width: 98%;
+}
+
 input[type=number]{
     width: 6em;
-} 
-
-body { 
-	font-family: sans-serif;
-	font-size: 12pt; 
-	-webkit-text-size-adjust: none;
-	-moz-text-size-adjust: none;
-	-ms-text-size-adjust: none;
 }
 
-/*label { display: inline-block; width: 12em; }*/
+form {
+    margin:0px; padding:0px; display:inline;
+}
 
-button, input[type=file], input[type=button] { 
+.butt {
+    font-size: 100%;
+    padding: 5px;
+    padding-right: 10px;
+    background-color: #4CAF50;
+    color: black;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+    border: 2px solid #307533;
+    margin: 5px 5px 5px 0px;
+    display: flex;
+    justify-content: safe left;
+    align-items: center;
+    flex-grow: 0;
+    border-radius: 4px;
+}
+
+.butt label:hover {
+    background-color: #efefef;
+    color: black;
+}
+
+button {
 	font-size: 100%;
-	padding: 5px 24px;
-	border-radius: 8px;
-	background-color: #e7e7e7;
+	padding: 5px;
+    padding-right: 10px;
+	background-color: #4CAF50;
 	color: black;
 	-webkit-transition-duration: 0.4s; /* Safari */
     transition-duration: 0.4s;
+    border: 2px solid #307533;
+    margin: 5px 5px 5px 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
 }
 
-button:hover,input[type=file]:hover,input[type=button]:hover {
+button:hover, input[type=file]:hover, input[type=button]:hover {
     background-color: #efefef;
+    color: black;
+}
+
+.buttonimg {
+    padding: 0 10px 0 10px;
+    width: 20px;
+}
+
+input[type=file], input[type=button] {
+}
+
+select {
+    appearance: none;
+    font-size: 12pt;
+    margin: 5px;
+    padding: 5px;
+    border: 2px solid #4CAF50;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: #FFF;
+}
+
+input[type=number] {
+    margin: 5px;
+    padding: 5px;
+    border: 2px solid #4CAF50;
+    border-radius: 4px;
+    font-size: 12pt;
+}
+
+/* tables */
+
+thead tr th {
+  position: sticky;
+  top: 0;
+  padding: 7px;
 }
 
 table {
     border-collapse: collapse;
+    width: 100%;
 }
 
-th, td {
-    padding: 8px;
+tbody {
+    overflow: auto;
+}
+
+td {
+    padding: 2px;
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
 
-th { background-color:#e5e5e5; }
+th {
+    padding: 2px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    background-color:#e5e5e5;
+    z-index: 1;
+}
 
-tr:hover {background-color:#f5f5f5;}
+tr:hover {
+    background-color:#f5f5f5;
+}
 
+.tabdiv {
+    display: none;
+    margin-left: 60px;
+    padding-left: 20px;
+    float: left;
+    background-color:#FFFFFF;
+}
+
+.tablink {
+    width: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 30px;
+    padding: 0px;
+}
+
+.fullheight {
+    height: 90vh;
+}
+
+/* content */
+
+#content {
+    display: flex;
+    height: 100%;
+}
+
+/* paramaters */
+
+#params table {
+    width: 100%;
+}
+
+#canvas {
+    width: 100%;
+}
+
+/* content divs */
+
+.main-content {
+    order: 2;
+    margin: 0px;
+    flex: 10 1 300px;
+    height: 100vh;
+}
+
+.main-left {
+    order: 2;
+    flex: 10 1 200px;
+    margin-right: 10px;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.main-right {
+    height: 100%;
+    padding-top: 10px;
+    order: 3;
+    flex: 0 0 15%;
+}
+
+/* dashboard */
+
+.dash-row {
+    display: flex;
+}
+
+.dash-box {
+    padding: 15px;
+    margin: 5px;
+    border-radius: 10px;
+    border: 2px solid #444;
+    height: 200px;
+    flex: 1 1 300px;
+}
+
+.dash-box h3 {
+    padding: 5px 0px 10px 0px;
+}
+
+/* CAN Mapping */
+
+#addcanmapping {
+    display: none;
+    padding: 10px;
+    border-radius: 20px;
+    background: #DDD;
+    margin-top: 30px;
+}
+
+#addcanmapping h3 {
+    padding: 8px;
+}
+
+#canmapping tbody {
+    padding: 100px;
+}
+
+/* modal */
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    left: 0;
+    top: 0;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+    //overflow: auto;
+}
+
+.large-modal-container {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 40px;
+    border: 1px solid #888;
+    border-radius: 10px;
+    width: 50%;
+    height: 50%;
+}
+
+.large-modal-container h2 {
+    padding-bottom: 10px;
+    display: inline;
+}
+
+#large-modal-header-div {
+    padding: 0 0 1em 0;
+}
+
+.modal-content {
+    //border: 1px solid #DDD;
+    height: 90%;
+    width: 100%;
+    overflow: auto;
+}
+
+.modal-close {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.small-modal-container {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px 40px 20px 40px;
+    border: 1px solid #888;
+    border-radius: 10px;
+    width: 300px;
+}
+
+.can-mapping-modal-container {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 40px;
+    border: 1px solid #888;
+    width: 50%;
+    border-radius: 5px;
+}
+
+#commandoutput {
+    height: calc(100% - 60px);
+    overflow: auto;
+    margin-bottom: 5px;
+}
+
+#commandinput {
+    width: 80%;
+}
+
+#wifiInner {
+    display: block;
+}
+
+/* plot */
+
+.plotField {
+    display: flex;
+}
+
+/* logger */
+
+.logger-field {
+    display: flex;
+}
+
+/* controls below navbar */
+#nodeid-div input {
+    width: 3em;
+}
+
+.control {
+  margin-left: 10px;
+  margin-top: 10px;
+}
+
+.beta-feature {
+    display: none;
+}
+/* version */
+
+#version {
+    padding: 0px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin: 0px;
+    margin-left: 10px;
+    margin-bottom: 10px;
+    text-align: center;
+    float: left;
+    width: 160px;
+    font-size: 10pt;
+    border: 1px solid black;
+    border-radius: 4px;
+    height: 30px;
+
+}
+
+#version p {
+    font-size: 12px;
+    padding: 0px;
+    margin: 0px;
+    color: #444;
+    margin-bottom: auto;
+}
+/* switch */
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 17px;
+  margin-right: 10px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 9px;
+  width: 9px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: orange;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(13px);
+  -ms-transform: translateX(13px);
+  transform: translateX(13px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 17px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+
+/** TOOLTIP */
+
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 10px;
+  border-radius: 6px;
+  position: absolute;
+  z-index: 10;
+  top: -5px;
+  left: 120%;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+@media only screen and (max-width: 1000px) {
+    #logo {
+        width: 80px;
+        height: 50px;
+    }
+    .buttonimg {
+        width: 60px;
+    }
+}
+
+/* notification bar */
+
+.communication-error-bar {
+    display: none;
+    padding: 15px;
+    background-color: #f44336;
+    color: white;
+    z-index: 100;
+    margin: 0 auto;
+    position: relative;
+    width: 30%;
+    top: 0px;
+    clear: left;
+    height: 20px;
+    border-radius: 0px 0px 20px 20px;
+}
+
+.communication-error-bar p {
+    text-align: center;
+}

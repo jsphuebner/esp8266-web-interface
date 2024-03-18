@@ -24,125 +24,545 @@
 <title>Huebner Inverter Management Console</title>
 <link href="style.css" rel="stylesheet" type="text/css" />
 <script src="chart.min.js" type="text/javascript"></script>
+<script src="modal.js" type="text/javascript"></script>
+<script src="docstrings.js" type="text/javascript"></script>
 <script src="inverter.js" type="text/javascript"></script>
 <script src="index.js" type="text/javascript"></script>
 <script src="subscription.js" type="text/javascript"></script>
+<script src="log.js" type="text/javascript"></script>
+<script src="wifi.js" type="text/javascript"></script>
+<script src="plot.js" type="text/javascript"></script>
+<script src="ui.js" type="text/javascript"></script>
+
 </head>
-<body onload="onLoad()">
-<div class="navbar">
-	<a class="navbar" href="#commands">Commands</a>
-	<a class="navbar" href="#update">Update</a>
-	<a class="navbar" href="#parameters">Parameters</a>
-	<a class="navbar" href="#spot">Spot Values</a>
-	<a class="navbar" href="#plot">Plot</a>
-	<a class="navbar" href="/update">ESP8266</a>
-	<a class="navbar" href="javascript:updateTables()"><img src="refresh.png" style="margin-top: -1em; margin-bottom: -8px; margin-right: 0.5em">Refresh</a>
-	<input type="checkbox" title="Keep refreshing until unchecked" id="autorefresh"><label for="autorefresh">Auto</label>
-</div>
-<h2 id="commands">Commands</h2>
-<p><button onclick="sendCmd('save');">Save Parameters to Flash</button></p>
-<p><button onclick="sendCmd('load');">Restore Parameters from Flash</button></p>
-<p><button onclick="sendCmd('start 2');">Start Inverter in manual Mode</button></p>
-<p><button onclick="sendCmd('stop');">Stop Inverter</button></p>
-<p><button onclick="sendCmd('errors');">Display Error Memory</button></p>
-<p><button onclick="sendCmd('can clear');">Reset CAN Mapping</button></p>
-<p><input type="text" id="customcmd"/> <button onclick="sendCmd(document.getElementById('customcmd').value);">Send Custom Command</button></p>
-<p><a href="/wifi">Wifi Settings</a>
-<p><a href="/remote.html">Start Remote Support Session</a>
 
-<h2 id="update">UART Update</h2>
-<p>Use binary files (stm32_sine/foc.bin) for updating inverter firmware. Upload any other file for updating this web interface.</p>
-<form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
-    <input id="updatefile" name="updatefile" type="file" onchange="fileSelected();" />
-    <input type="button" onclick="uploadFile();" value="Upload" />
-</form>
-<div id="progress" class="graph">
-<div id="bar" class="bar" style="width: 0"></div>
-</div>
+<body onload="ui.onLoad()">
 
-<h2 id="swdupdate">SWD Update</h2>
-<p>Use binary files (stm32_loader.bin, stm32_sine/foc.bin) for updating inverter bootloader/firmware.</p>
-<form id="swdform" enctype="multipart/form-data" action="edit" method="POST">
-    <input id="swdfile" name="swdfile" type="file" onchange="fileSelected();" accept=".bin" />
-    <input type="button" onclick="uploadSWDFile();" value="Upload" />
-</form>
-<div id="progress" class="graph">
-<div id="swdbar" class="bar" style="width: 0"></div>
-</div>
-<br/><br/>
-<a href="/swd/zero" target="_blank">Erase Flash</a> | <a href="#" onclick="resetSWD();">Hard Reset</a> | <a href="/swd/hex?bootloader" target="_blank">hex Bootloader</a> | <a href="/swd/hex?flash" target="_blank">hex Flash</a> | <a href="/swd/bin?bootloader">bin Bootloader</a> | <a href="/swd/bin?flash">bin Flash</a>
+	<div id="content">
 
-<h2 id="parameters">Parameters</h2>
-<p><a href="https://openinverter.org/wiki/Parameters" target="_blank">Parameter Reference</a>
-<p><a download="params.json" href="data:text/json,{ }" id="paramDownload">Download Parameter File</a>
-Downloads the parameters as per the last table update</p>
-<form id="paramform" enctype="multipart/form-data" action="edit" method="POST">
-    <input id="paramfile" name="paramfile" type="file" />
-    <input type="button" onclick="loadParametersFromFile();" value="Apply Parameter File" />
-</form>
-<p>
-<form id="paramdb" action="https://openinverter.org/parameters/api.php" method="POST" enctype="multipart/form-data">
-    <input type="text" style="display: none;" id="parameters_json" name="data"></input>
-    <input type="hidden" id="parameters_token" name="token" />
-    <img src="ajax-loader.gif" style="visibility: hidden" id="loader0">
-    <input type="button" value="Submit parameters to openinverter" onclick="parameterSubmit();" />
-</form>
-<p>
-Subscribe to parameter set:
-<input id="token" type="text" onchange="checkToken(this.value, 'Requesting parameter set', true)" size="40">
-<br>
+		<!-- Large modal -->
+		<div id="large-modal-overlay" class="modal-overlay">
+			<div id="large-modal-container" class="large-modal-container">
+				<div id="large-modal-header-div">
+					<h2 id="large-modal-header"></h2>
+					<span class="modal-close" onclick="modal.hideModal('large');">&times;</span>
+				</div>
+				<div id="large-modal-content" class="modal-content"></div>
+			</div>
+		</div>
 
-<p>Type new value and hit enter to change. Only change one value at a time.</p>
-<p>Messages: <button onclick="clearMessages();">Clear</button></p>
-<pre><div id="message"></div></pre>
-<p><img src="ajax-loader.gif" style="visibility: hidden" id="loader1">
-<button onclick="toggleVisibility();">Toggle Category Visibility</button></p>
-<table id="params">
-<thead>
-<tr>
-	<th>I</th>
-	<th>Name</th>
-	<th>Value</th>
-	<th>Unit</th>
-	<th>Minimum</th>
-	<th>Maximum</th>
-	<th>Default</th>
-</tr>
-</thead>
-<tbody id="paramBody">
-</tbody>
-</table>
-<h2 id="spot">Spot Values</h2>
-<p><img src="ajax-loader.gif" style="visibility: hidden" id="loader2">
-<button onclick="showGauges()">Show Gauges</button>
-<button onclick="showLog()">Show Data Logger</button></p>
-<table id="spotValues"><thead>
-<tr>
-	<th>Name</th>
-	<th>Value</th>
-	<th>Unit</th>
-	<th>Plot</th>
-	<th>CAN Id</th>
-	<th>Position</th>
-	<th>Bits</th>
-	<th>Gain</th>
-	<th>Map to CAN</th>
-</tr>
-</thead>
-<tbody id="spotBody">
-</tbody>
-</table>
-<h2 id="plot">Plot</h2>
-<canvas id="canvas" width=100 height=40></canvas>
-<p>
-<button onclick="startPlot()">Start Plot</button>
-<button onclick="stopPlot()">Stop Plot</button>
-<button onclick="pauseResumePlot()" disabled id="pauseButton">Pause Plot</button>
-Limit data points to: <input type="number" id="maxValues" step="1" min="10" max="10000" value="1000" />
-Burst length: <input type="number" id="burstLength" step="1" min="1" max="1000" value="10" />
-<p>Copyright 2018 Johannes Huebner dev@johanneshuebner.com</p>
-<p>Charting by <a href="http://chartjs.org/" target="_blank">chart.js</a></p>
-<p>Gauges by <a href="https://github.com/Mikhus/canvas-gauges" target="_blank">Mykhailo Stadnyk</a></p>
+		<!-- Small modal -->
+		<div id="small-modal-overlay" class="modal-overlay">
+			<div id="small-modal-container" class="small-modal-container">
+				<div id="small-modal-content" class="modal-content"></div>
+			</div>
+		</div>
+
+		<div id="communication-error-bar" class="communication-error-bar">
+			<p>Communication problem between ESP and STM</p>
+		</div>
+
+		<!-- 'Add CAN Mapping' modal -->
+		<div id="can-mapping-modal-overlay" class="modal-overlay">
+			<div id="can-mapping-modal-container" class="can-mapping-modal-container">
+				<span class="modal-close" onclick="modal.hideModal('can-mapping');">&times;</span>
+				<h3 class="underline">New CAN Mapping</h3>
+				<table id="can-mapping-table">
+					<tr>
+						<td>Transmit or receive</td>
+						<td>
+							<select id="txrx">
+								<option value="tx">Transmit</option>
+								<option value="rx">Receive</option>
+							</select>
+						</td>
+						<td>Choose transmit to take values/parameters from your OpenInverter board and send them out in frames on the CAN bus where they can be seen by other devices. Choose receive to set values based on data seen on the CAN bus.</td>
+					</tr>
+					<tr>
+						<td>Parameter</td>
+						<td>
+							<select id="add-can-mapping-spot-value-drop-down"></select>
+						</td>
+						<td>Select the spot value/parameter to transmit or receive.</td>
+					</tr>
+					<tr>
+						<td>CAN ID</td>
+						<td><input type="number" step="1" min="0" max="2047" id="canid"></td>
+						<td>Set the ID of the CAN frame to send/receive</td>
+					</tr>
+					<tr>
+						<td>Offset</td>
+						<td><input type="number" step="1" min="0" max="63" id="canpos"></td>
+						<td>Specify the position (offset) within the frame to place (transmit) or find (receive) this value</td>
+					</tr>
+					<tr>
+						<td>Length</td>
+						<td><input type="number" step="1" min="1" max="32" id="canbits"></td>
+						<td>Specify the length of this field in bits</td>
+					</tr>
+					<tr>
+						<td>Gain</td>
+						<td><input type="number" step="1" min="1" max="100" id="cangain"></td>
+						<td>Specify a gain to scale the value up or down</td>
+					</tr>
+				</table>
+				<button onclick="ui.canMapping();">
+					<!-- /icon-check-circle.png -->
+					<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAbBJREFUSInF1c1KVVEUwPFfUd6i7xtlIRWFFUIPYGAQd9QbNFOIEh8hBJv4NhE0CBQHQV80CEu0oiwqm9kosaAmchqcped027d7j95oweIc1sd/7c1ea2/+s9Qxhnv4hLXQpbCN4uBmwDVMYhVZG13GzirwM5gvAaYxgn7swPb4H8EU7mJbKf8oZvE4BT+NzwF+i8EqKwv4y8h/1uysYS6cD7G3IvwIFiL/DY41B0yGcxH7ug0/rDjQi1uEH08FjSkOtOtw8p7OMPwv4PAxAs8mfPfxNIAp+Cv0NuXcCd2QnxHckygwG76FAJfhrxNwihnakB9hqCWCewO0XqQdfE/4v5eNS2E8l0hoLvI3OJyPmA/kYy9WResW/YIGXoQ2wpaSofg+LxtHo+pMi6Qq8iBYN8rGumLQhv7M6VguB+OrxFUzEc73OLAJ+CG8C8Z4KmCXoiUfVSxSx5PInZNud3BK0VGLuNQBvCHfdSa/6vvaJZxQXNuZfJKvYwC75U/kAK4pDjST774tfF16cAsrJUArXcVN6SH97alLyX5cxRVcwEn51K/EimdwG986XXnX5ReKvJKLP0fJ2wAAAABJRU5ErkJggg==">Save CAN mapping</button>
+			</div>
+		</div>
+
+		<aside id="navbar" class="navbar">
+
+			<div id="logo">
+				<img src="logo.png" onclick="ui.toggleNavbar();">
+			</div>
+
+            <div>
+				<a class="tablink" onclick="ui.openPage('dashboard', this, 'white')" style="background-color:white">
+					<!-- /icon-grid.png -->
+					<img class="navimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAFpJREFUSIljYBhO4DADA8N/PPgwOWoZkTT9J8IRMPVEq2XBYwgywGUgQbVMRLiEIjBqAUGALZKJSSFEq0X2wRECao/gYBNSO4zAaFGBVe3Qz2hD34LRomLgAQDIVzQ/KtRExgAAAABJRU5ErkJggg=="><p class="navbar-text">DASHBOARD</p></a>
+				<a class="tablink" onclick="ui.openPage('update', this, 'white')">
+					<!-- /icon-cpu.png -->
+					<img class="navimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAALlJREFUSInVVe0ORTAMPRG53gnvd/FavMrmMfihZGa6dhdxT9JI+nW6VVcgjp5EqldjIpHqd8iuqEBDUADoAFgcK5w88fUWQAvgwxF2gURaaTiCtfKSczpBRbGGcxI1ThP/SJP7ELMD1+7L2RxsdskJ6kQbyxzTiX0fH7RbCGJNTsHW5FwZdBmzC81vGr2J/5xkFyN9q4Rc69BZzqnF78/1lyMoiMQkJDZYdgG7cEJ4906WDNqg1O8wA3zYflZwNkaoAAAAAElFTkSuQmCC"><p class="navbar-text">UPDATE</p></a>
+				<a class="tablink" onclick="ui.openPage('parameters', this, 'white')">
+					<!-- /icon-sliders.png -->
+					<img class="navimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAGxJREFUSIljYBhu4DAU00qe4T8UU02eCZ9t1AAjw4LDDJhhC+PjjVBiLaAqIJRKSNbPgqbgCAWGUwUQykgEfUAI2BCQxxoCyKkEHaO7luQ4GnSpCJs83hAYEj7AKz8oyqLBbQGpRQWl8kMQAADlPjazklCDTgAAAABJRU5ErkJggg=="><p class="navbar-text">PARAMETERS</p></a>
+				<a class="tablink" onclick="ui.openPage('spotvalues', this, 'white')">
+					<!-- /icon-target.png -->
+					<img class="navimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAiVJREFUSInFlT1PVEEUhh8ocDeuxd6IhdCzWFtpogs/QE3Q2o+gf0FdOilU/oX2Il+VQCLGRkU3VgJGG5e1E9elZi3mPZnjcvfupSBOMpn7vnNmzrnna+CYx0Cf/QS4BlwBKsCo+AawBSwBC8CvoyouAjWgBXT6zN+SLea9fBTYdBe8AqaBMeCkZgW4C6w6uU1gJM/lDR3YBi7lMOgysKMzjSwlRWf5a6As/gwwC9SBfc26uGHJlIENnX0PFNIU1Jzldvl14A+9/d8CpiSbAF/FP+i+PCEG1NxyAzgQtwhUiTGYIGRQRzKmpEoMvBkJwB1iQM0tZvnDtN/t+usW0V1r4m55wQWR08KzznKAE8Ac0NR8Cgxpb1myj4TvCc97Bdsix4Q/C1eF5zjs/yfamxSuC1eEt7yCtshSD9wUvgBc1Peu9k4Jt4VLHg9ytDGQcsbazYHWQY8NNLVakXzTel7rc61vgTf6ftYlY2fOav3prXhJepCXhIcIgd3VfEwM8grpQX7hFdwWuSrs07RG7zHD4TRdF3fTCyaE4ugQeguEKrZCWyZkS0lz0lnuC80yao+uQoNYNN+B0+KmyG7ZvVrF/bTfLQAfJLDhLBgm+PcjIfXawCdx5paEEPzMZgchi6xd7xALLWtMOMt/kONNGJEV5oY1QmaME2NwTty6k3uX53IbBULLtcBnzT2Cz1Pd0u/RLwNXCY/+OP8++l8IdbIoJf9n/AUj8c16AxbPKwAAAABJRU5ErkJggg=="><p class="navbar-text">SPOT VALUES</p></a>
+				<a class="tablink" onclick="ui.openPage('plot', this, 'white')">
+					<!-- /icon-activity.png -->
+					<img class="navimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAANRJREFUSIndlVsOwiAQRQ9uSlyIrsq6EB+rIO7D6kL0wyEdpxWE4k9vMgmBzEw5XCgsXQ64Srh/NPDAU8LXFFhl1ndqvK1pkJIDeoYdPGiMKeLpVaNiTClEEc8JOMu4GSaNZ82wm2aYNlLwLgUdcKMC0zdEEcWR4ZAvZq1IQRXSob9WH7rGFC+jzQ25BmGi0JSb/ETuqMGv6iS5U3MHmdvXFLSybrJumy3rJuu2kXJvkZV1k3VbEzV5QlLSmJJ4oBwRfGKCxniiZv+IcnK8L5K9jAvUC4JQVgVac1dWAAAAAElFTkSuQmCC"><p class="navbar-text">PLOT & GAUGE</p></a>
+				<a class="tablink" onclick="ui.openPage('logger', this, 'white')">
+					<!-- /icon-database.png -->
+					<img class="navimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAATRJREFUSInt1c8uA1EUx/FPu2tIEyxIPAWbFpu+BPFI+iQkvIFKLEi7Ys+akCgbutNazB25UzNtaoqNX3IyMyc358893zuXH1alwL+OHWxhEytYCgYvwfq4QhcXuJ+WsIkzDDGa0YbooFHUwR4OUcUbzkNlXTxEVYu6WQtdNtHCIt6xj5Px6gehkgPUp7WaozraIcYgdVajBbWoq6LZTFIlileLnalG0Xu8RT2Tt6gp2aYWFsYSZpQOq+P7Qz6Nvgs7qEgw3Q62IcF0WRbTZzzhOnR6KcE0jpPbQVll4lQnLJyL/iRBW7lzkFERpq8STHuSAT7Kx3TV15OcF/szQVlMO2bANP2bTsK0L4vpnX9MyyS4Dc95YHqTOuNB7OIoJC2D6VBy4RznVdHwg1dmrDKY/q4+ACxLm8QEJ1UnAAAAAElFTkSuQmCC"><p class="navbar-text">DATA LOGGER</p></a>
+				<a class="tablink" onclick="ui.openPage('canmapping', this, 'white')">
+					<!-- /icon-repeat.png -->
+					<img class="navimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAANlJREFUSInNlUsKwjAQhj/EA0jBoocReqkiiFcThboSV7rwHD4Wuih1kQloSUqe6AeBLmb+fzKdaSGeBjgCZQItIwegA865TKbASUwuwPznJhWwBR6SEHLuNvE10EYIDxpUIv4EamAydM0e/RbNTEE7Cag9hJ3FQV2rw69y8BhT3T9fnBct1GCQ8cfzPrV4Lho52fhq9cgSVKJeXJZKStTIdagR9KGQvKstwHlpLCwld5NavBDxF+pzszAF6U2OOS2wslURY3BDtcVYueb//kyhxIypl0mSRXsDL+eEkxJwUCAAAAAASUVORK5CYII="><p class="navbar-text">CAN MAPPING</p></a>
+				<a class="tablink" onclick="ui.openPage('wifi', this, 'white')">
+					<!-- /icon-wifi.png -->
+					<img class="navimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAVdJREFUSInt1L9KXEEYBfDf2ogsBhTR7FpIYq2WEtIFspV2koBo8A2CIija+Ao+gJWEkKQQBZUETRM2L2AvWPkvASURFHXXYmfZRd27dy9IUnjgNPebc74z880dHvGvkYqoteEVcuhDVyAc4BA7+IbvOInbdACfcIViTF7hI/qjjLNYRSGIzrGFGbzEc6QDe8O3WWzjImgKWEHmtvlr7IdFf7CI7rhbRicWlI6piGMMlYvjVanXw+Kk6MKGym7GYQynmHR36Bm8xxp28Rdn2AtG0+i5pUlhKniO1UryFEsqZxvFS3y4p1FNDONI5XZ8CUl6lQbcgmd4i+WqECcYjdOgPKjNYFQP3fgcNNdorid4g3eif8L7MIKJBjWgFXPI41dgHvN4ksSwGoPBsNaAf+NFlEFTnQYZtCu9Nzl0BObwVem9yiaOH5BOWPs/8QM/GxHUm8EjHh43i7Jhzxg3JD0AAAAASUVORK5CYII="><p class="navbar-text">WIFI SETTINGS</p></a>
+				<a class="tablink" onclick="ui.openPage('files', this, 'white')">
+					<!-- /icon-file-text.png -->
+					<img class="navimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAK5JREFUSIljYKAzYGdgYOhmYGB4xsDA8J8A/srAwCBGqgWdRBiMjC+TagnM5VYE1JFtCUwTseouQenrDAwMkrSwQJRUS0i1gIFUS0i1ABv+TIoFh5HEDuMQx4bhgIUI12IDtngciBcQG0RE62eiwDCiACELCIU1etyQbAHVwWgckGwB1cHQj4PnUNqaDLNgxcczfIo6GEirMrHhdnwWsEEteUqGwU+hhrMR6WPqAAAbTIrOKieWjwAAAABJRU5ErkJggg=="><p class="navbar-text">FILES</p></a>
+				<a class="tablink" onclick="ui.openPage('support', this, 'white')">
+					<!-- /icon-help-circle.png -->
+					<img class="navimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAdRJREFUSInF1T1rlEEUBeBHYpHFJZDFQkhqsxELwdrPwlLtLP0g+heU+Ee0sLIViRYWJgGjEFBT6ppEsDGFNsYQLSUWc4d9s072fSOIB6Y598y5l7kzd/jHOFAT7+AyLqKLyeA3sIqnmMO3/SZuYRZb2KlZ30Pbamo+iZWKwXPMYAqHYnVxE/MV3QommphvxIY1nG5Q0Bmsx56NYUlalcpfYLyBecY4lmLvG4yWRLP6lQ+an8Az/MBXPCxU2sHH8LgzaN7Rb+jgsZzET3829wuODGjP6jd+V5E39Bs6iNzIBxiT+rQQ3L2CPseuVcm5IGcKGx6hJ92ejOOhf1fQ34rY4yq5FuRUYUMJF4Yk6EZstUpuB9muMR6RjjPr7xY07Yht7zfBSFScm3w/uEGMRXyrSjY5opyghyv2nmO7juhgkD0cxalIVsIvqbl1yNf8fZW8HlnnGxjUYTG8rlbJjvQ4dqTZshdeYXlI/Hx4bCqMmjwqPuHwXySojorbJcEo3oZgqVTBEHTwUs2wIw2wPK7XpdlSh3P6lX/W4E+YiCryfV+Qnv+09E7aOBbcYkX3uol5xqg0cnPjh61N6cyLx1L36Y/jkvTpT9v96X+QPv0nkeT/4DdxyppwcyvRBAAAAABJRU5ErkJggg=="><p class="navbar-text">SUPPORT</p></a>
+			</div>
+
+			<!-- spinner div -->
+			<div id="spinner-div" class="control">
+				<img style="vertical-align:middle" src="ajax-loader.gif"><p> refreshing...</p>
+			</div>
+
+			<!-- auto reload toggle -->
+			<div id="auto-reload-toggle-div" class="control small-screen-hide">
+				<label class="switch">
+					<input id="auto-reload-checkbox" type="checkbox" onclick="ui.setAutoReload(this.checked);"><span class="slider round"></span>
+				</label><p style="display: inline-block;">Auto reload</p>
+			</div>
+			<!-- beta features toggle -->
+			<div id="beta-features-toggle-div" onclick="ui.toggleBetaFeaturesVisibility();" class="control small-screen-hide">
+				<label class="switch">
+					<input id="beta-features-checkbox" type="checkbox"><span class="slider round"></span>
+				</label><p style="display: inline-block;">Beta features</p>
+			</div>
+
+			<div id="version" class="small-screen-hide"></div>
+
+		</aside>
+
+		<div id="content-wrapper">
+			<div id="content-wrapper-inner">
+
+				<!-- DASHBOARD -->
+				<div id="dashboard" class="tabdiv main-content" style="display:flex;">
+
+					<div class="main-right">
+						<h3 class="underline">Actions</h3>
+						<button onclick="ui.sendCmd('start 2');">
+							<!-- /icon-play.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAL9JREFUSInd1aGqQkEQxvGfx2C6xWC22ExWn0DMvoKv4CvYTb6CT2AURGy33CfQeMMNgkFBjsE9cDDdsIPoB8syO8P8YXdnhk/UFj8YRgHKtG5Y4CsKcEn7EeMIQB/7mr1CJycACkxxSmd/yW7kAlTqYl3zbdDLCag0wW/ynzFDMycA2ljW4r4xyAmoNMIhxV4xRysngEeNLDxqpsTuOaD4Z6KsevkVhT5y2DftCiq00FYR3uzC23XYwAkfme+lO+/CXqyEUBhOAAAAAElFTkSuQmCC">Start inverter in manual mode</button>
+						<button onclick="ui.sendCmd('stop');">
+							<!-- icon-square.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAHNJREFUSIntlTEOgCAMRV8c5E7i/RTuCR5DB8ugaRwogxp+0nRo8h5h+fCnOCACGdgrJwMBGDVBNIDvs2qC8vKp7gMA8MJI2rHYrblwhgbAx3RBF3RBF7xNsMn2Bt4sO2vHQLvCWTSBE0kygBNnm6mV+c0cZy9SUXHYiZQAAAAASUVORK5CYII=">Stop inverter</button>
+
+					</div>
+
+					<div class="main-left">
+						<h2>Dashboard</h2>
+
+						<div id="top-row" class="dash-row">
+							<div id="top-left" class="dash-box">
+								<img src="ajax-loader.gif">
+							</div>
+							<div id="top-right" class="dash-box">
+								<h3>Inverter messages</h3>
+								<pre><div id="message"></div></pre>
+							</div>
+						</div>
+
+						<div id="bottom-row" class="dash-row">
+							<div id="bottom-left" class="dash-box">
+								<h3>Command</h2>
+								<div id="commandoutput"></div>
+								&raquo;&nbsp;<input type="text" id="commandinput"/>
+							</div>
+							<div id="bottom-right" class="dash-box"></div>
+						</div>
+					</div>
+				</div>
+
+				<!-- UPDATE -->
+				<div id="update" class="tabdiv main-content">
+
+					<div class="main-right">
+
+
+						<h3 class="underline beta-feature" hidden>Bootloader</h3>
+						<form class="beta-feature" id="swduploadform" enctype="multipart/form-data" action="edit" method="POST">
+							<input id="swdupdatefile" name="swdupdatefile" type="file" onchange="ui.swdUpdate();" hidden />
+							<!-- /icon-download.png -->
+							<label class="butt" for="swdupdatefile"><img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAK5JREFUSIntlEEOgjAQRV9YeAMbPYvxeqLnYmdY6cITIAfgALjwk0yw1FJkIfqTny5m8l/TTAd+TYU8m1o5WtlMF/kDvgRQACXgAj1OPUmje+Y5klcDsWPqVGvVO1pr4KKAG7A1gH5tkwLwQTrAR8I72aewtk8XpdCe6UNC4YM57/aMAxo5dPPBnNGLLAawrJ9c69xNyNvrvPuKR15HMdUHH2AFnIBqQnAF5MpaiB4kGFo0awBlFAAAAABJRU5ErkJggg==">Install bootloader</label>
+						</form>
+						<a class="beta-feature" href="/swd/bin?bootloader" hidden><button>
+							<!-- /icon-download.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAK5JREFUSIntlEEOgjAQRV9YeAMbPYvxeqLnYmdY6cITIAfgALjwk0yw1FJkIfqTny5m8l/TTAd+TYU8m1o5WtlMF/kDvgRQACXgAj1OPUmje+Y5klcDsWPqVGvVO1pr4KKAG7A1gH5tkwLwQTrAR8I72aewtk8XpdCe6UNC4YM57/aMAxo5dPPBnNGLLAawrJ9c69xNyNvrvPuKR15HMdUHH2AFnIBqQnAF5MpaiB4kGFo0awBlFAAAAABJRU5ErkJggg==">Download bootloader</button></a>
+
+						<h3 class="underline">Firmware</h3>
+
+						<!-- Install firmware from file -->
+						<form id="upload-firmware-form" enctype="multipart/form-data" action="edit" method="POST">
+							<input id="update-firmware-file" name="update-firmware-file" type="file" onchange="ui.uploadFirmwareFile();" hidden />
+							<label class="butt" for="update-firmware-file">
+							<!-- /icon-upload.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAKdJREFUSIntlEEKgzAQAAcP/YHSvkX8nrbv8iae9OAL1Af4AHtZIUbFGNeL7cISyIaZsFkCvxQRMEhGV8BrYJSsNSU2XFUSApUAGwNu7r204E9DYNe8JAXLVkwCmLeu8BHkQMm8z6ZgkpRyViVswW4EWua/QEWQozMNmxyXCXG5xCbn8Ai6CO71yL2s8QleImu3Vnyz/PN9M10TPIAP0J4At0AmrJvEF5W8XDFZxlMrAAAAAElFTkSuQmCC">Install firmware from file</label>
+						</form>
+
+						<!-- OTA firmware update -->
+						<a href="#" class="beta-feature" onclick="ui.showOTAUpdateFirmwareModal();"><button>
+							<!-- /icon-upload-cloud.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAYJJREFUSInd1EFLFVEYxvEfKCIK4i2EIEERopAWSbQoCty0dOGm1m7rKwgVuGovtNJFy6B1i0KiVlEgBVGfwJKiFC1ayG0x73CP02XmzG3nA4e55z3/eZ45M++5nFRdxwa28Qvf8BHrWPwf41lsodswnuFcW/Or2A+DL3iABYxjEpdxT7Gbblyv5Jqfx/e48Qk6NewpPA32J2ZyAl4k5kMZ/FAS8rwJvhngruJV5Oo0vsa91+rARwGttjAvtab34Q/xDncxnEKfA7g0QMC0YufVLnuPMyX0I4oTAwSkGseS4rx08Qaj8DsKYw0G8ziKMV/DdfApPFfgQ0wWGszLB+nG77qQ28G9gs2Y3M80zwmZCmYHbiST6gG7kJj/qZiXtX7N0dE7iOBlFB5XwIPK05YB6a4O+gQsx9pWWZjFnuLgpNpT9Hf5KsoAUTsMJtWkXuvfSRfmYtQpDeini3od9Fbe306rgIexvo2zbc1zAjq4hZFBzHMC/tFwM3JMr1vyJ0B/AfsvhI9sESZHAAAAAElFTkSuQmCC">Over the air firmware update</button></a>
+
+						<h3 class="underline">Web Interface</h3>
+
+						<!-- upload file -->
+						<form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
+							<input id="updatefile" name="updatefile" type="file" onchange="ui.uploadFile();" hidden />
+							<!-- /icon-upload.png -->
+							<label class="butt" for="updatefile"><img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAKdJREFUSIntlEEKgzAQAAcP/YHSvkX8nrbv8iae9OAL1Af4AHtZIUbFGNeL7cISyIaZsFkCvxQRMEhGV8BrYJSsNSU2XFUSApUAGwNu7r204E9DYNe8JAXLVkwCmLeu8BHkQMm8z6ZgkpRyViVswW4EWua/QEWQozMNmxyXCXG5xCbn8Ai6CO71yL2s8QleImu3Vnyz/PN9M10TPIAP0J4At0AmrJvEF5W8XDFZxlMrAAAAAElFTkSuQmCC">Upload file</label>
+						</form>
+
+					</div>
+
+					<div class="main-left">
+						<h2 id="update">Update</h2>
+						<p>On this page you can apply software updates to your OpenInverter system. There are several distinct pieces of software which go to make up an OpenInverter system and each has a separate update mechanism.</p>
+
+						<h3>OpenInverter Board Bootloader</h3>
+						<p>Use the stm32_loader.bin file to update the bootloader on your OpenInverter board. You can find download links in the forum <a href="https://openinverter.org/forum/viewforum.php?f=7">here</a>.
+
+						<h3>OpenInverter Board Firmware</h3>
+						<p>To install a new firmware on your OpenInverter board click on the 'Install firmware from file' button on the right. Use the stm32_sine.bin file to install the sine firmware or use the stm32_foc.bin file to install the FOC firmware. You can find information about the latest available releases, including download links, on the OpenInverter forum <a href="https://openinverter.org/forum/viewforum.php?f=7&sid=cdb63cfa1d2f7ab493e7079fc13a8e65">here</a>.</p>
+
+						<h3>Web Interface Firmware</h3>
+						<p>The ESP8266 firmware can be upgraded with platformio via OTA i.e. directly via wifi without programming cable, see <a href="https://openinverter.org/forum/viewtopic.php?p=60907#p60907">forum</a>.<br>
+You can also program with a cable, see <a href="https://openinverter.org/forum/viewtopic.php?f=5&t=8">here</a> for more details.</p>
+
+						<h3>Web Interface Application</h3>
+						<p>You can apply updates to this web interface by uploading individual files. More information about updating the web interface can be found in its github repository <a href="https://github.com/jsphuebner/esp8266-web-interface">here</a>.</p>
+					</div>
+
+				</div>
+
+				<!-- PARAMETERS -->
+				<div id="parameters" class="tabdiv main-content">
+
+					<div class="main-right">
+						<h3 class="underline">Save & Load</h3>
+
+						<!-- Save params to flash -->
+						<button onclick="ui.showParamsSavedModal();">
+							<!-- /icon-save.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAALhJREFUSIndlUsOgjAQhj+M0RNI4lU0Xs8H12LJDhaeADwGbqamNLSZERJj/2TS5/xf21kUctIeqIABGA3RAKUGUBmN/eg0EHfyk4xdckqlmKsgoaEGAHAAWtn7BI5rA9SQGCAVtbfff65GA6iNAAeJ3tzyJClNfDYrGCb1U4CmBrFafFR4/TGYs9YjzCsAtobEmJIHybvI/wd4SXte4HeRdphbvPP9hxPGdQ6wAx5Av8C4B27ilYnep/GG5uAVCQ8AAAAASUVORK5CYII=">Save parameters to flash</button>
+
+						<!-- Restore params from flash -->
+						<button onclick="ui.showRestoreParamsFromFlashConfirmationModal();">
+							<!-- /icon-rotate-ccw.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAXBJREFUSInd1UtOFUEUBuCP1kvUsAimAjMXoJGJEwcgYNgBL1mJj4QtmDBgygIYsAACGEe8DDBipAQlYdAO6rR0Ln27720Z8SeVU6k65//rceoUDx3DmMU6jnCJ3zjA15h73ESyHa0bUzhB3tCO8bZOoHAskOFjaXwPHzCOETzDBFbxveT3CUNNAh3pOHJcYykEeyEL8euI+Vwn8BSb0f+JlzXE3ZgsiUz1EtgKe4EXA5AXWIn4Iyk57gjkOMNYC3J4hP3gmekl0N2qsqsOqxG3Xgxk+NVyxVXYCtvmiPvCiLSDy2KgLgXboEj3f+/hvgVGw55XCbyR7mP6PwQmw+5UTc65LQ2VT74BGb4Fx1yVQwen4bDYQmDJ7UPr9HKaDqc/eDUA+euIyfVxxGslkQXNxW5R+iNyfOlnNVlJJMculvFcqjHD0V+W7qvwWzPg3c3gh/pSkkuf0rtBiMt4gvfYwCGucCN9mRuY11U5Hx7+AhGmdqYvlqvtAAAAAElFTkSuQmCC">Restore parameters from flash</button>
+
+						<!-- Download params file -->
+						<a download="params.json" href="data:text/json,{ }" id="paramDownload"><button>
+							<!-- /icon-download.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAK5JREFUSIntlEEOgjAQRV9YeAMbPYvxeqLnYmdY6cITIAfgALjwk0yw1FJkIfqTny5m8l/TTAd+TYU8m1o5WtlMF/kDvgRQACXgAj1OPUmje+Y5klcDsWPqVGvVO1pr4KKAG7A1gH5tkwLwQTrAR8I72aewtk8XpdCe6UNC4YM57/aMAxo5dPPBnNGLLAawrJ9c69xNyNvrvPuKR15HMdUHH2AFnIBqQnAF5MpaiB4kGFo0awBlFAAAAABJRU5ErkJggg==">Download parameters file</button></a>
+
+						<!-- Load params from file -->
+						<form id="paramform" enctype="multipart/form-data" action="edit" method="POST">
+							<input id="paramfile" name="paramfile" type="file" onchange="ui.loadParametersFromFile();" hidden />
+							<!-- /icon-file-text.png -->
+							<label class="butt" for="paramfile"><img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAK5JREFUSIljYKAzYGdgYOhmYGB4xsDA8J8A/srAwCBGqgWdRBiMjC+TagnM5VYE1JFtCUwTseouQenrDAwMkrSwQJRUS0i1gIFUS0i1ABv+TIoFh5HEDuMQx4bhgIUI12IDtngciBcQG0RE62eiwDCiACELCIU1etyQbAHVwWgckGwB1cHQj4PnUNqaDLNgxcczfIo6GEirMrHhdnwWsEEteUqGwU+hhrMR6WPqAAAbTIrOKieWjwAAAABJRU5ErkJggg==">Load parameters from file</label>
+						</form>
+
+						<h3 class="underline">Parameter Database</h3>
+
+						<!-- Submit params to OI -->
+						<form id="paramdb" action="https://openinverter.org/parameters/api.php" method="POST" enctype="multipart/form-data">
+							<input type="text" style="display: none;" id="parameters_json" name="data"></input>
+							<input type="hidden" id="parameters_token" name="token" />
+							<button type="button" onclick="ui.parameterSubmit();">
+								<!-- /icon-upload-cloud.png -->
+								<image class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAYJJREFUSInd1EFLFVEYxvEfKCIK4i2EIEERopAWSbQoCty0dOGm1m7rKwgVuGovtNJFy6B1i0KiVlEgBVGfwJKiFC1ayG0x73CP02XmzG3nA4e55z3/eZ45M++5nFRdxwa28Qvf8BHrWPwf41lsodswnuFcW/Or2A+DL3iABYxjEpdxT7Gbblyv5Jqfx/e48Qk6NewpPA32J2ZyAl4k5kMZ/FAS8rwJvhngruJV5Oo0vsa91+rARwGttjAvtab34Q/xDncxnEKfA7g0QMC0YufVLnuPMyX0I4oTAwSkGseS4rx08Qaj8DsKYw0G8ziKMV/DdfApPFfgQ0wWGszLB+nG77qQ28G9gs2Y3M80zwmZCmYHbiST6gG7kJj/qZiXtX7N0dE7iOBlFB5XwIPK05YB6a4O+gQsx9pWWZjFnuLgpNpT9Hf5KsoAUTsMJtWkXuvfSRfmYtQpDeini3od9Fbe306rgIexvo2zbc1zAjq4hZFBzHMC/tFwM3JMr1vyJ0B/AfsvhI9sESZHAAAAAElFTkSuQmCC">Submit parameters to OpenInverter</button>
+						</form>
+
+						<!-- Subscribe to param set -->
+						<button onclick="ui.showSubscribeModal();">
+							<!-- /icon-download-cloud.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAYhJREFUSInd1bFqFVEQBuDPhKAkIknAxSJFxEJIYUhjIYiFheXFwheQNHkFQSsfQksLRdA3kAThFsJFLQxGsQ8RQUwIBLu12DnZ48XcPdcoiD8My875559zZs7s8j/iBK7hEd7jO/bwEQ9w/TjiF9BH3WEvcHFc8avYD4Ft3MMlnMJpLOMuvgTnKy6Xii/hWwQ+wewI7iyeBXcPiyUJXkbAU0wU8CfxPGLWu8g3gvgZZ0p2E5iPmBpXRhEfBunOGOIJ97WNP8BbrGEqJ30KwvJvJFjQNj23d6gSKTV3nPL8CtPoYSv03oiTHIRjukCkHzYK85qhrHEbNuNlpSBBKkEXbgWvP4HX4ewVBJZiI55LNBNcYwdzHYGlJ5jTTjvaQXv8hxLcDN6r5FjErmZwcvQ1JUxXLk9Qxdpw0yttk1fzhfNhOQZB3IzAlKDSXo5Bxp/K/IfXdBTOaoamxgc/D1Lyncv4M5oqDHT38xD5bnNLpxrGSc3HcCwMJzlK/FioND+k/b8h/u/iB+S1fKXC8i/kAAAAAElFTkSuQmCC">Subscribe to parameter set</button>
+
+						<button onclick="ui.parameterDatabaseShowUnsubscribeDialog();">
+							<!-- /icon-x-square.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAMNJREFUSIndlU0KwjAQRp8u7AksehXr/bS9VnfiSqGCrhOPURdOoOpEzA+o/SAkzDTvC5nQgTGpABrAAn3ksEANzDSDJgH8PLaagTv5Ku4CAKiEYbSkc0/VA2eaAfhWP2HQAnugHMRKibUhZr4a7CR+FHAp615yn3K8iTlwkNwZ6GR9AhY5DJxJN/jm4oG/cFKKPAndEHNFywDO94oc+kyjihyiEf8qrjJXCby1zFZL1uRrOBvNoBATkwA23LuZ2jL/UzfDRo5pCPZ1fQAAAABJRU5ErkJggg==">Stop subscription</button>
+
+						<h3 class="underline">Misc</h3>
+
+						<a href="/syncofs.html" target="_blank">
+							<!-- /icon-search.png -->
+							<button><img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAVtJREFUSInd1MsubEEUBuAPQxoTEmO3oVuc2SFxGZp6GrwEE7yB8AhCWkzE6EjwAgYIIm0oGOy10605u6tbGFhJZVVq/5eqVXsVvz0WsY1LPMW4wBYWviI8gjJeG4xDDDcrPov7ELjGCsbRGWMi1m4Cc4+/qeKjeAjiDkoF2G7sBvZO4knysuygLQHfhr3gHDQCL6qWpWjn9dGjWq75+o/tNfPlyOuoNGHwiI06jU/jMnYx1oR4HhPBvSgCVQLU1YJBKbgfTt7+EZt0uf/jvBQZXEUebMFgqE7jU4Ny5KUWDHJOuQi0IKvjjayJUqMXt8GdawQ+DOCutLvowHFw9lN2Myxr+9ykpwDbWyP+jD8pBjBTY3KLVUzKft8SprCmWpbnyGfoTzUZkr0tjZ7rfUzjn2qjDaSakL0tmziXNVEl5pveX2jfV0xSo19WplecfIdBbnKKo+8y+Pl4A40jaChg9FgQAAAAAElFTkSuQmCC">Launch syncofs tuner</button></a>
+
+						<button onclick="ui.toggleVisibility();">
+							<!-- /icon-eye.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAUhJREFUSIntlTFPAjEYhh9kMsrAogxHwkj0f7jq5g9g1o0/Y1w9gzv+AEYGHUiMhoGIwQVm1jrcW6mlXjkubDzJl9y17/e2/XrXwp6SVIEr4AmYAEvFRG2X0mxFB5gCJhJTaTfmFOg7Bm/ADdAGDhVt4FZ9VtdXbi4tYKyEOXANVHL0FWkWyhnLI0gCfEk4BBqx2Tg0lGPkkfiCI+BVggFQCwz+CHwDMyANmNSUa4AXef5yr453oO4lNlmVwI1FYJC6PAxwZxsv1LAEzvylaeYGeJZhomejlficy8vIm5FeugExZCUxWom7KqO+EF31jw7+EYQwBbR/iJUoZVWipsKW6CGgXysR5G9yQrFN/sDbZIBj4p9pSlbzmWZe6DO1Jjv70Swttjsq5mxwVFjKHHYnMXOXDvDJ+uaWPq5dqmSXSo8dXDh7APgBB26OHSqgJlwAAAAASUVORK5CYII=">Toggle category visibility</button>
+
+						<!-- Params reference -->
+						<a href="https://openinverter.org/wiki/Parameters" target="_blank"><button>
+							<!-- /icon-help-circle.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAdRJREFUSInF1T1rlEEUBeBHYpHFJZDFQkhqsxELwdrPwlLtLP0g+heU+Ee0sLIViRYWJgGjEFBT6ppEsDGFNsYQLSUWc4d9s072fSOIB6Y598y5l7kzd/jHOFAT7+AyLqKLyeA3sIqnmMO3/SZuYRZb2KlZ30Pbamo+iZWKwXPMYAqHYnVxE/MV3QommphvxIY1nG5Q0Bmsx56NYUlalcpfYLyBecY4lmLvG4yWRLP6lQ+an8Az/MBXPCxU2sHH8LgzaN7Rb+jgsZzET3829wuODGjP6jd+V5E39Bs6iNzIBxiT+rQQ3L2CPseuVcm5IGcKGx6hJ92ejOOhf1fQ34rY4yq5FuRUYUMJF4Yk6EZstUpuB9muMR6RjjPr7xY07Yht7zfBSFScm3w/uEGMRXyrSjY5opyghyv2nmO7juhgkD0cxalIVsIvqbl1yNf8fZW8HlnnGxjUYTG8rlbJjvQ4dqTZshdeYXlI/Hx4bCqMmjwqPuHwXySojorbJcEo3oZgqVTBEHTwUs2wIw2wPK7XpdlSh3P6lX/W4E+YiCryfV+Qnv+09E7aOBbcYkX3uol5xqg0cnPjh61N6cyLx1L36Y/jkvTpT9v96X+QPv0nkeT/4DdxyppwcyvRBAAAAABJRU5ErkJggg==">Parameter reference</button></a>
+
+						</p>
+						<p>
+					</div>
+
+					<div class="main-left">
+						<h2>Parameters</h2>
+						<table id="params" class="fullheight">
+							<thead>
+								<tr>
+									<th>I</th>
+									<th>Name</th>
+									<th>Value</th>
+									<th>Unit</th>
+									<th>Min</th>
+									<th>Max</th>
+									<th>Default</th>
+								</tr>
+							</thead>
+							<tbody id="paramBody">
+							</tbody>
+						</table>
+					</div>
+
+				</div>
+
+				<!-- SPOT VALUES -->
+				<div id="spotvalues" class="tabdiv main-content">
+
+					<div class="main-right">
+					</div>
+
+					<div class="main-left">
+						<h2 id="spot">Spot Values</h2>
+
+						<table id="spotValues" class="fullheight">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Value</th>
+									<th>Unit</th>
+								</tr>
+							</thead>
+							<tbody id="spotBody">
+							</tbody>
+						</table>
+					</div>
+
+				</div>
+
+				<!-- PLOT -->
+				<div id="plot" class="tabdiv main-content">
+
+					<div class="main-right">
+						<h3 class="underline">Actions</h3>
+
+						<!-- start plot -->
+						<button onclick="plot.startPlot()">
+							<!-- /icon-play.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAL9JREFUSInd1aGqQkEQxvGfx2C6xWC22ExWn0DMvoKv4CvYTb6CT2AURGy33CfQeMMNgkFBjsE9cDDdsIPoB8syO8P8YXdnhk/UFj8YRgHKtG5Y4CsKcEn7EeMIQB/7mr1CJycACkxxSmd/yW7kAlTqYl3zbdDLCag0wW/ynzFDMycA2ljW4r4xyAmoNMIhxV4xRysngEeNLDxqpsTuOaD4Z6KsevkVhT5y2DftCiq00FYR3uzC23XYwAkfme+lO+/CXqyEUBhOAAAAAElFTkSuQmCC">Start plot</button>
+
+						<!-- stop plot -->
+						<button onclick="plot.stopPlot()">
+							<!-- /icon-square.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAHNJREFUSIntlTEOgCAMRV8c5E7i/RTuCR5DB8ugaRwogxp+0nRo8h5h+fCnOCACGdgrJwMBGDVBNIDvs2qC8vKp7gMA8MJI2rHYrblwhgbAx3RBF3RBF7xNsMn2Bt4sO2vHQLvCWTSBE0kygBNnm6mV+c0cZy9SUXHYiZQAAAAASUVORK5CYII=">Stop plot</button>
+
+						<!-- pause plot -->
+						<button onclick="plot.pauseResumePlot()" disabled id="pauseButton">
+							<!-- /icon-pause.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAFFJREFUSIntlEEOABAMBJf4/6f4V90akWxaXBx2EpcOGS4AcUkHYNvqB94pJGBkXpLeqWTjeoBdIuPDwDMKKKCAAj8EWuDZt5z19AUjmEVe5JmL0BI6Ilgh+wAAAABJRU5ErkJggg==">Pause plot</button>
+
+						<!-- launch gauges -->
+						<button onclick="plot.launchGauges()">
+							<!-- /icon-clock.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAaNJREFUSInF1c9qU0EUBvCfdpNgEBLctfumvoN/HyD6BFZFfQWlj+PSlbq0LVgFQe1WbSO4MWtr6brExT1DJuU2MwbED4YLZ775vnPPzJzhH+NCYX6AuxhhiLWIT3CA13iJX39r3MUWjjEtjN/B7daKr2E/E3iDR1jHpRhDPMZ2xtvHao34JBYc4npFQjcwjjWTRSbdLPO36Ldw3sc4iz72Yu0ndNoMtrLM28SZlaMNA3yP+Wdtk2lDF5VlkQHcNNv4uSQfmm3oIpQMYCc49+FiBEfxfVFYXIOkMcqDh+G6Xlhc8wfD4BzkwZMI9ioN7mHlHE4vOCfLGHzITMbnGF2O+eM8WFuilRBNF2sapjnmSpQ2+Wt8rxUMTvEcG9gMkdMznHTMv+TBB+G6XTCowW5obebBgeZyTDW9ZVncDo0jLd0gtYofuLKEeN4qnrYROvgchL22DAri7xSaHU2rTe16rOktJdwyy/ynijdhNbJIx3AHTzQnpxfjasR2M97HGvGEjqblpo1fNI40NW8tS+nR7+OOpnFtmH/0v2ke/Vdh8n/wB7ImjnFjEwJCAAAAAElFTkSuQmCC">Launch gauges</button>
+
+						<h3 class="underline">Configure Plot</h3>
+						Data points : <input type="number" id="maxValues" step="1" min="10" max="10000" value="1000" /><br>
+						Burst length : <input type="number" id="burstLength" step="1" min="1" max="1000" value="10" />
+						<form id="plotConfiguration">
+							<a onclick="ui.addPlotItem();"><button type="button">
+								<!-- /icon-plus-circle.png -->
+								<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAYVJREFUSInFlb9OAkEQxn9acfGaI3bQc/gO/n0AtLM1Rn0FDY9kpZSKiUil0qqAiY1Xi4ZeLHYmt0eO2yWB+CWbTeZmvvluZncWlowVx/cycAA0gBioij0B+kALuAK+5k0cAE3gB5g41rf4Br7kVaBnEdwAJ0ANWJMVA6fAreXXAyo+5IkEDIAtD0HbwFBikqIkgaX8Hog8yBUR0JHYJ6CU59QkVT4PuaIMvAvHRd5HbWhRWbqyZmGHtPEZkcekDS2CNrQIbfE5AlgVY0P2S0ewD5SjYRsHkrXmCPb5g1h8+rZxLMZwyrmL+6JN9yQU+xjSEi0SyvlrG5dWIs32Kvumr8wC6DF/sRO0ZD9cQALlaNnGMuZyTDCzZRZcF21POEbkTAMdFR/AurferEgdFed5DiXgWRw6eQoc5A84hh2YUavjeoiZLS7skir/xONNqIgKPZJt4AyoYy5RCGyI7c7ye/QhV5QwI1cbX7RGmJrnlsX16EfAPmZw1ck++m+Yo3gtSf4Hf6VKhAI+0rkQAAAAAElFTkSuQmCC">Add field to plot</button></a>
+						</form>
+					</div>
+
+					<div class="main-left">
+						<h2 id="plot">Plot</h2>
+						<canvas id="canvas" width="100%" height=40></canvas>
+						<p>
+						<p>Copyright 2018 Johannes Huebner dev@johanneshuebner.com</p>
+						<p>Charting by <a href="http://chartjs.org/" target="_blank">chart.js</a></p>
+						<p>Gauges by <a href="https://github.com/Mikhus/canvas-gauges" target="_blank">Mykhailo Stadnyk</a></p>
+					</div>
+				</div>
+				<!-- END PLOT -->
+
+				<!-- DATA LOGGER -->
+				<div id="logger" class="tabdiv main-content">
+
+					<div class="main-right">
+						<h3 class="underline">Actions</h3>
+
+						<!-- Start logging -->
+						<button onclick="log.start();" id="startstop">
+							<!-- /icon-play.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAL9JREFUSInd1aGqQkEQxvGfx2C6xWC22ExWn0DMvoKv4CvYTb6CT2AURGy33CfQeMMNgkFBjsE9cDDdsIPoB8syO8P8YXdnhk/UFj8YRgHKtG5Y4CsKcEn7EeMIQB/7mr1CJycACkxxSmd/yW7kAlTqYl3zbdDLCag0wW/ynzFDMycA2ljW4r4xyAmoNMIhxV4xRysngEeNLDxqpsTuOaD4Z6KsevkVhT5y2DftCiq00FYR3uzC23XYwAkfme+lO+/CXqyEUBhOAAAAAElFTkSuQmCC">Start logging</button>
+
+						<!-- Stop logging -->
+						<button onclick="log.stop();">
+							<!-- /icon-square.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAHNJREFUSIntlTEOgCAMRV8c5E7i/RTuCR5DB8ugaRwogxp+0nRo8h5h+fCnOCACGdgrJwMBGDVBNIDvs2qC8vKp7gMA8MJI2rHYrblwhgbAx3RBF3RBF7xNsMn2Bt4sO2vHQLvCWTSBE0kygBNnm6mV+c0cZy9SUXHYiZQAAAAASUVORK5CYII=">Stop logging</button>
+
+						<!-- Save -->
+						<button onclick="log.save();">
+							<!-- /icon-save.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAALhJREFUSIndlUsOgjAQhj+M0RNI4lU0Xs8H12LJDhaeADwGbqamNLSZERJj/2TS5/xf21kUctIeqIABGA3RAKUGUBmN/eg0EHfyk4xdckqlmKsgoaEGAHAAWtn7BI5rA9SQGCAVtbfff65GA6iNAAeJ3tzyJClNfDYrGCb1U4CmBrFafFR4/TGYs9YjzCsAtobEmJIHybvI/wd4SXte4HeRdphbvPP9hxPGdQ6wAx5Av8C4B27ilYnep/GG5uAVCQ8AAAAASUVORK5CYII=">Save as...</button>
+
+						<h3 class="underline">Configure Logger</h3>
+						<label for="data-logger-samples">Samples per line: </label>
+						<input id="data-logger-samples" type="number" step="1" min="1" max="2000" value="500"><br>
+						<input type="checkbox" id="data-logger-minmax">
+						<label for="data-logger-minmax">Include Min/Max values</label><br>
+						<form id="data-logger-configuration">
+							<a onclick="log.addLogItem();"><button type="button">
+								<!-- /icon-plus-circle.png -->
+								<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAYVJREFUSInFlb9OAkEQxn9acfGaI3bQc/gO/n0AtLM1Rn0FDY9kpZSKiUil0qqAiY1Xi4ZeLHYmt0eO2yWB+CWbTeZmvvluZncWlowVx/cycAA0gBioij0B+kALuAK+5k0cAE3gB5g41rf4Br7kVaBnEdwAJ0ANWJMVA6fAreXXAyo+5IkEDIAtD0HbwFBikqIkgaX8Hog8yBUR0JHYJ6CU59QkVT4PuaIMvAvHRd5HbWhRWbqyZmGHtPEZkcekDS2CNrQIbfE5AlgVY0P2S0ewD5SjYRsHkrXmCPb5g1h8+rZxLMZwyrmL+6JN9yQU+xjSEi0SyvlrG5dWIs32Kvumr8wC6DF/sRO0ZD9cQALlaNnGMuZyTDCzZRZcF21POEbkTAMdFR/AurferEgdFed5DiXgWRw6eQoc5A84hh2YUavjeoiZLS7skir/xONNqIgKPZJt4AyoYy5RCGyI7c7ye/QhV5QwI1cbX7RGmJrnlsX16EfAPmZw1ck++m+Yo3gtSf4Hf6VKhAI+0rkQAAAAAElFTkSuQmCC">Add field to log</button></a>
+						</form>
+					</div>
+
+					<div class="main-left">
+						<h2>Data Logger</h2>
+						<textarea id="data-logger-text-area" rows="50">
+						</textarea>
+					</div>
+
+				</div>
+				<!-- END DATA LOGGER -->
+
+				<!-- CAN MAPPING -->
+				<div id="canmapping" class="tabdiv main-content">
+
+					<div class="main-right">
+						<h3 class="underline">Actions</h3>
+						<button onclick="modal.showModal('can-mapping');">
+							<!-- /icon-plus-circle.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAYVJREFUSInFlb9OAkEQxn9acfGaI3bQc/gO/n0AtLM1Rn0FDY9kpZSKiUil0qqAiY1Xi4ZeLHYmt0eO2yWB+CWbTeZmvvluZncWlowVx/cycAA0gBioij0B+kALuAK+5k0cAE3gB5g41rf4Br7kVaBnEdwAJ0ANWJMVA6fAreXXAyo+5IkEDIAtD0HbwFBikqIkgaX8Hog8yBUR0JHYJ6CU59QkVT4PuaIMvAvHRd5HbWhRWbqyZmGHtPEZkcekDS2CNrQIbfE5AlgVY0P2S0ewD5SjYRsHkrXmCPb5g1h8+rZxLMZwyrmL+6JN9yQU+xjSEi0SyvlrG5dWIs32Kvumr8wC6DF/sRO0ZD9cQALlaNnGMuZyTDCzZRZcF21POEbkTAMdFR/AurferEgdFed5DiXgWRw6eQoc5A84hh2YUavjeoiZLS7skir/xONNqIgKPZJt4AyoYy5RCGyI7c7ye/QhV5QwI1cbX7RGmJrnlsX16EfAPmZw1ck++m+Yo3gtSf4Hf6VKhAI+0rkQAAAAAElFTkSuQmCC">Add new mapping</button>
+						<button onclick="ui.sendCmd('can clear');">
+							<!-- /icon-trash-2.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAKNJREFUSIntlmEKhCAQhT+Wpb1T0fXatmu5V9GOUT8yCHdCJ6kt6MGgw9N5Myoq/BkvoAMcMATmgA9Q5Ah0QuDQ2hyBOfNS4CrP2RyBOcutPI9F3/BbfhgolTeSwGGIlq2Zt3sFpxEwLDZO8FWQ1nLt1MTmnWeJboH98Ewc9434Klz/quh9Wyni1L51KYNb4s/kmjUpAgXTY24VgS3wJvMDsAkjQRJaZqmk/aEAAAAASUVORK5CYII=">Remove all mappings</button>
+						<button onclick="ui.showParamsSavedModal();">
+							<!-- /icon-save.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAALhJREFUSIndlUsOgjAQhj+M0RNI4lU0Xs8H12LJDhaeADwGbqamNLSZERJj/2TS5/xf21kUctIeqIABGA3RAKUGUBmN/eg0EHfyk4xdckqlmKsgoaEGAHAAWtn7BI5rA9SQGCAVtbfff65GA6iNAAeJ3tzyJClNfDYrGCb1U4CmBrFafFR4/TGYs9YjzCsAtobEmJIHybvI/wd4SXte4HeRdphbvPP9hxPGdQ6wAx5Av8C4B27ilYnep/GG5uAVCQ8AAAAASUVORK5CYII=">Save mappings to flash</button>
+					</div>
+
+					<div class="main-left">
+						<h2>CAN Mapping</h2>
+						<p>On this page you can configure the CAN mapping settings for your OpenInverter board. CAN mapping allows you to send and receive data via CAN bus. You can specify spot values that you would like to transmit on the CAN bus. Additionally you can specify spot values that you would like to set based on data received on the CAN bus.</p>
+						<p>A maximum of 8 items per CAN message can be mapped.</p>
+
+						<h3 class="underline">Existing CAN Mappings</h3>
+						<table id="existingCanMappingTable" class="existing-can-mapping">
+							<tr>
+								<th>Spot Value</th>
+								<th>Transmit or Receive</th>
+								<th>ID</th>
+								<th>Offset</th>
+								<th>Length</th>
+								<th>Gain</th>
+								<th>Delete Mapping</th>
+							</tr>
+						</table>
+					</div>
+				</div>
+				<!-- END CAN MAPPING -->
+
+
+				<!-- WIFI SETTINGS -->
+				<div id="wifi" class="tabdiv main-content"></div>
+
+				<!-- FILES -->
+				<div id="files" class="tabdiv main-content">
+					<div class="main-right">
+						<h3 class="underline">Actions</h3>
+						<!-- upload file -->
+						<form id="uploadform" enctype="multipart/form-data" action="edit" method="POST">
+							<input id="updatefile" name="updatefile" type="file" onchange="uploadFile();" hidden />
+							<label class="butt" for="updatefile">
+								<!-- /icon-upload.png -->
+								<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAKdJREFUSIntlEEKgzAQAAcP/YHSvkX8nrbv8iae9OAL1Af4AHtZIUbFGNeL7cISyIaZsFkCvxQRMEhGV8BrYJSsNSU2XFUSApUAGwNu7r204E9DYNe8JAXLVkwCmLeu8BHkQMm8z6ZgkpRyViVswW4EWua/QEWQozMNmxyXCXG5xCbn8Ai6CO71yL2s8QleImu3Vnyz/PN9M10TPIAP0J4At0AmrJvEF5W8XDFZxlMrAAAAAElFTkSuQmCC">Upload file</label>
+						</form>
+					</div>
+					<div class="main-left">
+						<h2>Files</h2>
+						<table id="filesTable" class="fullheight">
+							<tr>
+								<th>Filename</th>
+								<th>Delete</th>
+							</tr>
+						</table>
+					</div>
+				</div>
+				<!-- END FILES -->
+
+				<!-- SUPPORT -->
+				<div id="support" class="tabdiv main-content">
+					<div class="main-right">
+						<h3 class="underline">Actions</h3>
+						<a href="/remote.html"><button>
+							<!-- /icon-tool.png -->
+							<img class="buttonimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAUdJREFUSInl1M8uBEEQx/HPcmbj33IQVxJeQ4Q34U6WFV7FS/hzccGFOHEgvMAiER6AdeiaZIwsM6xEopJOd1dXf6vnN9XNH7RxNHGOx2gnaGHgp/Al3KPTpS3/FP4aoF0sYBo34bvE6HfhE3gI0BZqaAQ0gzcidgQrKsrVDNBewOtd4PmkrSoJzmPTQsw3voB3cAx9JRNMRX8afaew3sAh5nAbvtnSx8dTQAdjXpQoP56JcbtKgpPYtFg4dV6STK6lmJ+VhTdwHZuahbU61sNflwrgIGLXysLzn/9ZndewHbF30o2vBM+qZQybklyjGJZk2Y/YV++lrAQv6l5sd72CX+NIeugepPJdzcV2tTFcBORKeiI+81eyoRInz/sr285vwmt4xgsmew3PErQDNh9JegbPbMvHsusZHPojSVuSa0f68f/c3gAXBoY3A6QNPQAAAABJRU5ErkJggg==">Start remote support session</button></a>
+					</div>
+					<div class="main-left">
+						<h2>Support</h2>
+						<p>You can get support from the community on the <a href="https://openinverter.org">OpenInverter Forum</a>.</p>
+						<p>Paid support is also available. See details <a href="https://openinverter.org/docs/index.html%3Fen_consulting,35.html">here</a>.
+					</div>
+				</div>
+				<!-- END SUPPORT -->
+
+			</div> <!-- end content-wrapper -->
+		</div> <!-- end content-wrapper-inner -->
+
+	</div>
+
 </body>
 </html>
 
