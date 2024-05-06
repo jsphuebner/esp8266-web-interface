@@ -223,15 +223,8 @@ static void handleCommand() {
   if (!fastUart && fastUartAvailable)
   {
     sendCommand("fastuart");
-    if (Serial.readString().startsWith("OK"))
-    {
-      Serial.begin(921600);
-      fastUart = true;
-    }
-    else
-    {
-      fastUartAvailable = false;
-    }
+    Serial.begin(921600);
+    fastUart = true;
   }
 
   sendCommand(cmd);
