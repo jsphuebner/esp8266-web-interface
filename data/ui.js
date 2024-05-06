@@ -538,6 +538,9 @@ var ui = {
 			{
 				uploadFirmwareBar.innerHTML = "<p>Update Done!</p>";
 				setTimeout(function() { modal.hideModal('small'); ui.refresh(); }, 3000);
+				var xhr=new XMLHttpRequest();
+				xhr.open("DELETE", "/edit?f="+file);
+				xhr.send();
 			}
 		}
 		runUpdateRequest.open("GET", "/fwupdate?step=" + step + "&file=" + file);
