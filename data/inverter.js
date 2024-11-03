@@ -160,8 +160,8 @@ var inverter = {
 	 */
 	parseEnum: function(unit)
 	{
-		var expr = /(\-{0,1}[0-9]+)=([a-zA-Z0-9_\-\.]+)[,\s]{0,2}|([a-zA-Z0-9_\-\.]+)[,\s]{1,2}/g;
-		var enums = new Array();
+		var expr = /(\-{0,1}[0-9\.]+)=([a-zA-Z0-9_\-\.]+)[,\s]{0,2}|([a-zA-Z0-9_\-\.]+)[,\s]{1,2}/g;
+		var enums = {};
 		var res = expr.exec(unit);
 
 		if (res)
