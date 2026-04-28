@@ -113,7 +113,8 @@ bool handleFileRead(String path){
     if(SPIFFS.exists(pathWithGz))
       path += ".gz";
     File file = SPIFFS.open(path, "r");
-    size_t sent = server.streamFile(file, contentType);
+    server.sendHeader("Cache-Control", "max-age=86400");
+    server.streamFile(file, contentType);
     file.close();
     return true;
   }
@@ -380,7 +381,7 @@ static void handleWifi()
   if (updated)
   {
     File file = SPIFFS.open("/wifi-updated.html", "r");
-    size_t sent = server.streamFile(file, getContentType("wifi-updated.html"));
+    server.streamFile(file, getContentType("wifi-updated.html"));
     file.close();    
   }
 }
@@ -769,7 +770,6 @@ void setup(void){
   });
 
   server.begin();
-  server.client().setNoDelay(1);
 
   MDNS.addService("http", "tcp", 80);
 }

@@ -62,6 +62,10 @@
 			<p>Communication problem between ESP and STM</p>
 		</div>
 
+		<div id="param-success-bar" class="param-success-bar">
+			<p id="param-success-bar-text"></p>
+		</div>
+
 		<!-- 'Add CAN Mapping' modal -->
 		<div id="can-mapping-modal-overlay" class="modal-overlay">
 			<div id="can-mapping-modal-container" class="can-mapping-modal-container">
@@ -91,7 +95,7 @@
 						<td>Set the ID of the CAN frame to send/receive</td>
 					</tr>
 					<tr>
-						<td>Offset</td>
+						<td>Position</td>
 						<td><input type="number" step="1" min="0" max="63" id="canpos"></td>
 						<td>Specify the position (offset) within the frame to place (transmit) or find (receive) this value</td>
 					</tr>
@@ -104,6 +108,11 @@
 						<td>Gain</td>
 						<td><input type="number" step="1" min="1" max="100" id="cangain"></td>
 						<td>Specify a gain to scale the value up or down</td>
+					</tr>
+					<tr>
+						<td>Offset</td>
+						<td><input type="number" step="1" min="-128" max="127" id="canoffset"></td>
+						<td>Specify an offset to add to the value</td>
 					</tr>
 				</table>
 				<button onclick="ui.canMapping();">
@@ -151,16 +160,15 @@
 					<img class="navimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAdRJREFUSInF1T1rlEEUBeBHYpHFJZDFQkhqsxELwdrPwlLtLP0g+heU+Ee0sLIViRYWJgGjEFBT6ppEsDGFNsYQLSUWc4d9s072fSOIB6Y598y5l7kzd/jHOFAT7+AyLqKLyeA3sIqnmMO3/SZuYRZb2KlZ30Pbamo+iZWKwXPMYAqHYnVxE/MV3QommphvxIY1nG5Q0Bmsx56NYUlalcpfYLyBecY4lmLvG4yWRLP6lQ+an8Az/MBXPCxU2sHH8LgzaN7Rb+jgsZzET3829wuODGjP6jd+V5E39Bs6iNzIBxiT+rQQ3L2CPseuVcm5IGcKGx6hJ92ejOOhf1fQ34rY4yq5FuRUYUMJF4Yk6EZstUpuB9muMR6RjjPr7xY07Yht7zfBSFScm3w/uEGMRXyrSjY5opyghyv2nmO7juhgkD0cxalIVsIvqbl1yNf8fZW8HlnnGxjUYTG8rlbJjvQ4dqTZshdeYXlI/Hx4bCqMmjwqPuHwXySojorbJcEo3oZgqVTBEHTwUs2wIw2wPK7XpdlSh3P6lX/W4E+YiCryfV+Qnv+09E7aOBbcYkX3uol5xqg0cnPjh61N6cyLx1L36Y/jkvTpT9v96X+QPv0nkeT/4DdxyppwcyvRBAAAAABJRU5ErkJggg=="><p class="navbar-text">SUPPORT</p></a>
 			</div>
 
-			<!-- spinner div -->
-			<div id="spinner-div" class="control">
-				<img style="vertical-align:middle" src="ajax-loader.gif"><p> refreshing...</p>
-			</div>
-
 			<!-- auto reload toggle -->
 			<div id="auto-reload-toggle-div" class="control small-screen-hide">
 				<label class="switch">
 					<input id="auto-reload-checkbox" type="checkbox" onclick="ui.setAutoReload(this.checked);"><span class="slider round"></span>
 				</label><p style="display: inline-block;">Auto reload</p>
+			</div>
+			<!-- spinner div -->
+			<div id="spinner-div" class="control">
+				<img style="vertical-align:middle" src="ajax-loader.gif"><p> refreshing...</p>
 			</div>
 			<!-- beta features toggle -->
 			<div id="beta-features-toggle-div" onclick="ui.toggleBetaFeaturesVisibility();" class="control small-screen-hide">
@@ -504,9 +512,10 @@ You can also program with a cable, see <a href="https://openinverter.org/forum/v
 								<th>Spot Value</th>
 								<th>Transmit or Receive</th>
 								<th>ID</th>
-								<th>Offset</th>
+								<th>Position</th>
 								<th>Length</th>
 								<th>Gain</th>
+								<th>Offset</th>
 								<th>Delete Mapping</th>
 							</tr>
 						</table>
