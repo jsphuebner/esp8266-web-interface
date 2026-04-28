@@ -95,7 +95,7 @@ var inverter = {
 		xmlhttp.onreadystatechange = function() {
 			if (xmlhttp.readyState === XMLHttpRequest.DONE) {
 				console.log(req + ": " + xmlhttp.status);
-				if (xmlhttp.status != 200) {
+				if (xmlhttp.status !== 200) {
 					paramsCache.failedFetchCount += 1;
 					if ( paramsCache.failedFetchCount >= 2 && typeof ui !== 'undefined'){
 						ui.showCommunicationErrorBar();
