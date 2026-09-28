@@ -131,14 +131,15 @@ var ui = {
 			}
 		});
 
-		ui.updateTables();
+		ui.updateTables(function() {
+			ui.populateSpotValueDropDown();
+			ui.populateExistingCanMappingTable();
+			ui.refreshStatusBox();
+		});
 		plot.generateChart();
 		ui.parameterDatabaseCheckForUpdates();
-		ui.populateSpotValueDropDown();
-		ui.populateExistingCanMappingTable();
 		wifi.populateWiFiTab();
 		ui.populateFileList();
-		ui.refreshStatusBox();
 		ui.refreshMessagesBox();
 		ui.setAutoReload(true);
 	},
@@ -162,9 +163,10 @@ var ui = {
 	},
 
 	/** @brief generates parameter and spotvalue tables */
-	updateTables: function()
+	updateTables: function(callback)
 	{
 		var tableParam = document.getElementById("params");
+		var tableSpot = document.getElementById("spotValues");
 
 		// Don't run if any one of the param boxes are highlighted (i.e. don't clobber what the user is typing)
 		var paramFields = tableParam.querySelectorAll('input, select');
@@ -172,6 +174,7 @@ var ui = {
 		{
 			if ( paramFields[i] === document.activeElement )
 			{
+				if (callback) callback();
 				return;
 			}
 		}
@@ -180,110 +183,121 @@ var ui = {
 
 		inverter.getParamList(function(values)
 		{
-
-			var tableSpot = document.getElementById("spotValues");
+			var isInitialBuild = tableParam.rows.length <= 1;
 			var lastCategory = "";
 			var params = {};
 
-			while (tableParam.rows.length > 1) tableParam.deleteRow(1);
-			while (tableSpot.rows.length > 1) tableSpot.deleteRow(1);
+			if (isInitialBuild)
+			{
+				while (tableParam.rows.length > 1) tableParam.deleteRow(1);
+				while (tableSpot.rows.length > 1) tableSpot.deleteRow(1);
+			}
 
 			for (var name in values)
 			{
 				var param = values[name];
 
-				// Get docstring
-				var docstring = docstrings.get(name);
-				if ( ! docstring == "" )
-				{
-					var nameWithTooltip = "<div class=\"tooltip\">" + name + "<span class=\"tooltiptext\">" + docstring + "</span></div>";
-				}
-				else
-				{
-					nameWithTooltip = name;
-				}
-
 				if (param.isparam)
 				{
-					var valInput;
-					var unit = param.unit;
-					var index = "-";
 					params[name] = param.value;
 
-					// Initialise categoryVisible toggles if needed (on first load for example). Make visible by default.
-					if ( !(param.category in ui.categoryVisible) )
-						ui.categoryVisible[param.category] = true;
-
-                    // If we're starting a new category, insert the category header row.
-					if (param.category != lastCategory)
+					if (isInitialBuild)
 					{
-						var icon = ui.categoryVisible[param.category] ? '-' : '+';
-						ui.addRow(tableParam, [ '<BUTTON onclick="ui.toggleVisibility(\'' +
-							param.category + '\');" style="background: none; border: none; font-weight: bold;">' + icon + ' ' +
-							param.category + '</BUTTON>' ], true);
-						lastCategory = param.category;
-					}
+						// Get docstring
+						var docstring = docstrings.get(name);
+						var nameWithTooltip = (docstring && docstring !== "")
+							? "<div class=\"tooltip\">" + name + "<span class=\"tooltiptext\">" + docstring + "</span></div>"
+							: name;
 
-					if (param.enums)
-					{
-						if (param.enums[param.value])
+						var valInput;
+						var unit = param.unit;
+						var index = "-";
+
+						// Initialise categoryVisible toggles if needed (on first load for example). Make visible by default.
+						if ( !(param.category in ui.categoryVisible) )
+							ui.categoryVisible[param.category] = true;
+
+						// If we're starting a new category, insert the category header row.
+						if (param.category != lastCategory)
 						{
+							var icon = ui.categoryVisible[param.category] ? '-' : '+';
+							ui.addRow(tableParam, [ '<BUTTON onclick="ui.toggleVisibility(\'' +
+								param.category + '\');" style="background: none; border: none; font-weight: bold;">' + icon + ' ' +
+								param.category + '</BUTTON>' ], true);
+							lastCategory = param.category;
+						}
 
-						    valInput = '<SELECT onchange="ui.showParamUpdateModal(\'' + name + '\', this.value)">';
+						if (param.enums)
+						{
+							if (param.enums[param.value])
+							{
+								valInput = '<SELECT id="param_input_' + name + '" onchange="ui.showParamUpdateModal(\'' + name + '\', this.value)">';
 
-						    for (var idx in param.enums)
-						    {
-	     						valInput += '<OPTION value="' + idx + '"';
-							    if (idx == param.value)
-								    valInput += " selected";
-							    valInput += '>' + param.enums[idx] + '</OPTION>';
-						    }
+								for (var idx in param.enums)
+								{
+									valInput += '<OPTION value="' + idx + '"';
+									if (idx == param.value)
+										valInput += " selected";
+									valInput += '>' + param.enums[idx] + '</OPTION>';
+								}
+								valInput += '</SELECT>';
+							}
+							else
+							{
+								valInput = "<ul id=\"param_input_" + name + "\">";
+								for (var key in param.enums)
+								{
+									if (param.value & key)
+										valInput += "<li>" + param.enums[key];
+								}
+								valInput += "</ul>";
+							}
+							unit = "";
 						}
 						else
 						{
-	 						valInput = "<ul>";
-	 						for (var key in param.enums)
-	 						{
-	 							if (param.value & key)
-	 								valInput += "<li>" + param.enums[key];
-	 						}
-	 						valInput += "</ul>";
+							valInput = '<INPUT id="param_input_' + name + '" type="number" min="' + param.minimum + '" max="' + param.maximum +
+								'" step="0.05" value="' + param.value + '" onchange="ui.showParamUpdateModal(\'' + name + '\', this.value)"/>';
 						}
-						unit = "";
+
+						if (param.i !== undefined)
+							index = param.i;
+
+						ui.addRow(tableParam, [ index, nameWithTooltip, valInput, unit, param.minimum, param.maximum, param.default ], ui.categoryVisible[param.category]);
 					}
 					else
 					{
-						valInput = '<INPUT type="number" min="' + param.minimum + '" max="' + param.maximum +
-							'" step="0.05" value="' + param.value + '" onchange="ui.showParamUpdateModal(\'' + name + '\', this.value)"/>';
+						var el = document.getElementById("param_input_" + name);
+						if (el && el !== document.activeElement)
+						{
+							if (el.tagName === "INPUT" || el.tagName === "SELECT")
+							{
+								if (el.value != param.value) el.value = param.value;
+							}
+						}
 					}
-
-					if (param.i !== undefined)
-					    index = param.i;
-
-					ui.addRow(tableParam, [ index, nameWithTooltip, valInput, unit, param.minimum, param.maximum, param.default ], ui.categoryVisible[param.category]);
 				}
 				else
 				{
-					var checkHtml = '<INPUT type="checkbox" data-name="' + name + '" data-axis="left" /> l';
-					checkHtml += ' <INPUT type="checkbox" data-name="' + name + '" data-axis="right" /> r';
+					var display;
 					var unit = param.unit;
 
 					if (param.enums)
 					{
 						if (param.enums[param.value])
-	 					{
-	 						display = param.enums[param.value];
-	 					}
-	 					else
-	 					{
-	 						var active = [];
-	 						for (var key in param.enums)
-	 						{
-	 							if (param.value & key)
-	 								active.push(param.enums[key]);
-	 						}
-	 						display = active.join('|');
-	 					}
+						{
+							display = param.enums[param.value];
+						}
+						else
+						{
+							var active = [];
+							for (var key in param.enums)
+							{
+								if (param.value & key)
+									active.push(param.enums[key]);
+							}
+							display = active.join('|');
+						}
 						unit = "";
 					}
 					else
@@ -291,12 +305,29 @@ var ui = {
 						display = param.value;
 					}
 
-					ui.addRow(tableSpot, [ nameWithTooltip, display, unit ], true);
+					if (isInitialBuild)
+					{
+						var docstring = docstrings.get(name);
+						var nameWithTooltip = (docstring && docstring !== "")
+							? "<div class=\"tooltip\">" + name + "<span class=\"tooltiptext\">" + docstring + "</span></div>"
+							: name;
+
+						ui.addRow(tableSpot, [ nameWithTooltip, '<span id="spot_val_' + name + '">' + display + '</span>', unit ], true);
+					}
+					else
+					{
+						var el = document.getElementById("spot_val_" + name);
+						if (el && el.textContent !== String(display))
+						{
+							el.textContent = display;
+						}
+					}
 				}
 			}
-      ui.populateVersion();
+			ui.populateVersion();
 			document.getElementById("paramDownload").href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(params, null, 2));
 			document.getElementById("spinner-div").style.visibility = "hidden";
+			if (callback) callback(values);
 		});
 	},
 
@@ -351,10 +382,10 @@ var ui = {
 	setAutoReload: function(enable)	{
       var autoReloadCheckbox = document.getElementById('auto-reload-checkbox');
 
-      // run the poll function every 2 seconds
+      // run the poll function every 5 seconds
       if (enable) {
         autoReloadCheckbox.checked = true;
-        ui.autoRefreshHandle = setInterval(ui.refresh, 2000);
+        ui.autoRefreshHandle = setInterval(ui.refresh, 5000);
       }
       else {
         autoReloadCheckbox.checked = false;
@@ -496,20 +527,33 @@ var ui = {
 
 		uploadFirmwareFileRequest.onload = function()
 		{
-			modal.appendToModal('small', '<p>Installing firmware...</p>');
-			modal.appendToModal('small', '<div id="progress" class="graph"><div id="upload-firmware-bar" style="width: 0"></div></div>');
-
-			if (file.endsWith(".bin"))
+			if (uploadFirmwareFileRequest.status >= 200 && uploadFirmwareFileRequest.status < 300)
 			{
-				ui.runUpdateStep(-1, "/" + file);
+				modal.appendToModal('small', '<p>Installing firmware...</p>');
+				modal.appendToModal('small', '<div id="progress" class="graph"><div id="upload-firmware-bar" style="width: 0"><p>Connecting to bootloader...</p></div></div>');
+
+				if (file.endsWith(".bin"))
+				{
+					ui.runUpdateStep(-1, "/" + file);
+				}
+				else
+				{
+					modal.hideModal('small');
+					alert('Error: Wrong file type. The firmware file must end with .bin');
+				}
 			}
-			else {
+			else
+			{
 				modal.hideModal('small');
-				alert('Error, wrong file type. You must use the "stm32_foc.bin" or "stm32_sine.bin" file to update the firmware');
+				alert('Failed to upload file to ESP8266 (HTTP ' + uploadFirmwareFileRequest.status + ')');
 			}
-			document.getElementById("upload-firmware-bar").innerHTML = "<p>Upload complete</p>";
-			document.getElementById("upload-firmware-bar").style.width = "100%";
-		}
+		};
+
+		uploadFirmwareFileRequest.onerror = function()
+		{
+			modal.hideModal('small');
+			alert('Network error while uploading file to ESP8266');
+		};
 
 		uploadFirmwareFileRequest.open("POST", "/edit");
 		uploadFirmwareFileRequest.send(fd);
@@ -523,26 +567,92 @@ var ui = {
 	runUpdateStep: function(step, file)
 	{
 		var runUpdateRequest = new XMLHttpRequest();
+		runUpdateRequest.timeout = 15000;
+
 		runUpdateRequest.onload = function()
 		{
-			step++;
 			var uploadFirmwareBar = document.getElementById("upload-firmware-bar");
-			var result = JSON.parse(this.responseText);
+			if (!uploadFirmwareBar) return;
+
+			if (this.status !== 200)
+			{
+				var errMsg = "Update failed (HTTP " + this.status + ")";
+				try {
+					var errObj = JSON.parse(this.responseText);
+					if (errObj.error) errMsg = errObj.error;
+				} catch(e) {}
+				uploadFirmwareBar.style.width = "100%";
+				uploadFirmwareBar.style.backgroundColor = "#d9534f";
+				uploadFirmwareBar.innerHTML = "<p>" + errMsg + "</p>";
+				return;
+			}
+
+			var result;
+			try {
+				result = JSON.parse(this.responseText);
+			} catch(e) {
+				uploadFirmwareBar.style.width = "100%";
+				uploadFirmwareBar.style.backgroundColor = "#d9534f";
+				uploadFirmwareBar.innerHTML = "<p>Invalid response from server</p>";
+				return;
+			}
+
+			if (result.error)
+			{
+				uploadFirmwareBar.style.width = "100%";
+				uploadFirmwareBar.style.backgroundColor = "#d9534f";
+				uploadFirmwareBar.innerHTML = "<p>" + result.error + "</p>";
+				return;
+			}
+
 			var totalPages = result.pages;
-			var progress = Math.round(100 * step / totalPages);
+			if (!totalPages || totalPages <= 0)
+			{
+				uploadFirmwareBar.style.width = "100%";
+				uploadFirmwareBar.style.backgroundColor = "#d9534f";
+				uploadFirmwareBar.innerHTML = "<p>Error: Invalid page count</p>";
+				return;
+			}
+
+			step++;
+			var progress = Math.min(100, Math.max(1, Math.round(100 * step / totalPages)));
 			uploadFirmwareBar.style.width = progress + "%";
-			uploadFirmwareBar.innerHTML = "<p>" +  progress + "%</p>";
+			uploadFirmwareBar.innerHTML = "<p>Page " + step + " / " + totalPages + " (" + progress + "%)</p>";
+
 			if (step < totalPages)
+			{
 				ui.runUpdateStep(step, file);
+			}
 			else
 			{
 				uploadFirmwareBar.innerHTML = "<p>Update Done!</p>";
 				setTimeout(function() { modal.hideModal('small'); ui.refresh(); }, 3000);
-				var xhr=new XMLHttpRequest();
-				xhr.open("DELETE", "/edit?f="+file);
+				var xhr = new XMLHttpRequest();
+				xhr.open("DELETE", "/edit?f=" + file);
 				xhr.send();
 			}
-		}
+		};
+
+		runUpdateRequest.onerror = function()
+		{
+			var uploadFirmwareBar = document.getElementById("upload-firmware-bar");
+			if (uploadFirmwareBar) {
+				uploadFirmwareBar.style.width = "100%";
+				uploadFirmwareBar.style.backgroundColor = "#d9534f";
+				uploadFirmwareBar.innerHTML = "<p>Communication error on step " + step + "</p>";
+			}
+		};
+
+		runUpdateRequest.ontimeout = function()
+		{
+			var uploadFirmwareBar = document.getElementById("upload-firmware-bar");
+			if (uploadFirmwareBar) {
+				uploadFirmwareBar.style.width = "100%";
+				uploadFirmwareBar.style.backgroundColor = "#d9534f";
+				uploadFirmwareBar.innerHTML = "<p>Timeout waiting for response on step " + step + "</p>";
+			}
+		};
+
 		runUpdateRequest.open("GET", "/fwupdate?step=" + step + "&file=" + file);
 		runUpdateRequest.send();
 	},
@@ -1245,7 +1355,7 @@ var ui = {
 		var existigCanMappingTable = document.getElementById("existingCanMappingTable");
 		// emtpy the table
 		while (existigCanMappingTable.rows.length > 1) existigCanMappingTable.deleteRow(1);
-		inverter.getParamList(function(values) {
+		var populate = function(values) {
 			for (var name in values) {
 				var param = values[name];
 				if (typeof param.canid !== 'undefined'){
@@ -1255,7 +1365,7 @@ var ui = {
 					canNameCell.innerHTML = name;
 					// tx/rx
 					var canTxRxCell = tr.insertCell(-1);
-					canTxRxCell.innerHTML = param.isrx ? "Receive" : "Transmit";;
+					canTxRxCell.innerHTML = param.isrx ? "Receive" : "Transmit";
 					// canid
 					var canIdCell = tr.insertCell(-1);
 		        	canIdCell.innerHTML = param.canid;
@@ -1274,22 +1384,36 @@ var ui = {
 		        	canDeleteCell.innerHTML = "<button onclick=\"" + cmd + "\"><img class=\"buttonimg\" src=\"/icon-trash.png\">Delete mapping</button>";
 				}
 			}
-		});
+		};
+
+		var cached = paramsCache.getData();
+		if (cached) {
+			populate(cached);
+		} else {
+			inverter.getParamList(populate);
+		}
 	},
 
 	/** @brief Populate the 'spot value' drop-down on the 'Add new CAN mapping' form */
 	populateSpotValueDropDown: function()
 	{
 		var select = document.getElementById("add-can-mapping-spot-value-drop-down");
-		inverter.getParamList(function(values) {
+		select.innerHTML = "";
+		var populate = function(values) {
 			for (var name in values) {
-				var param = values[name];
 				var el = document.createElement("option");
 				el.textContent = name;
 				el.value = name;
 				select.appendChild(el);
 			}
-		});
+		};
+
+		var cached = paramsCache.getData();
+		if (cached) {
+			populate(cached);
+		} else {
+			inverter.getParamList(populate);
+		}
 	},
 
 

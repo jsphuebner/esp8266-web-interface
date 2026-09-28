@@ -54,7 +54,7 @@
 
 const char* host = "inverter";
 bool fastUart = false;
-bool fastUartAvailable = true;
+bool fastUartAvailable = false;
 
 ESP8266WebServer server(80);
 ESP8266HTTPUpdateServer updater;
@@ -209,39 +209,165 @@ static void sendCommand(String cmd)
 
 static void handleCommand() {
   const int cmdBufSize = 128;
-  if(!server.hasArg("cmd")) {server.send(500, "text/plain", "BAD ARGS"); return;}
+  if (!server.hasArg("cmd")) {
+    server.send(500, "text/plain", "BAD ARGS");
+    return;
+  }
 
   String cmd = server.arg("cmd").substring(0, cmdBufSize);
   int repeat = 0;
-  char buffer[255];
-  size_t len = 0;
-  String output;
-
   if (server.hasArg("repeat"))
     repeat = server.arg("repeat").toInt();
 
-  if (!fastUart && fastUartAvailable)
-  {
-    sendCommand("fastuart");
-    Serial.begin(921600);
-    fastUart = true;
-  }
+  // Stream directly to TCP client using HTTP "Connection: close" (Streaming to Close)
+  // Bypasses RAM buffering completely, allowing arbitrary-sized payloads (50KB+) without OOM
+  WiFiClient client = server.client();
+
+  client.print(
+    "HTTP/1.1 200 OK\r\n"
+    "Content-Type: application/json\r\n"
+    "Access-Control-Allow-Origin: *\r\n"
+    "Connection: close\r\n"
+    "\r\n"
+  );
 
   sendCommand(cmd);
-  do {
-    memset(buffer,0,sizeof(buffer));
-    len = Serial.readBytes(buffer, sizeof(buffer) - 1);
-    output += buffer;
 
-    if (repeat)
+  // Buffer incoming serial bytes into full TCP packets (MSS size: 1460 bytes)
+  // to avoid exhausting LwIP TCP PCB segments and prevent network choking
+  const size_t TX_BUF_SIZE = 1460;
+  char txBuffer[TX_BUF_SIZE];
+  size_t txLen = 0;
+
+  bool isJson = cmd.startsWith("json");
+  bool jsonStarted = false;
+  int jsonDepth = 0;
+  bool inQuotes = false;
+  bool escapeNext = false;
+  bool complete = false;
+  bool done = false;
+
+  unsigned long startWait = millis();
+  while (!Serial.available() && (millis() - startWait < 1500))
+  {
+    delay(1);
+  }
+
+  unsigned long lastDataTime = millis();
+
+  while (!done)
+  {
+    int avail = Serial.available();
+    if (avail > 0)
     {
-      repeat--;
-      Serial.print("!");
-      Serial.readBytes(buffer, 1); //consume "!"
+      size_t space = TX_BUF_SIZE - txLen;
+      int toRead = avail < (int)space ? avail : (int)space;
+      int bytesRead = Serial.readBytes(&txBuffer[txLen], toRead);
+      if (bytesRead > 0)
+      {
+        lastDataTime = millis();
+
+        if (isJson && !complete)
+        {
+          for (int i = 0; i < bytesRead; i++)
+          {
+            char c = txBuffer[txLen + i];
+            if (escapeNext)
+            {
+              escapeNext = false;
+            }
+            else if (c == '\\')
+            {
+              if (inQuotes) escapeNext = true;
+            }
+            else if (c == '"')
+            {
+              inQuotes = !inQuotes;
+            }
+            else if (!inQuotes)
+            {
+              if (c == '{')
+              {
+                jsonDepth++;
+                jsonStarted = true;
+              }
+              else if (c == '}')
+              {
+                jsonDepth--;
+                if (jsonStarted && jsonDepth == 0)
+                {
+                  complete = true;
+                  break;
+                }
+              }
+            }
+          }
+        }
+
+        txLen += bytesRead;
+
+        if (txLen >= TX_BUF_SIZE)
+        {
+          client.write((const uint8_t*)txBuffer, txLen);
+          txLen = 0;
+          yield();
+        }
+      }
     }
-  } while (len > 0);
-  server.sendHeader("Access-Control-Allow-Origin","*");
-  server.send(200, "text/json", output);
+    else
+    {
+      // Idle serial: flush partial buffer if pending for >= 10ms
+      if (txLen > 0 && (millis() - lastDataTime >= 10))
+      {
+        client.write((const uint8_t*)txBuffer, txLen);
+        txLen = 0;
+        yield();
+      }
+
+      if (repeat > 0)
+      {
+        if (millis() - lastDataTime >= 20)
+        {
+          repeat--;
+          Serial.print("!");
+          char discard[1];
+          Serial.readBytes(discard, 1); // consume "!"
+          lastDataTime = millis();
+        }
+      }
+      else if (complete)
+      {
+        // JSON root closed: brief 20ms window to drain any trailing \r\n, then done
+        if (millis() - lastDataTime >= 20)
+        {
+          done = true;
+          break;
+        }
+      }
+      else
+      {
+        // Timeout: wait longer for JSON (800ms) to ensure slow parameter iterations are not cut off
+        unsigned long timeout = isJson ? 800 : 250;
+        if (millis() - lastDataTime >= timeout)
+        {
+          done = true;
+          break;
+        }
+      }
+
+      delay(1);
+    }
+  }
+
+  // Flush any final remaining bytes
+  if (txLen > 0)
+  {
+    client.write((const uint8_t*)txBuffer, txLen);
+    txLen = 0;
+  }
+
+  client.flush();
+  client.stop();
 }
 
 static uint32_t crc32_word(uint32_t Crc, uint32_t Data)
@@ -267,12 +393,46 @@ static uint32_t crc32(uint32_t* data, uint32_t len, uint32_t crc)
 }
 
 
+static int waitForBootloaderChar(const char* targetChars, unsigned long timeoutMs)
+{
+  unsigned long start = millis();
+  while (millis() - start < timeoutMs)
+  {
+    if (Serial.available() > 0)
+    {
+      int c = Serial.read();
+      if (c >= 0)
+      {
+        for (const char* p = targetChars; *p; p++)
+        {
+          if ((char)c == *p)
+            return c;
+        }
+      }
+    }
+    delay(1);
+  }
+  return -1;
+}
+
 static void handleUpdate()
 {
-  if(!server.hasArg("step") || !server.hasArg("file")) {server.send(500, "text/plain", "BAD ARGS"); return;}
+  if (!server.hasArg("step") || !server.hasArg("file"))
+  {
+    server.send(500, "application/json", "{\"error\": \"BAD ARGS\"}");
+    return;
+  }
+
   size_t PAGE_SIZE_BYTES = 1024;
   int step = server.arg("step").toInt();
-  File file = SPIFFS.open(server.arg("file"), "r");
+  String filepath = server.arg("file");
+  File file = SPIFFS.open(filepath, "r");
+  if (!file)
+  {
+    server.send(404, "application/json", "{\"error\": \"File not found on device: " + filepath + "\", \"pages\": 0}");
+    return;
+  }
+
   int pages = (file.size() + PAGE_SIZE_BYTES - 1) / PAGE_SIZE_BYTES;
   String message;
 
@@ -283,73 +443,103 @@ static void handleUpdate()
 
   if (step == -1)
   {
-    int c;
-    sendCommand("reset");
+    // The STM32 bootloader USART is configured for 115200 8-N-2 (2 stop bits)
+    Serial.begin(115200, SERIAL_8N2);
+    delay(10);
 
-    if (fastUart)
-    {
-      Serial.begin(115200);
-      fastUart = false;
-      fastUartAvailable = true; //retry after reboot
-    }
-    do {
-      c = Serial.read();
-    } while (c != 'S' && c != '2');
+    // Flush any pending data in serial buffer
+    while (Serial.available()) Serial.read();
 
-    if (c == '2') //version 2 bootloader
+    // Send reset command directly (do NOT use sendCommand which waits for a \n echo!)
+    Serial.print("reset\r\n");
+
+    // Wait for bootloader version: '2' (v2) or 'S' (v1)
+    int ver = waitForBootloaderChar("2S", 3000);
+    if (ver < 0)
     {
-      Serial.write(0xAA); //Send magic
-      while (Serial.read() != 'S');
+      server.send(500, "application/json", "{\"error\": \"Bootloader did not respond after reset (no '2' or 'S' received)\", \"pages\": 0}");
+      file.close();
+      return;
     }
-    
-    Serial.write(pages);
-    while (Serial.read() != 'P');
+
+    if (ver == '2') // Version 2 bootloader
+    {
+      Serial.write(0xAA); // Send magic byte
+      if (waitForBootloaderChar("S", 1500) < 0)
+      {
+        server.send(500, "application/json", "{\"error\": \"Timeout waiting for 'S' after sending magic byte\", \"pages\": 0}");
+        file.close();
+        return;
+      }
+    }
+
+    // Send number of pages
+    Serial.write((uint8_t)pages);
+
+    // Bootloader acknowledges and requests page 0 with 'P'
+    if (waitForBootloaderChar("P", 2000) < 0)
+    {
+      server.send(500, "application/json", "{\"error\": \"Timeout waiting for 'P' after sending page count\", \"pages\": 0}");
+      file.close();
+      return;
+    }
+
     message = "reset";
   }
   else
   {
-    bool repeat = true;
     file.seek(step * PAGE_SIZE_BYTES);
     char buffer[PAGE_SIZE_BYTES];
     size_t bytesRead = file.readBytes(buffer, sizeof(buffer));
 
     while (bytesRead < PAGE_SIZE_BYTES)
       buffer[bytesRead++] = 0xff;
-    
+
     uint32_t crc = crc32((uint32_t*)buffer, PAGE_SIZE_BYTES / 4, 0xffffffff);
 
-    while (repeat)
+    // Flush any stale bytes
+    while (Serial.available()) Serial.read();
+
+    // Send page buffer (1024 bytes)
+    Serial.write((const uint8_t*)buffer, sizeof(buffer));
+
+    // Wait for bootloader to request CRC ('C') or error ('T'/'E')
+    int res = waitForBootloaderChar("CTE", 2500);
+
+    if (res == 'C')
     {
-      Serial.write(buffer, sizeof(buffer));
-      while (!Serial.available());
-      char res = Serial.read();
+      // Send 4-byte CRC32 (little endian)
+      Serial.write((const uint8_t*)&crc, sizeof(uint32_t));
 
-      if ('C' == res) {
-        Serial.write((char*)&crc, sizeof(uint32_t));
-        while (!Serial.available());
-        res = Serial.read();
-      }
+      // Wait for page result: 'P' (success, next page), 'D' (update done), 'E' (crc error), 'T' (timeout)
+      res = waitForBootloaderChar("PDET", 3000);
+    }
 
-      switch (res) {
-        case 'D':
-          message = "Update Done";
-          repeat = false;
-          fastUartAvailable = true;
-          break;
-        case 'E':
-          while (Serial.read() != 'T');
-          break;
-        case 'P':
-          message = "Page write success";
-          repeat = false;
-          break;
-        default:
-        case 'T':
-          break;
-      }
+    if (res == 'P')
+    {
+      message = "Page write success";
+    }
+    else if (res == 'D')
+    {
+      message = "Update Done";
+      // Restore normal 8N1 serial for regular operation
+      Serial.begin(115200, SERIAL_8N1);
+    }
+    else if (res == 'E')
+    {
+      server.send(500, "application/json", "{\"error\": \"CRC verification error on page " + String(step) + "\", \"pages\": " + String(pages) + "}");
+      file.close();
+      return;
+    }
+    else
+    {
+      server.send(500, "application/json", "{\"error\": \"Timeout or sync error on page " + String(step) + " (code: " + String((char)(res > 0 ? res : '?')) + ")\", \"pages\": " + String(pages) + "}");
+      file.close();
+      return;
     }
   }
-  server.send(200, "text/json", "{ \"message\": \"" + message + "\", \"pages\": " + pages + " }");
+
+  server.send(200, "application/json", "{\"message\": \"" + message + "\", \"pages\": " + pages + ", \"step\": " + step + "}");
   file.close();
 }
 
@@ -401,6 +591,7 @@ void staCheck(){
 }
 
 void setup(void){
+  Serial.setRxBufferSize(8192);
   Serial.begin(115200);
   Serial.setTimeout(100);
   SPIFFS.begin();
