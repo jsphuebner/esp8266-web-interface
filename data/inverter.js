@@ -69,33 +69,92 @@ var inverter = {
 
 	firmwareVersion: 0,
 
-	/** @brief send a command to the inverter */
+	/** @brief send a command to the inverter with streaming chunk support */
 	sendCmd: function(cmd, replyFunc, repeat)
 	{
-		var xmlhttp=new XMLHttpRequest();
-		var req = "/cmd?cmd=" + cmd;
-
-		xmlhttp.onload = function()
-		{
-			if (replyFunc) replyFunc(this.responseText);
-		}
-
+		var req = "/cmd?cmd=" + encodeURIComponent(cmd);
 		if (repeat)
-			req += "&repeat=" + repeat;
+			req += "&repeat=" + encodeURIComponent(repeat);
 
-		xmlhttp.open("GET", req, true);
-		xmlhttp.send();
+		if (window.fetch && window.ReadableStream)
+		{
+			fetch(req)
+				.then(function(response) {
+					if (!response.ok) {
+						throw new Error("HTTP " + response.status);
+					}
+					var reader = response.body.getReader();
+					var decoder = new TextDecoder();
+					var accumulated = "";
+
+					function readNextChunk() {
+						return reader.read().then(function(result) {
+							if (result.done) {
+								if (replyFunc) replyFunc(accumulated);
+								return accumulated;
+							}
+							accumulated += decoder.decode(result.value, { stream: true });
+							return readNextChunk();
+						});
+					}
+					return readNextChunk();
+				})
+				.catch(function(err) {
+					console.error("sendCmd fetch error:", err);
+					if (replyFunc) replyFunc("");
+				});
+		}
+		else
+		{
+			var xmlhttp = new XMLHttpRequest();
+			xmlhttp.onload = function()
+			{
+				if (replyFunc) replyFunc(this.responseText);
+			};
+			xmlhttp.onerror = function()
+			{
+				if (replyFunc) replyFunc("");
+			};
+			xmlhttp.ontimeout = function()
+			{
+				if (replyFunc) replyFunc("");
+			};
+			xmlhttp.open("GET", req, true);
+			xmlhttp.send();
+		}
 	},
+
+	_paramListInFlight: false,
+	_paramListCallbacks: [],
+	_paramListCmd: "",
 
 	/** @brief get the params from the inverter */
 	getParamList: function(replyFunc, includeHidden)
 	{
 		var cmd = includeHidden ? "json hidden" : "json";
 
+		if (replyFunc) {
+			inverter._paramListCallbacks.push(replyFunc);
+		}
+
+		if (inverter._paramListInFlight && inverter._paramListCmd === cmd) {
+			return;
+		}
+		inverter._paramListInFlight = true;
+		inverter._paramListCmd = cmd;
+
 		inverter.sendCmd(cmd, function(reply) {
+			inverter._paramListInFlight = false;
+			var callbacks = inverter._paramListCallbacks.slice();
+			inverter._paramListCallbacks = [];
+
 			var params = {};
 			try
 			{
+				if (typeof reply === "string")
+				{
+					reply = reply.trim();
+				}
 				params = JSON.parse(reply);
 
 				for (var name in params)
@@ -110,17 +169,29 @@ var inverter = {
 			}
 			catch(ex)
 			{
-        paramsCache.failedFetchCount += 1;
-        if ( paramsCache.failedFetchCount >= 2 ){
-          ui.showCommunicationErrorBar();
-        }
+				console.error("JSON parse failed. Response length: " + (reply ? reply.length : 0), ex);
+				if (reply && reply.length > 0)
+				{
+					console.error("JSON snippet start:", reply.substring(0, 150));
+					console.error("JSON snippet end:", reply.substring(Math.max(0, reply.length - 150)));
+				}
+				paramsCache.failedFetchCount += 1;
+				if ( paramsCache.failedFetchCount >= 2 ){
+					ui.showCommunicationErrorBar();
+				}
 			}
 			if ( paramsCache.failedFetchCount < 2 )
 			{
 				ui.hideCommunicationErrorBar();
 			}
 			paramsCache.setData(params);
-			if (replyFunc) replyFunc(params);
+			for (var i = 0; i < callbacks.length; i++) {
+				try {
+					callbacks[i](params);
+				} catch(e) {
+					console.error("Error in getParamList callback", e);
+				}
+			}
 		});
 	},
 
