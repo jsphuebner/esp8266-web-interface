@@ -30,17 +30,27 @@ var paramsCache = {
     failedFetchCount: 0,
 
     get: function(name) {
-      if ( paramsCache.data !== undefined )
-      {
-        if ( name in paramsCache.data ) {
-          if ( paramsCache.data[name].enums ) {
-                return paramsCache.data[name].enums[paramsCache.data[name].value];
-            } else {
-              return paramsCache.data[name].value;
-            }
-        }
-      }
-      return null;
+    	if ( paramsCache.data !== undefined ) {
+        	if ( name in paramsCache.data ) {
+	        	var param = paramsCache.data[name];
+				if (param.enums){
+					// Normal enum value
+	        		if (param.enums[param.value] !== undefined){
+			          return param.enums[param.value];
+			        }
+		        	// Bitmask value
+	        		var active = [];
+	        		for (var key in param.enums){
+			        	if (param.value & Number(key)){
+				            active.push(param.enums[key]);
+				        }
+			        }
+			    	return active.join('|');
+	      		}
+				return param.value;
+			}
+		}
+      	return null;
     },
 
     getEntry: function(name) {
